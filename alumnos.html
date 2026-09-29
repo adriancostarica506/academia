@@ -14,6 +14,15 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
+        <!-- Logo -->
+        <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden">
+          <img 
+            src="logo.png" 
+            alt="Logo" 
+            class="w-full h-full object-contain rounded-full"
+            onerror="this.onerror=null; this.src='assets/logo.png';"
+          >
+        </div>
         <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
         <span class="text-sm font-semibold text-slate-700">Expediente de Alumnos y Matrícula</span>
@@ -341,35 +350,43 @@
       document.getElementById('modalSelectCourse').innerHTML = '<option value="" disabled selected>Selecciona curso...</option>' + courseOpts;
     }
 
+    // CARGA INFALIBLE: Cruza los datos en memoria para que nunca dependa de restricciones de esquema
     async function loadStudentsAndSchedules() {
       const tbody = document.getElementById('studentsTableBody');
       try {
-        const { data, error } = await supabaseClient
+        // 1. Obtener alumnos
+        const { data: students, error: errSt } = await supabaseClient
           .from('students')
-          .select(`
-            id,
-            full_name,
-            identification,
-            phone,
-            email,
-            emergency_contact,
-            created_at,
-            student_schedules (
-              id,
-              teacher_id,
-              course_id,
-              time_slot,
-              days_of_week,
-              assigned_date,
-              teachers (id, full_name),
-              courses (id, name)
-            )
-          `)
+          .select('id, full_name, identification, phone, email, emergency_contact, created_at')
           .order('full_name', { ascending: true });
 
-        if (error) throw error;
+        if (errSt) throw errSt;
 
-        allStudentsData = data || [];
+        // 2. Obtener horarios
+        const { data: schedules, error: errSch } = await supabaseClient
+          .from('student_schedules')
+          .select('id, student_id, teacher_id, course_id, time_slot, days_of_week, assigned_date');
+
+        if (errSch) throw errSch;
+
+        // Mapas para resolución instantánea
+        const teacherMap = new Map(teachersList.map(t => [t.id, t.full_name]));
+        const courseMap = new Map(coursesList.map(c => [c.id, c.name]));
+        const scheduleMap = new Map((schedules || []).map(s => [s.student_id, s]));
+
+        // Ensamblar en memoria
+        allStudentsData = (students || []).map(st => {
+          const sch = scheduleMap.get(st.id) || null;
+          return {
+            ...st,
+            schedule: sch ? {
+              ...sch,
+              teacher_name: teacherMap.get(sch.teacher_id) || 'Sin asignar',
+              course_name: courseMap.get(sch.course_id) || 'General'
+            } : null
+          };
+        });
+
         applyFilters();
 
       } catch (err) {
@@ -390,11 +407,11 @@
         const phone = (student.phone || '').toLowerCase();
         const matchSearch = !search || name.includes(search) || iden.includes(search) || phone.includes(search);
 
-        const schedule = student.student_schedules?.[0] || null;
+        const sch = student.schedule;
 
-        const matchTeacher = !teacherId || (schedule && schedule.teacher_id === teacherId);
-        const matchCourse = !courseId || (schedule && schedule.course_id === courseId);
-        const matchSlot = !timeSlot || (schedule && schedule.time_slot === timeSlot);
+        const matchTeacher = !teacherId || (sch && sch.teacher_id === teacherId);
+        const matchCourse = !courseId || (sch && sch.course_id === courseId);
+        const matchSlot = !timeSlot || (sch && sch.time_slot === timeSlot);
 
         let matchMonthYear = true;
         if (monthYear && student.created_at) {
@@ -417,13 +434,13 @@
       }
 
       tbody.innerHTML = list.map(student => {
-        const schedule = student.student_schedules?.[0] || null;
-        const teacherName = schedule?.teachers?.full_name || '<span class="text-amber-600 font-semibold italic">Sin asignar</span>';
-        const courseName = schedule?.courses?.name || '<span class="text-slate-400">-</span>';
-        const timeSlot = schedule?.time_slot ? `<span class="text-blue-700 font-bold">${schedule.time_slot}</span>` : '<span class="text-slate-400">-</span>';
+        const sch = student.schedule;
+        const teacherName = sch?.teacher_name ? `<span class="font-semibold text-slate-800">${sch.teacher_name}</span>` : '<span class="text-amber-600 font-semibold italic">Sin asignar</span>';
+        const courseName = sch?.course_name || '<span class="text-slate-400">-</span>';
+        const timeSlot = sch?.time_slot ? `<span class="text-blue-700 font-bold">${sch.time_slot}</span>` : '<span class="text-slate-400">-</span>';
 
-        const daysBadges = (schedule?.days_of_week && schedule.days_of_week.length > 0)
-          ? schedule.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-0.5">${d}</span>`).join('')
+        const daysBadges = (sch?.days_of_week && sch.days_of_week.length > 0)
+          ? sch.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-0.5">${d}</span>`).join('')
           : '<span class="text-slate-400">-</span>';
 
         const dateFormatted = formatSafeDate(student.created_at);
@@ -437,7 +454,7 @@
             <td class="p-3.5 font-mono text-slate-700 font-bold">
               ${student.identification ? escapeHtml(student.identification) : '<span class="text-slate-400">-</span>'}
             </td>
-            <td class="p-3.5 font-semibold text-slate-800">
+            <td class="p-3.5">
               ${teacherName}
             </td>
             <td class="p-3.5 text-slate-700 font-medium">
@@ -510,13 +527,13 @@
       document.getElementById('inputEmail').value = student.email || '';
       document.getElementById('inputEmergencyContact').value = student.emergency_contact || '';
 
-      const schedule = student.student_schedules?.[0] || null;
-      if (schedule) {
-        document.getElementById('modalSelectTeacher').value = schedule.teacher_id || '';
-        document.getElementById('modalSelectCourse').value = schedule.course_id || '';
-        document.getElementById('modalSelectTimeSlot').value = schedule.time_slot || '2:00 pm a 5:00 pm';
+      const sch = student.schedule;
+      if (sch) {
+        document.getElementById('modalSelectTeacher').value = sch.teacher_id || '';
+        document.getElementById('modalSelectCourse').value = sch.course_id || '';
+        document.getElementById('modalSelectTimeSlot').value = sch.time_slot || '2:00 pm a 5:00 pm';
 
-        const assignedDays = schedule.days_of_week || [];
+        const assignedDays = sch.days_of_week || [];
         document.querySelectorAll('input[name="enrollDays"]').forEach(cb => {
           cb.checked = assignedDays.includes(cb.value);
         });
@@ -538,7 +555,7 @@
       }
     }
 
-    // ENVÍO DEL FORMULARIO CON VALIDACIONES ESTRICTAS
+    // FORMULARIO: REGISTRO / EDICIÓN CON VALIDACIONES
     document.getElementById('enrollForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       document.getElementById('modalAlert').classList.add('hidden');
@@ -555,28 +572,25 @@
       const timeSlot = document.getElementById('modalSelectTimeSlot').value;
       const checkedDays = Array.from(document.querySelectorAll('input[name="enrollDays"]:checked')).map(cb => cb.value);
 
-      // 1. Validación de Nombre: Solo letras y espacios
+      // Validaciones
       const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
       if (!nameRegex.test(fullName)) {
         showModalAlert('El nombre completo no puede contener números ni caracteres especiales.');
         return;
       }
 
-      // 2. Validación de Cédula: Mínimo 9 dígitos numéricos
       const digitsInIden = iden.replace(/\D/g, '');
       if (digitsInIden.length < 9) {
-        showModalAlert(`La cédula debe tener como mínimo 9 dígitos numéricos. (Ingresaste ${digitsInIden.length}).`);
+        showModalAlert(`La cédula debe tener como mínimo 9 dígitos numéricos (ingresaste ${digitsInIden.length}).`);
         return;
       }
 
-      // 3. Validación de Teléfono: 8 dígitos e iniciar en 6, 7 u 8
       const phoneRegex = /^[678]\d{7}$/;
       if (!phoneRegex.test(phone)) {
-        showModalAlert('El teléfono debe tener exactamente 8 dígitos y comenzar por 6, 7 u 8 (ej: 88887777).');
+        showModalAlert('El teléfono debe tener 8 dígitos y comenzar por 6, 7 u 8 (ej: 88887777).');
         return;
       }
 
-      // 4. Validación de asignaciones
       if (!teacherId || !courseId || !timeSlot) {
         showModalAlert('Debes seleccionar el profesor, curso y horario de clase.');
         return;
@@ -593,7 +607,6 @@
 
       try {
         if (editId) {
-          // Actualización
           const { error: errUpdate } = await supabaseClient
             .from('students')
             .update({
@@ -618,7 +631,6 @@
           });
 
         } else {
-          // Nuevo ingreso
           const { error: rpcErr } = await supabaseClient.rpc('register_and_enroll_student', {
             p_full_name: fullName,
             p_phone: phone,
@@ -654,16 +666,16 @@
       }
 
       const rows = allStudentsData.map(student => {
-        const schedule = student.student_schedules?.[0] || null;
+        const sch = student.schedule;
         return {
           'Alumno': student.full_name,
           'Cédula': student.identification || 'S/N',
           'Teléfono': student.phone,
           'Correo': student.email || 'S/N',
-          'Profesor Encargado': schedule?.teachers?.full_name || 'Sin asignar',
-          'Curso': schedule?.courses?.name || 'General',
-          'Horario': schedule?.time_slot || 'N/A',
-          'Días de Clase': schedule?.days_of_week ? schedule.days_of_week.join(', ') : 'N/A',
+          'Profesor Encargado': sch?.teacher_name || 'Sin asignar',
+          'Curso': sch?.course_name || 'General',
+          'Horario': sch?.time_slot || 'N/A',
+          'Días de Clase': sch?.days_of_week ? sch.days_of_week.join(', ') : 'N/A',
           'Fecha Matrícula': formatSafeDate(student.created_at)
         };
       });
@@ -681,7 +693,6 @@
       return String(text).replace(/[&<>"']/g, m => map[m]);
     }
 
-    // BLOQUEO ESTRICTO: Solo Admin y Recepción
     async function init() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
