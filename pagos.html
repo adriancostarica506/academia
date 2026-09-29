@@ -158,7 +158,6 @@
       </div>
 
       <form id="formNewPayment" class="space-y-4">
-        <!-- Selección de Alumno -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Alumno *</label>
           <select id="selectStudent" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
@@ -167,34 +166,30 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Monto -->
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Monto (₡) *</label>
             <input type="number" step="any" min="1" id="inputAmount" placeholder="Ej. 25000" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono">
           </div>
 
-          <!-- Fecha -->
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Fecha de Cobro *</label>
             <input type="date" id="inputPaymentDate" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           </div>
         </div>
 
-        <!-- Concepto -->
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Concepto *</label>
           <select id="selectConcept" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
             <option value="Mensualidad" selected>Mensualidad</option>
             <option value="Matrícula">Matrícula</option>
-            <option value="Material Didáctico">Material Didáctico</option>
-            <option value="Certificación / Examen">Certificación / Examen</option>
             <option value="Uniforme">Uniforme</option>
+            <option value="Materiales / Kit">Materiales / Kit</option>
+            <option value="Certificación / Examen">Certificación / Examen</option>
             <option value="Otro">Otro concepto...</option>
           </select>
-          <input type="text" id="inputOtherConcept" placeholder="Especificar otro concepto..." class="w-full mt-2 border border-slate-300 rounded-lg px-3 py-2 text-sm hidden focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <input type="text" id="inputOtherConcept" placeholder="Especificar concepto..." class="w-full mt-2 border border-slate-300 rounded-lg px-3 py-2 text-sm hidden focus:ring-2 focus:ring-indigo-500 focus:outline-none">
         </div>
 
-        <!-- Método de Pago (Ajustado a la restricción SQL exacta) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Método de Pago *</label>
@@ -206,7 +201,6 @@
             </select>
           </div>
 
-          <!-- Comprobante / Referencia -->
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">N° Comprobante / Ref</label>
             <input type="text" id="inputReference" placeholder="Ej. #849302" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
@@ -230,7 +224,6 @@
   <div id="modalReceipt" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-6">
       
-      <!-- Área Imprimible -->
       <div id="receiptPrintArea" class="border border-slate-300 p-6 rounded-xl bg-white space-y-4">
         <div class="text-center border-b pb-3">
           <h2 class="text-xl font-black text-indigo-950 uppercase tracking-wider">Academi</h2>
@@ -284,7 +277,6 @@
         </div>
       </div>
 
-      <!-- Acciones del Recibo -->
       <div class="flex justify-end space-x-3 no-print">
         <button id="btnCloseReceipt" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cerrar</button>
         <button id="btnPrintReceipt" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm shadow-md transition flex items-center space-x-2">
@@ -296,18 +288,15 @@
   </div>
 
   <script>
-    // 1. Configuración de Supabase
     const SUPABASE_URL = "https://ianektdgzoohzrktuzph.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Estado local
     let currentUser = null;
     let userRole = null;
     let paymentsList = [];
     let studentsMap = new Map();
 
-    // Elementos DOM
     const userBadge = document.getElementById('userBadge');
     const btnLogout = document.getElementById('btnLogout');
     const paymentsTableBody = document.getElementById('paymentsTableBody');
@@ -338,7 +327,6 @@
     const btnCloseReceipt = document.getElementById('btnCloseReceipt');
     const btnPrintReceipt = document.getElementById('btnPrintReceipt');
 
-    // Elementos Recibo
     const recNumber = document.getElementById('recNumber');
     const recDate = document.getElementById('recDate');
     const recCashier = document.getElementById('recCashier');
@@ -349,12 +337,10 @@
     const recRef = document.getElementById('recRef');
     const recAmount = document.getElementById('recAmount');
 
-    // Formateador de Colones
     const formatCurrency = (amount) => {
       return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', minimumFractionDigits: 2 }).format(amount || 0);
     };
 
-    // 2. Inicialización y Autenticación
     async function initApp() {
       lucide.createIcons();
       inputPaymentDate.value = new Date().toISOString().split('T')[0];
@@ -387,7 +373,6 @@
       setupRealtime();
     }
 
-    // 3. Cargar Alumnos para el selector
     async function loadStudents() {
       const { data, error } = await supabase
         .from('students')
@@ -409,7 +394,6 @@
       });
     }
 
-    // 4. Obtener Pagos vía RPC get_payments_summary
     async function fetchPayments() {
       const search = searchInput.value.trim();
       const start = filterStartDate.value || null;
@@ -432,7 +416,6 @@
       computeMetrics();
     }
 
-    // 5. Renderizado en Tabla
     function renderPayments() {
       if (paymentsList.length === 0) {
         paymentsTableBody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 font-medium">No se encontraron cobros registrados con los criterios seleccionados.</td></tr>`;
@@ -448,7 +431,7 @@
             <td class="py-3 px-4 font-mono font-bold text-xs text-blue-700 whitespace-nowrap">#${p.receipt_number || '-'}</td>
             <td class="py-3 px-4 text-slate-600 whitespace-nowrap text-xs">${dateFormatted}</td>
             <td class="py-3 px-4 font-bold text-slate-900">${p.student_name}</td>
-            <td class="py-3 px-4 text-slate-700">${p.concept}</td>
+            <td class="py-3 px-4 text-slate-700 font-semibold">${p.concept}</td>
             <td class="py-3 px-4">
               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
                 p.payment_method === 'SINPE Móvil' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
@@ -472,7 +455,6 @@
       lucide.createIcons();
     }
 
-    // 6. Cálculo de Totales
     function computeMetrics() {
       const todayStr = new Date().toISOString().split('T')[0];
       let todayTotal = 0;
@@ -493,7 +475,6 @@
       statFiltered.textContent = formatCurrency(filteredTotal);
     }
 
-    // 7. Mostrar Recibo
     window.viewReceipt = function(paymentId) {
       const payment = paymentsList.find(p => p.payment_id === paymentId);
       if (!payment) return;
@@ -515,11 +496,11 @@
       lucide.createIcons();
     };
 
-    // 8. Event Listeners
     selectConcept.addEventListener('change', () => {
       if (selectConcept.value === 'Otro') {
         inputOtherConcept.classList.remove('hidden');
         inputOtherConcept.required = true;
+        inputOtherConcept.focus();
       } else {
         inputOtherConcept.classList.add('hidden');
         inputOtherConcept.required = false;
@@ -540,7 +521,6 @@
     btnCloseReceipt.addEventListener('click', () => modalReceipt.classList.add('hidden'));
     btnPrintReceipt.addEventListener('click', () => window.print());
 
-    // Filtros
     searchInput.addEventListener('input', () => fetchPayments());
     filterStartDate.addEventListener('change', () => fetchPayments());
     filterEndDate.addEventListener('change', () => fetchPayments());
@@ -551,7 +531,6 @@
       fetchPayments();
     });
 
-    // Envío del Formulario de Pago
     formNewPayment.addEventListener('submit', async (e) => {
       e.preventDefault();
       paymentError.classList.add('hidden');
@@ -564,7 +543,7 @@
       const ref = inputReference.value.trim();
 
       if (!studentId || !amount || amount <= 0 || !concept) {
-        paymentError.textContent = 'Por favor complete todos los datos obligatorios con valores válidos.';
+        paymentError.textContent = 'Por favor complete todos los campos obligatorios con valores válidos.';
         paymentError.classList.remove('hidden');
         return;
       }
@@ -602,11 +581,9 @@
 
     btnLogout.addEventListener('click', async () => {
       await supabase.auth.signOut();
-      sessionStorage.clear();
       window.location.href = 'index.html';
     });
 
-    // 9. Suscripción en Tiempo Real
     function setupRealtime() {
       supabase
         .channel('public:payments')
