@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Profesores - Academi</title>
+  <title>Equipo Docente y Recepción - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -15,7 +15,7 @@
       <div class="flex items-center space-x-3">
         <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-600">Gestión de Profesores</span>
+        <span class="text-sm font-semibold text-slate-600">Personal (Profesores y Recepción)</span>
       </div>
       <div>
         <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
@@ -29,30 +29,38 @@
   <main class="max-w-7xl mx-auto px-4 py-6">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- Formulario para Crear Profesor -->
+      <!-- Formulario para Registrar Personal -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Registrar Nuevo Profesor</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-4">Registrar Personal</h2>
 
         <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
 
-        <form id="createTeacherForm" class="space-y-4">
+        <form id="createStaffForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Cargo</label>
+            <select id="staffRole" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="profesor" selected>Profesor</option>
+              <option value="recepcion">Recepción</option>
+            </select>
+          </div>
+
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo (solo letras)</label>
             <input 
               type="text" 
-              id="teacherName" 
+              id="staffName" 
               placeholder="Ej: Carlos Morales" 
               required 
               pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
-              title="Solo se permiten letras y espacios" 
+              title="Solo letras y espacios" 
               class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             >
           </div>
 
-          <div>
+          <div id="fieldSpecialty">
             <label class="block text-xs font-semibold text-slate-600 mb-1">Especialidad / Materia</label>
-            <select id="teacherSpecialty" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-              <option value="" disabled selected>Selecciona una especialidad...</option>
+            <select id="staffSpecialty" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="" disabled selected>Selecciona especialidad...</option>
               <option value="Barberia y Estilismo">Barbería y Estilismo</option>
               <option value="Manicurismo">Manicurismo</option>
               <option value="Trenzado">Trenzado</option>
@@ -63,59 +71,63 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Teléfono</label>
-            <input type="tel" id="teacherPhone" placeholder="Ej: 8888-8888" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <input type="tel" id="staffPhone" placeholder="Ej: 8888-8888" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
           </div>
 
           <div class="border-t border-slate-200 pt-3">
             <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre de Usuario (Login)</label>
             <input 
               type="text" 
-              id="teacherUsername" 
+              id="staffUsername" 
               placeholder="Ej: carlos" 
               required 
               pattern="^[a-zA-Z0-9._-]+$"
-              title="Solo letras, números, puntos o guiones, sin espacios"
+              title="Sin espacios"
               class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             >
-            <span class="text-xs text-slate-400">Obligatorio. Sin espacios.</span>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Contraseña Inicial</label>
             <input 
               type="password" 
-              id="teacherPassword" 
+              id="staffPassword" 
               placeholder="••••••••" 
               required 
               minlength="6"
-              title="Mínimo 6 caracteres"
               class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             >
-            <span class="text-xs text-slate-400">Obligatorio (mínimo 6 caracteres).</span>
           </div>
 
           <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">
-            Crear Profesor
+            Guardar y Registrar
           </button>
         </form>
       </div>
 
-      <!-- Tabla de Profesores Creados -->
+      <!-- Tabla de Personal -->
       <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Profesores Registrados</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-slate-800">Equipo Registrado</h2>
+          <button onclick="loadStaff()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-300">
+            Actualizar Estados
+          </button>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
+                <th class="p-3">Estado</th>
                 <th class="p-3">Nombre</th>
+                <th class="p-3">Cargo</th>
                 <th class="p-3">Especialidad</th>
-                <th class="p-3">Teléfono</th>
                 <th class="p-3">Usuario</th>
+                <th class="p-3 text-center">Acción</th>
               </tr>
             </thead>
-            <tbody id="teachersTableBody">
+            <tbody id="staffTableBody">
               <tr>
-                <td colspan="4" class="p-4 text-center text-slate-400">Cargando profesores...</td>
+                <td colspan="6" class="p-4 text-center text-slate-400">Cargando datos...</td>
               </tr>
             </tbody>
           </table>
@@ -125,21 +137,54 @@
     </div>
   </main>
 
+  <!-- Modal para Editar -->
+  <div id="editModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+      <h3 class="text-base font-bold text-slate-800 mb-4">Editar Datos</h3>
+      <input type="hidden" id="editUserId">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo</label>
+          <input type="text" id="editName" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+        </div>
+        <div id="editSpecialtyDiv">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Especialidad</label>
+          <select id="editSpecialty" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+            <option value="Barberia y Estilismo">Barbería y Estilismo</option>
+            <option value="Manicurismo">Manicurismo</option>
+            <option value="Trenzado">Trenzado</option>
+            <option value="Maquillaje">Maquillaje</option>
+            <option value="Estilismo">Estilismo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Teléfono</label>
+          <input type="tel" id="editPhone" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-2 mt-5">
+        <button onclick="closeModal()" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Cancelar</button>
+        <button id="btnSaveEdit" onclick="saveEdit()" class="px-4 py-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const alertMsg = document.getElementById('alertMsg');
-    const tableBody = document.getElementById('teachersTableBody');
-    const form = document.getElementById('createTeacherForm');
-    const btnSubmit = document.getElementById('btnSubmit');
+    let staffList = [];
 
-    function showAlert(text, type = 'error') {
-      alertMsg.textContent = text;
-      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
-      alertMsg.classList.remove('hidden');
-    }
+    // Ocultar campo de especialidad si se elige recepción
+    document.getElementById('staffRole').addEventListener('change', (e) => {
+      const field = document.getElementById('fieldSpecialty');
+      if (e.target.value === 'recepcion') {
+        field.classList.add('hidden');
+      } else {
+        field.classList.remove('hidden');
+      }
+    });
 
     async function checkAdmin() {
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -147,7 +192,6 @@
         window.location.href = 'index.html';
         return;
       }
-
       const { data: profile } = await supabaseClient
         .from('profiles')
         .select('role')
@@ -155,91 +199,169 @@
         .single();
 
       if (!profile || profile.role !== 'admin') {
-        alert('Acceso restringido solo para administradores.');
+        alert('Solo administradores.');
         window.location.href = 'dashboard.html';
       }
     }
 
-    async function loadTeachers() {
-      const { data, error } = await supabaseClient
-        .from('teachers')
-        .select('full_name, specialty, phone, profiles(username)')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Error al cargar profesores.</td></tr>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">No hay profesores registrados aún.</td></tr>`;
-        return;
-      }
-
-      tableBody.innerHTML = data.map(t => `
-        <tr class="border-b border-slate-100 hover:bg-slate-50">
-          <td class="p-3 font-medium text-slate-800">${t.full_name}</td>
-          <td class="p-3 text-slate-600"><span class="px-2 py-1 rounded bg-slate-100 text-xs font-semibold">${t.specialty || '-'}</span></td>
-          <td class="p-3 text-slate-600">${t.phone || '-'}</td>
-          <td class="p-3 font-mono text-xs text-blue-600 bg-blue-50 w-fit rounded px-2 py-0.5">${t.profiles?.username || '-'}</td>
-        </tr>
-      `).join('');
+    // Calcula si está online (activo en los últimos 3 minutos)
+    function isOnline(lastSeen) {
+      if (!lastSeen) return false;
+      const diffMinutes = (new Date() - new Date(lastSeen)) / (1000 * 60);
+      return diffMinutes <= 3;
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      alertMsg.classList.add('hidden');
+    async function loadStaff() {
+      const tableBody = document.getElementById('staffTableBody');
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('id, full_name, role, username, last_seen, teachers(specialty, phone)')
+        .in('role', ['profesor', 'recepcion'])
+        .order('full_name');
 
-      const full_name = document.getElementById('teacherName').value.trim();
-      const specialty = document.getElementById('teacherSpecialty').value;
-      const phone = document.getElementById('teacherPhone').value.trim();
-      const username = document.getElementById('teacherUsername').value.trim().toLowerCase();
-      const password = document.getElementById('teacherPassword').value;
-
-      // Validación JS extra de solo letras
-      const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
-      if (!nameRegex.test(full_name)) {
-        showAlert('El nombre completo solo puede contener letras y espacios.');
+      if (error) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar.</td></tr>`;
         return;
       }
 
-      if (!username || !password || !specialty) {
-        showAlert('Por favor completa todos los campos requeridos.');
+      staffList = data || [];
+
+      if (staffList.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay personal registrado aún.</td></tr>`;
         return;
       }
 
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = 'Creando...';
+      tableBody.innerHTML = staffList.map(u => {
+        const online = isOnline(u.last_seen);
+        const specialty = u.teachers?.[0]?.specialty || (u.role === 'recepcion' ? 'Atención al Cliente' : '-');
+        const phone = u.teachers?.[0]?.phone || '-';
+
+        return `
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="p-3">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${online ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
+                <span class="w-1.5 h-1.5 rounded-full ${online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+                ${online ? 'Online' : 'Offline'}
+              </span>
+            </td>
+            <td class="p-3 font-medium text-slate-800">${u.full_name}</td>
+            <td class="p-3 capitalize font-semibold text-xs text-slate-600">${u.role}</td>
+            <td class="p-3 text-slate-600 text-xs">${specialty}</td>
+            <td class="p-3 font-mono text-xs text-blue-600 bg-blue-50 w-fit rounded px-2 py-0.5">${u.username || '-'}</td>
+            <td class="p-3 text-center">
+              <button onclick="openEditModal('${u.id}')" class="text-xs text-blue-600 hover:underline font-semibold">Editar</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal de edición
+    function openEditModal(userId) {
+      const user = staffList.find(s => s.id === userId);
+      if (!user) return;
+
+      document.getElementById('editUserId').value = user.id;
+      document.getElementById('editName').value = user.full_name;
+      document.getElementById('editPhone').value = user.teachers?.[0]?.phone || '';
+      
+      const specDiv = document.getElementById('editSpecialtyDiv');
+      if (user.role === 'recepcion') {
+        specDiv.classList.add('hidden');
+      } else {
+        specDiv.classList.remove('hidden');
+        document.getElementById('editSpecialty').value = user.teachers?.[0]?.specialty || 'Barberia y Estilismo';
+      }
+
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    async function saveEdit() {
+      const id = document.getElementById('editUserId').value;
+      const name = document.getElementById('editName').value.trim();
+      const phone = document.getElementById('editPhone').value.trim();
+      const specialty = document.getElementById('editSpecialty').value;
+      const btn = document.getElementById('btnSaveEdit');
+
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
 
       try {
-        const { data, error } = await supabaseClient.rpc('admin_create_teacher', {
-          p_full_name: full_name,
-          p_username: username,
-          p_password: password,
+        const { error } = await supabaseClient.rpc('admin_update_staff', {
+          p_user_id: id,
+          p_full_name: name,
           p_specialty: specialty,
           p_phone: phone
         });
 
         if (error) throw error;
-
-        showAlert('¡Profesor creado exitosamente!', 'success');
-        form.reset();
-        loadTeachers();
+        closeModal();
+        loadStaff();
       } catch (err) {
-        showAlert(err.message || 'Error al crear el profesor.');
+        alert('Error al guardar: ' + err.message);
       } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Crear Profesor';
+        btn.disabled = false;
+        btn.textContent = 'Guardar Cambios';
+      }
+    }
+
+    // Crear personal
+    document.getElementById('createStaffForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertMsg = document.getElementById('alertMsg');
+      alertMsg.classList.add('hidden');
+
+      const role = document.getElementById('staffRole').value;
+      const full_name = document.getElementById('staffName').value.trim();
+      const specialty = document.getElementById('staffSpecialty').value;
+      const phone = document.getElementById('staffPhone').value.trim();
+      const username = document.getElementById('staffUsername').value.trim().toLowerCase();
+      const password = document.getElementById('staffPassword').value;
+
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        const { error } = await supabaseClient.rpc('admin_create_staff', {
+          p_full_name: full_name,
+          p_role: role,
+          p_username: username,
+          p_password: password,
+          p_specialty: role === 'profesor' ? specialty : null,
+          p_phone: phone
+        });
+
+        if (error) throw error;
+
+        alertMsg.textContent = '¡Personal registrado con éxito!';
+        alertMsg.className = 'mb-4 p-3 rounded-lg text-sm bg-emerald-50 text-emerald-700 border border-emerald-200';
+        alertMsg.classList.remove('hidden');
+
+        document.getElementById('createStaffForm').reset();
+        loadStaff();
+      } catch (err) {
+        alertMsg.textContent = err.message || 'Error al registrar.';
+        alertMsg.className = 'mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
+        alertMsg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar y Registrar';
       }
     });
 
+    // Cerrar sesión
     document.getElementById('btnLogout').addEventListener('click', async () => {
       await supabaseClient.auth.signOut();
       sessionStorage.clear();
       window.location.href = 'index.html';
     });
 
-    checkAdmin().then(loadTeachers);
+    checkAdmin().then(loadStaff);
   </script>
 </body>
 </html>
