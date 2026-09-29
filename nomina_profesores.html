@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nómina y Pago a Profesores - Academi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
+
+  <!-- Barra Superior -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <span class="text-slate-400">|</span>
+        <span class="text-sm font-semibold text-slate-700">Nómina y Pagos a Profesores</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span id="userName" class="text-xs font-semibold text-slate-600">Verificando...</span>
+        <button id="btnLogout" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Salir
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal (Bloqueado a profesores) -->
+  <main id="mainContainer" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- Tarjetas de Resumen Financiero de Nómina -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pagado a Docentes</p>
+          <h3 id="statTotalPaid" class="text-2xl font-black text-slate-900 mt-1">₡0,00</h3>
+          <p class="text-[11px] text-slate-400 mt-1" id="statCountPaid">0 pagos registrados</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xl border border-indigo-100">
+          ₡
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pagado Este Mes</p>
+          <h3 id="statCurrentMonthPaid" class="text-2xl font-black text-emerald-600 mt-1">₡0,00</h3>
+          <p class="text-[11px] text-slate-400 mt-1" id="statCurrentMonthCount">Mes actual</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl border border-emerald-100">
+          📅
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Filtrado</p>
+          <h3 id="statFilteredPaid" class="text-2xl font-black text-blue-600 mt-1">₡0,00</h3>
+          <p class="text-[11px] text-slate-400 mt-1" id="statFilteredCount">Según filtros activos</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl border border-blue-100">
+          ∑
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Registro y Tabla de Consulta -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Formulario de Registro de Pago (4 columnas) -->
+      <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit space-y-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Registrar Pago a Profesor</h2>
+          <p class="text-xs text-slate-500">Selecciona el docente, el periodo laborado y el monto abonado.</p>
+        </div>
+
+        <div id="alertMsg" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+
+        <form id="payrollForm" class="space-y-4">
+          <!-- 1. Profesor -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Profesor *</label>
+            <select id="selectTeacher" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium">
+              <option value="" disabled selected>Cargando profesores...</option>
+            </select>
+          </div>
+
+          <!-- 2. Monto -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Monto Pagado en Colones (₡) *</label>
+            <input 
+              type="number" 
+              id="inputAmount" 
+              placeholder="Ej: 75000" 
+              required 
+              min="1" 
+              step="any" 
+              class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+          </div>
+
+          <!-- 3. Selección Intuitiva del Periodo (De tal fecha a tal fecha) -->
+          <div class="bg-indigo-50/60 p-3.5 rounded-xl border border-indigo-100 space-y-2.5">
+            <div class="flex justify-between items-center">
+              <label class="block text-[11px] font-black text-indigo-900 uppercase">Periodo Laborado *</label>
+              <!-- Botones rápidos e intuitivos -->
+              <div class="flex gap-1">
+                <button type="button" onclick="setPeriodShortcut('q1')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">1ra Quincena</button>
+                <button type="button" onclick="setPeriodShortcut('q2')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">2da Quincena</button>
+                <button type="button" onclick="setPeriodShortcut('month')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">Mes Completo</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <span class="block text-[10px] font-semibold text-slate-500 mb-0.5">Desde Fecha:</span>
+                <input type="date" id="inputPeriodStart" required class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
+              </div>
+              <div>
+                <span class="block text-[10px] font-semibold text-slate-500 mb-0.5">Hasta Fecha:</span>
+                <input type="date" id="inputPeriodEnd" required class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
+              </div>
+            </div>
+            <p id="periodPreviewText" class="text-[11px] font-semibold text-indigo-700 italic">Selecciona el rango de fechas</p>
+          </div>
+
+          <!-- 4. Fecha de emisión del pago -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de Emisión *</label>
+              <input type="date" id="inputPaymentDate" required class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none bg-white">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Método de Pago *</label>
+              <select id="selectMethod" required class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none bg-white font-medium">
+                <option value="SINPE Móvil" selected>SINPE Móvil</option>
+                <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Cheque">Cheque</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 5. Referencia y Notas -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">N° Comprobante / Referencia (Opcional)</label>
+            <input 
+              type="text" 
+              id="inputReference" 
+              placeholder="Ej: SINPE #493012" 
+              class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Notas / Detalle (Opcional)</label>
+            <textarea 
+              id="inputNotes" 
+              rows="2" 
+              placeholder="Ej: Pago de 20 horas de clase turno tarde..." 
+              class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none"
+            ></textarea>
+          </div>
+
+          <button 
+            type="submit" 
+            id="btnSubmitPayroll" 
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm"
+          >
+            Guardar Pago en Nómina
+          </button>
+        </form>
+      </div>
+
+      <!-- Tabla de Consultas y Filtros (8 columnas) -->
+      <div class="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        
+        <!-- Barra de Filtros -->
+        <div class="space-y-3 border-b border-slate-100 pb-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h3 class="text-base font-bold text-slate-800">Historial de Pagos a Docentes</h3>
+              <p class="text-xs text-slate-500">Consulta los pagos registrados con desglose de periodo, fecha y monto.</p>
+            </div>
+            <button 
+              onclick="exportPayrollToExcel()" 
+              class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm"
+            >
+              <span>📊 Descargar Excel (.xlsx)</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filtrar por Profesor</label>
+              <select id="filterTeacherSelect" onchange="filterPayroll()" class="w-full border border-slate-300 rounded-lg p-2 outline-none bg-white">
+                <option value="">👨‍🏫 Todos los profesores</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mes y Año de Emisión</label>
+              <input type="month" id="filterMonth" onchange="filterPayroll()" class="w-full border border-slate-300 rounded-lg p-1.5 outline-none bg-white">
+            </div>
+
+            <div class="flex items-end">
+              <button onclick="clearPayrollFilters()" class="w-full text-xs text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg p-2 hover:bg-slate-50 transition text-center font-medium">
+                Limpiar Filtros
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+                <th class="p-3">Profesor</th>
+                <th class="p-3">Periodo Cubierto (De - Hasta)</th>
+                <th class="p-3">Fecha de Pago</th>
+                <th class="p-3">Método / Ref</th>
+                <th class="p-3 text-right">Monto Pagado</th>
+                <th class="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="payrollTableBody" class="divide-y divide-slate-100 font-medium">
+              <tr>
+                <td colspan="6" class="p-8 text-center text-slate-400">Cargando pagos de nómina...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allPayroll = [];
+    let allTeachers = [];
+    let currentFiltered = [];
+
+    const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function formatSafeDate(rawDate) {
+      if (!rawDate) return '--/--/----';
+      const clean = String(rawDate).split('T')[0];
+      const parts = clean.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return clean;
+    }
+
+    function showAlert(text, type = 'error') {
+      const el = document.getElementById('alertMsg');
+      el.textContent = text;
+      el.className = `p-3 rounded-lg text-xs font-semibold ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      el.classList.remove('hidden');
+    }
+
+    // Atajos rápidos para seleccionar periodos con un clic
+    function setPeriodShortcut(type) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth(); // 0 a 11
+
+      let start, end;
+
+      if (type === 'q1') {
+        start = new Date(y, m, 1);
+        end = new Date(y, m, 15);
+      } else if (type === 'q2') {
+        start = new Date(y, m, 16);
+        end = new Date(y, m + 1, 0); // último día del mes
+      } else {
+        start = new Date(y, m, 1);
+        end = new Date(y, m + 1, 0);
+      }
+
+      const toInput = (d) => {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      };
+
+      document.getElementById('inputPeriodStart').value = toInput(start);
+      document.getElementById('inputPeriodEnd').value = toInput(end);
+      updatePeriodPreview();
+    }
+
+    function updatePeriodPreview() {
+      const s = document.getElementById('inputPeriodStart').value;
+      const e = document.getElementById('inputPeriodEnd').value;
+      const preview = document.getElementById('periodPreviewText');
+
+      if (s && e) {
+        preview.textContent = `Periodo: del ${formatSafeDate(s)} al ${formatSafeDate(e)}`;
+      } else {
+        preview.textContent = 'Selecciona el rango de fechas';
+      }
+    }
+
+    document.getElementById('inputPeriodStart').addEventListener('change', updatePeriodPreview);
+    document.getElementById('inputPeriodEnd').addEventListener('change', updatePeriodPreview);
+
+    async function loadTeachers() {
+      const { data, error } = await supabaseClient.from('teachers').select('id, full_name').order('full_name');
+      allTeachers = data || [];
+
+      const selectForm = document.getElementById('selectTeacher');
+      const selectFilter = document.getElementById('filterTeacherSelect');
+
+      const opts = allTeachers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
+
+      selectForm.innerHTML = '<option value="" disabled selected>Selecciona profesor...</option>' + opts;
+      selectFilter.innerHTML = '<option value="">👨‍🏫 Todos los profesores</option>' + opts;
+    }
+
+    async function loadPayroll() {
+      const tbody = document.getElementById('payrollTableBody');
+      try {
+        const { data, error } = await supabaseClient
+          .from('teacher_payroll')
+          .select(`
+            id,
+            teacher_id,
+            amount,
+            period_start,
+            period_end,
+            payment_date,
+            payment_method,
+            reference_number,
+            notes,
+            created_at,
+            teachers (id, full_name, phone)
+          `)
+          .order('payment_date', { ascending: false });
+
+        if (error) throw error;
+        allPayroll = data || [];
+        filterPayroll();
+        calculateMetrics();
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function calculateMetrics() {
+      const now = new Date();
+      const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      let totalPaid = 0;
+      let monthPaid = 0;
+      let monthCount = 0;
+
+      allPayroll.forEach(p => {
+        const amt = Number(p.amount) || 0;
+        totalPaid += amt;
+
+        if (p.payment_date && String(p.payment_date).startsWith(currentYearMonth)) {
+          monthPaid += amt;
+          monthCount++;
+        }
+      });
+
+      document.getElementById('statTotalPaid').textContent = formatCurrency(totalPaid);
+      document.getElementById('statCountPaid').textContent = `${allPayroll.length} pagos registrados en total`;
+      document.getElementById('statCurrentMonthPaid').textContent = formatCurrency(monthPaid);
+      document.getElementById('statCurrentMonthCount').textContent = `${monthCount} pagos en el mes actual`;
+    }
+
+    function filterPayroll() {
+      const teacherId = document.getElementById('filterTeacherSelect').value;
+      const monthVal = document.getElementById('filterMonth').value;
+
+      currentFiltered = allPayroll.filter(item => {
+        const matchTeacher = !teacherId || item.teacher_id === teacherId;
+        const matchMonth = !monthVal || (item.payment_date && String(item.payment_date).startsWith(monthVal));
+        return matchTeacher && matchMonth;
+      });
+
+      let filteredTotal = 0;
+      currentFiltered.forEach(p => filteredTotal += Number(p.amount) || 0);
+
+      document.getElementById('statFilteredPaid').textContent = formatCurrency(filteredTotal);
+      document.getElementById('statFilteredCount').textContent = `${currentFiltered.length} pagos filtrados`;
+
+      renderTable(currentFiltered);
+    }
+
+    function renderTable(list) {
+      const tbody = document.getElementById('payrollTableBody');
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">No se encontraron pagos con los filtros seleccionados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(p => {
+        const teacherName = p.teachers?.full_name || 'Profesor';
+        const periodStr = `${formatSafeDate(p.period_start)} al ${formatSafeDate(p.period_end)}`;
+        const dateStr = formatSafeDate(p.payment_date);
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-900">
+              ${teacherName}
+              ${p.notes ? `<p class="text-[10px] text-slate-400 font-normal mt-0.5">${p.notes}</p>` : ''}
+            </td>
+            <td class="p-3 font-mono font-semibold text-indigo-700 whitespace-nowrap">
+              🗓️ ${periodStr}
+            </td>
+            <td class="p-3 font-mono text-slate-700 whitespace-nowrap">
+              ${dateStr}
+            </td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                ${p.payment_method}
+              </span>
+              ${p.reference_number ? `<p class="font-mono text-[10px] text-slate-400 mt-0.5">Ref: ${p.reference_number}</p>` : ''}
+            </td>
+            <td class="p-3 text-right font-mono font-black text-emerald-700 text-sm whitespace-nowrap">
+              ${formatCurrency(p.amount)}
+            </td>
+            <td class="p-3 text-center whitespace-nowrap">
+              <button 
+                onclick="deletePayroll('${p.id}', '${encodeURIComponent(teacherName)}', '${p.amount}')" 
+                class="text-red-600 hover:text-red-800 text-xs font-bold underline px-2 py-1"
+                title="Eliminar este registro"
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function clearPayrollFilters() {
+      document.getElementById('filterTeacherSelect').value = '';
+      document.getElementById('filterMonth').value = '';
+      filterPayroll();
+    }
+
+    async function deletePayroll(id, teacherEscaped, amt) {
+      const name = decodeURIComponent(teacherEscaped);
+      if (!confirm(`¿Deseas eliminar el registro de pago por ${formatCurrency(amt)} a ${name}?`)) return;
+
+      try {
+        const { error } = await supabaseClient.from('teacher_payroll').delete().eq('id', id);
+        if (error) throw error;
+        await loadPayroll();
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      }
+    }
+
+    // REGISTRAR PAGO
+    document.getElementById('payrollForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('alertMsg').classList.add('hidden');
+
+      const teacherId = document.getElementById('selectTeacher').value;
+      const amount = parseFloat(document.getElementById('inputAmount').value);
+      const periodStart = document.getElementById('inputPeriodStart').value;
+      const periodEnd = document.getElementById('inputPeriodEnd').value;
+      const paymentDate = document.getElementById('inputPaymentDate').value;
+      const method = document.getElementById('selectMethod').value;
+      const ref = document.getElementById('inputReference').value.trim();
+      const notes = document.getElementById('inputNotes').value.trim();
+
+      if (!teacherId || !amount || amount <= 0 || !periodStart || !periodEnd || !paymentDate) {
+        showAlert('Completa los campos obligatorios.');
+        return;
+      }
+
+      if (periodStart > periodEnd) {
+        showAlert('La fecha de inicio del periodo no puede ser mayor que la fecha final.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitPayroll');
+      btn.disabled = true;
+      btn.textContent = 'Guardando en la base de datos...';
+
+      try {
+        const { data, error } = await supabaseClient.rpc('register_teacher_payroll', {
+          p_teacher_id: teacherId,
+          p_amount: amount,
+          p_period_start: periodStart,
+          p_period_end: periodEnd,
+          p_payment_date: paymentDate,
+          p_payment_method: method,
+          p_reference_number: ref || null,
+          p_notes: notes || null
+        });
+
+        if (error) throw error;
+
+        showAlert(`¡Pago de ${formatCurrency(amount)} registrado con éxito para ${data.teacher_name}!`, 'success');
+        document.getElementById('payrollForm').reset();
+        
+        // Restaurar fecha de emisión a hoy
+        document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('periodPreviewText').textContent = 'Selecciona el rango de fechas';
+
+        await loadPayroll();
+
+      } catch (err) {
+        showAlert('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar Pago en Nómina';
+      }
+    });
+
+    // EXPORTAR A EXCEL
+    function exportPayrollToExcel() {
+      if (currentFiltered.length === 0) {
+        alert('No hay registros de pago para exportar.');
+        return;
+      }
+
+      const rows = currentFiltered.map(p => ({
+        'Profesor': p.teachers?.full_name || 'Desconocido',
+        'Fecha de Emisión': formatSafeDate(p.payment_date),
+        'Periodo Desde': formatSafeDate(p.period_start),
+        'Periodo Hasta': formatSafeDate(p.period_end),
+        'Método de Pago': p.payment_method,
+        'N° Referencia': p.reference_number || 'S/N',
+        'Monto Pagado (₡)': Number(p.amount) || 0,
+        'Notas': p.notes || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{ wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 20 }, { wch: 18 }, { wch: 18 }, { wch: 28 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Nomina_Docente');
+      XLSX.writeFile(wb, `Academi_Nomina_Profesores_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    // SEGURIDAD: Solo Admin y Recepción
+    async function init() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
+        alert('Acceso restringido: Solo Administrador y Recepción pueden acceder a la Nómina.');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      document.getElementById('userName').textContent = `${profile.full_name || 'Personal'} (${profile.role.toUpperCase()})`;
+      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('mainContainer').classList.remove('hidden');
+
+      setPeriodShortcut('q1'); // Quincena inicial por defecto
+      await loadTeachers();
+      await loadPayroll();
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    });
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
