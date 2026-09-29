@@ -43,8 +43,8 @@
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Horarios de Alumnos</h3>
-            <p class="text-sm text-slate-500 mb-4">Asignar alumnos por fecha, horario y profesor encargado.</p>
+            <h3 class="font-semibold text-slate-800 mb-2">Horarios y Alumnos</h3>
+            <p class="text-sm text-slate-500 mb-4">Asignar uno o múltiples alumnos por profesor, fecha y turno.</p>
           </div>
           <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar Horarios</a>
         </div>
@@ -74,19 +74,19 @@
         </div>
       </div>
 
-      <!-- Monitor de Asistencias en Tiempo Real (Admin) -->
+      <!-- Monitor de Asistencias en Vivo -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Monitor de Asistencias en Vivo (Tiempo Real)</h3>
+              <h3 class="font-bold text-slate-800 text-base">Monitor de Asistencias en Vivo</h3>
             </div>
-            <p class="text-xs text-slate-500">Se actualiza instantáneamente cuando los profesores marcan si un alumno llegó o no.</p>
+            <p class="text-xs text-slate-500">Muestra las llegadas en tiempo real conforme los profesores marcan asistencia.</p>
           </div>
           <div class="flex items-center gap-2">
             <label class="text-xs font-semibold text-slate-600">Fecha:</label>
-            <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+            <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -94,7 +94,7 @@
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
                 <th class="p-3">Estado</th>
-                <th class="p-3">Fecha y Hora de Marcación</th>
+                <th class="p-3">Fecha y Hora</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Profesor</th>
                 <th class="p-3">Curso / Materia</th>
@@ -118,8 +118,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Horarios de Alumnos</h3>
-            <p class="text-sm text-slate-500 mb-4">Agendar alumnos en turnos y vincularlos a profesores en el calendario.</p>
+            <h3 class="font-semibold text-slate-800 mb-2">Horarios y Alumnos</h3>
+            <p class="text-sm text-slate-500 mb-4">Asignar alumnos a profesores individualmente o por grupo.</p>
           </div>
           <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar Horarios</a>
         </div>
@@ -147,13 +147,13 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Control de Llegadas en Vivo (Tiempo Real)</h3>
+              <h3 class="font-bold text-slate-800 text-base">Control de Llegadas en Vivo</h3>
             </div>
-            <p class="text-xs text-slate-500">Actualización en tiempo real conforme los profesores confirman llegadas.</p>
+            <p class="text-xs text-slate-500">Actualización en tiempo real de asistencias.</p>
           </div>
           <div class="flex items-center gap-2">
             <label class="text-xs font-semibold text-slate-600">Fecha:</label>
-            <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+            <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -161,7 +161,7 @@
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
                 <th class="p-3">Estado</th>
-                <th class="p-3">Fecha y Hora de Marcación</th>
+                <th class="p-3">Fecha y Hora</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Profesor</th>
                 <th class="p-3">Curso / Materia</th>
@@ -183,9 +183,9 @@
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia y Mis Alumnos</h2>
-          <p class="text-xs text-slate-500">Indica si el alumno llegó o no a la clase para registrarlo en el sistema.</p>
+          <p class="text-xs text-slate-500">Tus alumnos asignados se actualizan automáticamente en tiempo real.</p>
         </div>
-        <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-semibold">
+        <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold">
           ✓ Asistencia Actualizada en Vivo
         </div>
       </div>
@@ -194,11 +194,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
-            <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
+            <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
-            <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-1 focus:ring-blue-500">
+            <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
               <option value="">Todos los turnos de hoy</option>
               <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
               <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
@@ -236,7 +236,7 @@
       }
     }
 
-    // CARGA DE ALUMNOS PARA EL PROFESOR
+    // LISTA DE ALUMNOS DEL PROFESOR
     async function loadTeacherStudents() {
       const container = document.getElementById('teacherStudentsContainer');
       const dateVal = document.getElementById('teacherDateFilter').value;
@@ -280,7 +280,7 @@
               <th class="p-3">Alumno</th>
               <th class="p-3">Teléfono</th>
               <th class="p-3">Curso</th>
-              <th class="p-3">Hora de Registro</th>
+              <th class="p-3">Hora de Marcación</th>
             </tr>
           </thead>
           <tbody>
@@ -290,18 +290,18 @@
               let recordedTimeStr = '-';
               if (currentAttendance?.recorded_at) {
                 const recDate = new Date(currentAttendance.recorded_at);
-                recordedTimeStr = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                recordedTimeStr = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', hour12: true });
               }
 
               return `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
                   <td class="p-3 text-center">
                     <select 
-                      onchange="setAttendanceStatus('${item.id}', this.value)"
-                      class="text-xs font-semibold rounded-lg p-1.5 border outline-none cursor-pointer ${
+                      onchange="updateAttendanceChoice('${item.id}', this.value)"
+                      class="text-xs font-bold rounded-lg p-1.5 border outline-none cursor-pointer ${
                         status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
                         status === 'ausente' ? 'bg-red-100 text-red-800 border-red-300' :
-                        'bg-slate-100 text-slate-700 border-slate-300'
+                        'bg-slate-100 text-slate-600 border-slate-300'
                       }"
                     >
                       <option value="pendiente" ${status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
@@ -313,7 +313,7 @@
                   <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
                   <td class="p-3 text-xs text-slate-600">${item.students?.phone || '-'}</td>
                   <td class="p-3 text-xs text-slate-600">${item.courses?.name || '-'}</td>
-                  <td class="p-3 font-mono text-xs font-semibold text-slate-700" id="time-${item.id}">
+                  <td class="p-3 font-mono text-xs font-semibold text-slate-700">
                     ${recordedTimeStr}
                   </td>
                 </tr>
@@ -324,12 +324,11 @@
       `;
     }
 
-    // ACTUALIZAR ASISTENCIA
-    async function setAttendanceStatus(scheduleId, statusVal) {
+    async function updateAttendanceChoice(scheduleId, statusVal) {
       if (statusVal === 'pendiente') return;
 
       try {
-        const { data, error } = await supabaseClient.rpc('mark_student_attendance', {
+        const { error } = await supabaseClient.rpc('mark_student_attendance', {
           p_schedule_id: scheduleId,
           p_status: statusVal
         });
@@ -340,20 +339,15 @@
         feedback.classList.remove('hidden');
         setTimeout(() => feedback.classList.add('hidden'), 2000);
 
-        const timeCell = document.getElementById(`time-${scheduleId}`);
-        if (timeCell && data?.recorded_at) {
-          const dt = new Date(data.recorded_at);
-          timeCell.textContent = dt.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-
         await loadTeacherStudents();
 
       } catch (err) {
-        alert('Error al registrar asistencia: ' + (err.message || 'Error'));
+        alert('Error al guardar asistencia: ' + (err.message || 'Error'));
+        loadTeacherStudents();
       }
     }
 
-    // MONITOR EN TIEMPO REAL PARA ADMIN Y RECEPCIÓN
+    // MONITOR PARA ADMIN Y RECEPCIÓN
     async function loadAttendanceMonitor() {
       const adminDate = document.getElementById('adminAttendanceDate');
       const recepDate = document.getElementById('recepcionAttendanceDate');
@@ -383,7 +377,7 @@
         const dateObj = new Date(item.recorded_at);
         const [y, m, d] = item.attendance_date.split('-');
         const dateFormatted = `${d}/${m}/${y}`;
-        const timeFormatted = dateObj.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const timeFormatted = dateObj.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', hour12: true });
 
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
@@ -396,7 +390,7 @@
               </span>
             </td>
             <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
-              ${dateFormatted} <span class="font-bold text-slate-800">${timeFormatted}</span>
+              ${dateFormatted} <span class="font-bold text-slate-800 ml-1">${timeFormatted}</span>
             </td>
             <td class="p-3 font-bold text-slate-800">${item.student_name}</td>
             <td class="p-3 text-slate-700">${item.teacher_name}</td>
@@ -406,25 +400,25 @@
       }).join('');
     }
 
-    // SUSCRIPCIÓN EN TIEMPO REAL (WEBSOCKETS + POLLING DE RESPALDO)
-    function setupRealtimeAttendance() {
+    // SUSCRIPCIONES REALTIME (ASISTENCIAS Y NUEVAS ASIGNACIONES DE HORARIOS)
+    function setupRealtimeListeners() {
+      // 1. Escuchar cambios de asistencias (Admin y Recepción)
       supabaseClient
-        .channel('attendances_live_channel')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'attendances' },
-          () => {
-            loadAttendanceMonitor();
-          }
-        )
+        .channel('attendance_live_stream')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'attendances' }, () => {
+          loadAttendanceMonitor();
+        })
         .subscribe();
 
-      // Sondeo ligero cada 3 segundos para garantizar actualización continua
-      setInterval(() => {
-        if (currentUserRole === 'admin' || currentUserRole === 'recepcion') {
-          loadAttendanceMonitor();
-        }
-      }, 3000);
+      // 2. Escuchar cambios de asignación de horarios en tiempo real (Para el Profesor)
+      supabaseClient
+        .channel('schedules_live_stream')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'student_schedules' }, () => {
+          if (currentUserRole === 'profesor') {
+            loadTeacherStudents();
+          }
+        })
+        .subscribe();
     }
 
     async function initDashboard() {
@@ -460,7 +454,6 @@
         document.getElementById('sectionAdmin').classList.remove('hidden');
         document.getElementById('adminAttendanceDate').value = today;
         await loadAttendanceMonitor();
-        setupRealtimeAttendance();
 
       } else if (profile.role === 'profesor') {
         badgeRole.classList.add('bg-blue-100', 'text-blue-800');
@@ -484,9 +477,9 @@
         document.getElementById('sectionRecepcion').classList.remove('hidden');
         document.getElementById('recepcionAttendanceDate').value = today;
         await loadAttendanceMonitor();
-        setupRealtimeAttendance();
       }
 
+      setupRealtimeListeners();
       await updateOnlineHeartbeat();
       setInterval(updateOnlineHeartbeat, 60000);
     }
