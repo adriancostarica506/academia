@@ -7,156 +7,203 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
   <!-- Barra Superior -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-600">Módulo de Alumnos</span>
+        <span class="text-sm font-semibold text-slate-700">Directorio de Alumnos</span>
       </div>
-      <div>
-        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
-          Cerrar Sesión
+      <div class="flex items-center space-x-3">
+        <span id="userName" class="text-xs font-semibold text-slate-600">Usuario</span>
+        <button id="btnLogout" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Salir
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Contenido -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Contenedor Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-      <!-- Formulario para Registrar Alumno -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-        <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar Nuevo Alumno</h2>
-        <p class="text-xs text-slate-500 mb-4">Ingresa la información personal del estudiante.</p>
-
-        <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
-
-        <form id="createStudentForm" class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre(s) *</label>
-            <input 
-              type="text" 
-              id="studentFirstName" 
-              placeholder="Ej: Sofia" 
-              required 
-              pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
-              title="Solo letras y espacios" 
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Apellidos *</label>
-            <input 
-              type="text" 
-              id="studentLastName" 
-              placeholder="Ej: Rodríguez Vargas" 
-              required 
-              pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
-              title="Solo letras y espacios" 
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Celular / Teléfono *</label>
-            <input 
-              type="tel" 
-              id="studentPhone" 
-              placeholder="Ej: 8888-8888" 
-              required 
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-          </div>
-
-          <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">
-            Guardar Alumno
-          </button>
-        </form>
+    <!-- Encabezado con Métricas y Botón Nuevo Alumno -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h2 class="text-lg font-bold text-slate-800">Expediente de Alumnos Matriculados</h2>
+        <p class="text-xs text-slate-500">Agrega, edita y administra los datos personales de los estudiantes.</p>
       </div>
 
-      <!-- Tabla y Búsqueda de Alumnos -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-800">Listado General de Alumnos</h2>
-            <p class="text-xs text-slate-500">Expedientes registrados en la academia.</p>
-          </div>
-          <div class="w-full md:w-64">
-            <input 
-              type="text" 
-              id="searchStudent" 
-              onkeyup="filterStudents()" 
-              placeholder="Buscar por nombre o teléfono..." 
-              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
-            >
-          </div>
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <div class="bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl flex items-center gap-2">
+          <span class="text-xs text-blue-700 font-semibold">Total Alumnos:</span>
+          <span id="totalStudentsCount" class="text-sm font-black text-blue-900">0</span>
         </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Nombre(s)</th>
-                <th class="p-3">Apellidos</th>
-                <th class="p-3">Teléfono / Celular</th>
-                <th class="p-3">Fecha de Registro</th>
-                <th class="p-3 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="studentsTableBody">
-              <tr>
-                <td colspan="5" class="p-4 text-center text-slate-400">Cargando alumnos...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
+        <button 
+          onclick="openStudentModal()" 
+          class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm whitespace-nowrap"
+        >
+          <span>➕ Agregar Nuevo Alumno</span>
+        </button>
       </div>
-
     </div>
+
+    <!-- Barra de Búsqueda -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+      <div class="relative flex-1">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
+        <input 
+          type="text" 
+          id="searchInput" 
+          oninput="filterStudents()" 
+          placeholder="Buscar alumno por nombre, teléfono o identificación..." 
+          class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+        >
+      </div>
+      <button onclick="document.getElementById('searchInput').value=''; filterStudents();" class="text-xs text-slate-500 hover:text-slate-800 underline px-2">
+        Limpiar
+      </button>
+    </div>
+
+    <!-- Tabla de Estudiantes -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+              <th class="p-3.5">Nombre Completo</th>
+              <th class="p-3.5">Identificación / Cédula</th>
+              <th class="p-3.5">Teléfono</th>
+              <th class="p-3.5">Correo Electrónico</th>
+              <th class="p-3.5">Contacto Emergencia</th>
+              <th class="p-3.5">Fecha Registro</th>
+              <th class="p-3.5 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody" class="divide-y divide-slate-100 font-medium">
+            <tr>
+              <td colspan="7" class="p-8 text-center text-slate-400">Cargando alumnos registrados...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 
-  <!-- MODAL: EDITAR ALUMNO -->
-  <div id="editStudentModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-bold text-slate-800">Editar Datos del Alumno</h3>
-        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+  <!-- MODAL: REGISTRAR / EDITAR ALUMNO -->
+  <div id="studentModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 id="modalTitle" class="text-base font-bold text-slate-900">Agregar Nuevo Alumno</h3>
+        <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg leading-none">✕</button>
       </div>
 
-      <div id="editModalAlert" class="hidden mb-4 p-2.5 rounded-lg text-xs"></div>
+      <div id="modalAlert" class="hidden p-3 rounded-lg text-xs"></div>
 
-      <form id="editStudentForm" class="space-y-3">
-        <input type="hidden" id="editStudentId">
-        
+      <form id="studentForm" class="space-y-3 flex-1 overflow-y-auto pr-1">
+        <input type="hidden" id="studentId">
+
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre(s)</label>
-          <input type="text" id="editFirstName" required class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Completo *</label>
+          <input 
+            type="text" 
+            id="inputFullName" 
+            placeholder="Ej: Pedro Castro Valderramos" 
+            required 
+            class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Cédula / Identificación</label>
+            <input 
+              type="text" 
+              id="inputIdentification" 
+              placeholder="Ej: 1-1234-0567" 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Teléfono Móvil (WhatsApp) *</label>
+            <input 
+              type="text" 
+              id="inputPhone" 
+              placeholder="Ej: 88887777" 
+              required 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Correo Electrónico</label>
+            <input 
+              type="email" 
+              id="inputEmail" 
+              placeholder="alumno@ejemplo.com" 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha de Nacimiento</label>
+            <input 
+              type="date" 
+              id="inputBirthDate" 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-100 pt-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Contacto de Emergencia</label>
+            <input 
+              type="text" 
+              id="inputEmergencyContact" 
+              placeholder="Nombre del encargado" 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Teléfono de Emergencia</label>
+            <input 
+              type="text" 
+              id="inputEmergencyPhone" 
+              placeholder="Teléfono encargado" 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Apellidos</label>
-          <input type="text" id="editLastName" required class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Notas / Observaciones</label>
+          <textarea 
+            id="inputNotes" 
+            rows="2" 
+            placeholder="Alergias, cursos de interés, observaciones médicas, etc." 
+            class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Celular / Teléfono</label>
-          <input type="tel" id="editPhone" required class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-
-        <div class="flex justify-end space-x-2 pt-3">
-          <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 transition">
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button 
+            type="button" 
+            onclick="closeStudentModal()" 
+            class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 transition"
+          >
             Cancelar
           </button>
-          <button type="submit" id="btnUpdateStudent" class="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition">
-            Actualizar Alumno
+          <button 
+            type="submit" 
+            id="btnSubmitStudent" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow-sm"
+          >
+            Guardar Alumno
           </button>
         </div>
       </form>
@@ -170,189 +217,240 @@
 
     let allStudents = [];
 
-    const alertMsg = document.getElementById('alertMsg');
-    const form = document.getElementById('createStudentForm');
-    const btnSubmit = document.getElementById('btnSubmit');
-
-    function showAlert(text, type = 'error') {
-      alertMsg.textContent = text;
-      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
-      alertMsg.classList.remove('hidden');
+    function formatSafeDate(rawDate) {
+      if (!rawDate) return '-';
+      const clean = String(rawDate).split('T')[0];
+      const parts = clean.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return clean;
     }
 
-    async function checkRole() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) {
-        window.location.href = 'index.html';
-        return;
-      }
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
-        alert('Acceso permitido solo para Administrador o Recepción.');
-        window.location.href = 'dashboard.html';
-      }
+    function showModalAlert(text, type = 'error') {
+      const el = document.getElementById('modalAlert');
+      el.textContent = text;
+      el.className = `p-3 rounded-lg text-xs ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      el.classList.remove('hidden');
     }
 
     async function loadStudents() {
-      const tableBody = document.getElementById('studentsTableBody');
-      const { data, error } = await supabaseClient
-        .from('students')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const tbody = document.getElementById('studentsTableBody');
+      try {
+        const { data, error } = await supabaseClient
+          .from('students')
+          .select('*')
+          .order('full_name', { ascending: true });
 
-      if (error) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Error al cargar alumnos.</td></tr>`;
-        return;
+        if (error) throw error;
+
+        allStudents = data || [];
+        document.getElementById('totalStudentsCount').textContent = allStudents.length;
+        filterStudents();
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Error al cargar alumnos: ${err.message}</td></tr>`;
       }
-
-      allStudents = data || [];
-      renderStudentsTable(allStudents);
     }
 
-    function renderStudentsTable(students) {
-      const tableBody = document.getElementById('studentsTableBody');
-      if (students.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No hay alumnos registrados.</td></tr>`;
+    function filterStudents() {
+      const tbody = document.getElementById('studentsTableBody');
+      const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+
+      const filtered = allStudents.filter(s => {
+        const name = (s.full_name || '').toLowerCase();
+        const iden = (s.identification || '').toLowerCase();
+        const phone = (s.phone || '').toLowerCase();
+        return !search || name.includes(search) || iden.includes(search) || phone.includes(search);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">No se encontraron alumnos con ese criterio.</td></tr>`;
         return;
       }
 
-      tableBody.innerHTML = students.map(s => {
-        const dateObj = new Date(s.created_at);
-        const formattedDate = dateObj.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-        const firstName = s.first_name || (s.full_name ? s.full_name.split(' ')[0] : '-');
-        const lastName = s.last_name || (s.full_name ? s.full_name.split(' ').slice(1).join(' ') : '-');
+      tbody.innerHTML = filtered.map(s => {
+        const dateFormatted = formatSafeDate(s.created_at);
 
         return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="p-3 font-semibold text-slate-800">${firstName}</td>
-            <td class="p-3 text-slate-700">${lastName}</td>
-            <td class="p-3 font-mono text-xs text-blue-600">${s.phone || 'No registrado'}</td>
-            <td class="p-3 text-xs text-slate-500">${formattedDate}</td>
-            <td class="p-3 text-center space-x-2">
-              <button onclick="openEditModal('${s.id}')" class="text-xs text-blue-600 hover:underline font-semibold">Editar</button>
-              <span class="text-slate-300">|</span>
-              <button onclick="deleteStudent('${s.id}', '${s.full_name}')" class="text-xs text-red-600 hover:underline font-semibold">Eliminar</button>
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3.5 font-bold text-slate-900 text-sm">
+              ${escapeHtml(s.full_name)}
+            </td>
+            <td class="p-3.5 font-mono text-slate-700">
+              ${s.identification ? escapeHtml(s.identification) : '<span class="text-slate-400">-</span>'}
+            </td>
+            <td class="p-3.5 font-mono text-slate-700">
+              ${s.phone ? `📞 ${escapeHtml(s.phone)}` : '<span class="text-slate-400">-</span>'}
+            </td>
+            <td class="p-3.5 text-slate-600">
+              ${s.email ? escapeHtml(s.email) : '<span class="text-slate-400">-</span>'}
+            </td>
+            <td class="p-3.5 text-slate-600">
+              ${s.emergency_contact ? `<b>${escapeHtml(s.emergency_contact)}</b>${s.emergency_phone ? '(' + escapeHtml(s.emergency_phone) + ')' : ''}` : '<span class="text-slate-400">-</span>'}
+            </td>
+            <td class="p-3.5 font-mono text-slate-500">
+              ${dateFormatted}
+            </td>
+            <td class="p-3.5 text-center whitespace-nowrap">
+              <div class="flex items-center justify-center gap-2">
+                <button 
+                  onclick="editStudent('${s.id}')" 
+                  class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition"
+                >
+                  ✏️ Editar
+                </button>
+                <button 
+                  onclick="deleteStudent('${s.id}', '${encodeURIComponent(s.full_name)}')" 
+                  class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition"
+                >
+                  🗑️ Borrar
+                </button>
+              </div>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function filterStudents() {
-      const text = document.getElementById('searchStudent').value.toLowerCase();
-      const filtered = allStudents.filter(s => 
-        (s.full_name && s.full_name.toLowerCase().includes(text)) ||
-        (s.first_name && s.first_name.toLowerCase().includes(text)) ||
-        (s.last_name && s.last_name.toLowerCase().includes(text)) ||
-        (s.phone && s.phone.includes(text))
-      );
-      renderStudentsTable(filtered);
+    function openStudentModal(isEdit = false) {
+      document.getElementById('modalAlert').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = isEdit ? 'Editar Datos del Alumno' : 'Agregar Nuevo Alumno';
+      document.getElementById('studentModal').classList.remove('hidden');
+      document.getElementById('inputFullName').focus();
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      alertMsg.classList.add('hidden');
+    function closeStudentModal() {
+      document.getElementById('studentModal').classList.add('hidden');
+      document.getElementById('studentForm').reset();
+      document.getElementById('studentId').value = '';
+    }
 
-      const firstName = document.getElementById('studentFirstName').value.trim();
-      const lastName = document.getElementById('studentLastName').value.trim();
-      const phone = document.getElementById('studentPhone').value.trim();
-
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = 'Guardando...';
-
-      try {
-        const { error } = await supabaseClient.rpc('create_student_quick', {
-          p_first_name: firstName,
-          p_last_name: lastName,
-          p_phone: phone
-        });
-
-        if (error) throw error;
-
-        showAlert('¡Alumno registrado exitosamente!', 'success');
-        form.reset();
-        loadStudents();
-      } catch (err) {
-        showAlert(err.message || 'Error al guardar alumno.');
-      } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Guardar Alumno';
-      }
-    });
-
-    function openEditModal(studentId) {
-      const student = allStudents.find(s => s.id === studentId);
+    function editStudent(id) {
+      const student = allStudents.find(s => s.id === id);
       if (!student) return;
 
-      document.getElementById('editStudentId').value = student.id;
-      document.getElementById('editFirstName').value = student.first_name || (student.full_name ? student.full_name.split(' ')[0] : '');
-      document.getElementById('editLastName').value = student.last_name || (student.full_name ? student.full_name.split(' ').slice(1).join(' ') : '');
-      document.getElementById('editPhone').value = student.phone || '';
+      document.getElementById('studentId').value = student.id;
+      document.getElementById('inputFullName').value = student.full_name || '';
+      document.getElementById('inputIdentification').value = student.identification || '';
+      document.getElementById('inputPhone').value = student.phone || '';
+      document.getElementById('inputEmail').value = student.email || '';
+      document.getElementById('inputBirthDate').value = student.birth_date ? String(student.birth_date).split('T')[0] : '';
+      document.getElementById('inputEmergencyContact').value = student.emergency_contact || '';
+      document.getElementById('inputEmergencyPhone').value = student.emergency_phone || '';
+      document.getElementById('inputNotes').value = student.notes || '';
 
-      const modalAlert = document.getElementById('editModalAlert');
-      modalAlert.classList.add('hidden');
-      modalAlert.textContent = '';
-
-      document.getElementById('editStudentModal').classList.remove('hidden');
+      openStudentModal(true);
     }
 
-    function closeEditModal() {
-      document.getElementById('editStudentModal').classList.add('hidden');
-    }
-
-    document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('editStudentId').value;
-      const firstName = document.getElementById('editFirstName').value.trim();
-      const lastName = document.getElementById('editLastName').value.trim();
-      const phone = document.getElementById('editPhone').value.trim();
-      const btn = document.getElementById('btnUpdateStudent');
-      const modalAlert = document.getElementById('editModalAlert');
-
-      btn.disabled = true;
-      btn.textContent = 'Actualizando...';
-
-      try {
-        const { error } = await supabaseClient.rpc('update_student_info', {
-          p_student_id: id,
-          p_first_name: firstName,
-          p_last_name: lastName,
-          p_phone: phone
-        });
-
-        if (error) throw error;
-
-        closeEditModal();
-        loadStudents();
-      } catch (err) {
-        modalAlert.textContent = err.message || 'Error al actualizar alumno.';
-        modalAlert.className = 'mb-4 p-2.5 rounded-lg text-xs bg-red-50 text-red-700 border border-red-200 block';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Actualizar Alumno';
+    async function deleteStudent(id, nameEscaped) {
+      const name = decodeURIComponent(nameEscaped);
+      if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente a "${name}"? Esta acción no se puede deshacer.`)) {
+        return;
       }
-    });
-
-    async function deleteStudent(studentId, fullName) {
-      if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente al alumno "${fullName}"?`)) return;
 
       try {
-        const { error } = await supabaseClient.rpc('delete_student_record', {
-          p_student_id: studentId
-        });
+        const { error } = await supabaseClient
+          .from('students')
+          .delete()
+          .eq('id', id);
 
         if (error) throw error;
+        await loadStudents();
 
-        loadStudents();
       } catch (err) {
         alert('Error al eliminar alumno: ' + err.message);
       }
+    }
+
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('modalAlert').classList.add('hidden');
+
+      const id = document.getElementById('studentId').value;
+      const fullName = document.getElementById('inputFullName').value.trim();
+      const identification = document.getElementById('inputIdentification').value.trim() || null;
+      const phone = document.getElementById('inputPhone').value.trim();
+      const email = document.getElementById('inputEmail').value.trim() || null;
+      const birthDate = document.getElementById('inputBirthDate').value || null;
+      const emergencyContact = document.getElementById('inputEmergencyContact').value.trim() || null;
+      const emergencyPhone = document.getElementById('inputEmergencyPhone').value.trim() || null;
+      const notes = document.getElementById('inputNotes').value.trim() || null;
+
+      if (!fullName || !phone) {
+        showModalAlert('El nombre completo y el teléfono son campos obligatorios.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitStudent');
+      btn.disabled = true;
+      btn.textContent = 'Guardando en la base de datos...';
+
+      try {
+        const studentPayload = {
+          full_name: fullName,
+          identification: identification,
+          phone: phone,
+          email: email,
+          birth_date: birthDate,
+          emergency_contact: emergencyContact,
+          emergency_phone: emergencyPhone,
+          notes: notes
+        };
+
+        if (id) {
+          // Actualizar existente
+          const { error } = await supabaseClient
+            .from('students')
+            .update(studentPayload)
+            .eq('id', id);
+
+          if (error) throw error;
+        } else {
+          // Insertar nuevo
+          const { error } = await supabaseClient
+            .from('students')
+            .insert(studentPayload);
+
+          if (error) throw error;
+        }
+
+        closeStudentModal();
+        await loadStudents();
+
+      } catch (err) {
+        showModalAlert('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar Alumno';
+      }
+    });
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    async function init() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
+        alert('Acceso restringido a Administrador y Recepción.');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      document.getElementById('userName').textContent = `${profile.full_name || 'Personal'} (${profile.role.toUpperCase()})`;
+      await loadStudents();
     }
 
     document.getElementById('btnLogout').addEventListener('click', async () => {
@@ -361,7 +459,7 @@
       window.location.href = 'index.html';
     });
 
-    checkRole().then(loadStudents);
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
