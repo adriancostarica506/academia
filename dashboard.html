@@ -320,7 +320,6 @@
 
     <!-- ========================================== -->
     <!-- 3. SECCIÓN PROFESORES                      -->
-    <!-- (Sin botones ni opciones de agregar alumnos)-->
     <!-- ========================================== -->
     <div id="sectionProfesor" class="hidden space-y-6">
       <div class="flex items-center space-x-2 border-b border-slate-200 pb-2">
@@ -380,7 +379,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h2 class="text-lg font-bold text-slate-700">Expediente de Asistencias de Mis Alumnos</h2>
-            <p class="text-xs text-slate-500">Busca alumnos por nombre y revisa cuántas veces han llegado, llegado tarde o faltado.</p>
+            <p class="text-xs text-slate-500">Busca alumnos por nombre y revisa el informe completo de asistencia.</p>
           </div>
         </div>
 
@@ -412,7 +411,7 @@
                   <th class="p-3 text-center">🟡 Llegó tarde</th>
                   <th class="p-3 text-center">🔴 No se presentó</th>
                   <th class="p-3 text-center">Total Registros</th>
-                  <th class="p-3 text-center">Detalle por Fecha</th>
+                  <th class="p-3 text-center">Expediente Completo</th>
                 </tr>
               </thead>
               <tbody id="teacherStudentStatsTableBody" class="divide-y divide-slate-100">
@@ -428,6 +427,133 @@
     </div>
 
   </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL DE EXPEDIENTE VISUAL Y PROFESIONAL DEL ESTUDIANTE (REEMPLAZA EL ALERT)-->
+  <!-- ========================================================================= -->
+  <div id="modalVisualStudentInfo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[92vh] flex flex-col border border-slate-100 animate-fadeIn">
+      
+      <!-- Cabecera del Alumno con Avatar y Datos Principales -->
+      <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-black text-2xl shadow-md" id="modalStudentAvatar">
+            A
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="modalStudentName" class="text-lg font-black text-slate-900 leading-tight">Nombre del Alumno</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Matriculado
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-500 font-medium">
+              <span id="modalStudentIden">🪪 Cédula: -</span>
+              <span>•</span>
+              <span id="modalStudentPhone">📞 Tel: -</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="closeVisualStudentModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 font-bold flex items-center justify-center transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Tarjetas de Resumen y Métricas de Asistencia -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl text-center">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Clases</p>
+          <p id="modalMetricTotal" class="text-2xl font-black text-slate-800 mt-0.5">0</p>
+          <p class="text-[10px] text-slate-400 font-medium" id="modalMetricPct">100% asist.</p>
+        </div>
+
+        <div class="bg-emerald-50/70 border border-emerald-200 p-3 rounded-2xl text-center">
+          <p class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">🟢 Sí Llegó</p>
+          <p id="modalMetricPresente" class="text-2xl font-black text-emerald-700 mt-0.5">0</p>
+          <p class="text-[10px] text-emerald-600 font-semibold">Puntual</p>
+        </div>
+
+        <div class="bg-amber-50/70 border border-amber-200 p-3 rounded-2xl text-center">
+          <p class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">🟡 Llegó Tarde</p>
+          <p id="modalMetricTarde" class="text-2xl font-black text-amber-700 mt-0.5">0</p>
+          <p class="text-[10px] text-amber-600 font-semibold">Tardanza</p>
+        </div>
+
+        <div class="bg-rose-50/70 border border-rose-200 p-3 rounded-2xl text-center">
+          <p class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">🔴 No Se Presentó</p>
+          <p id="modalMetricAusente" class="text-2xl font-black text-rose-700 mt-0.5">0</p>
+          <p class="text-[10px] text-rose-600 font-semibold">Faltas</p>
+        </div>
+      </div>
+
+      <!-- Ficha de Horario Asignado por Administración / Recepción -->
+      <div class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 text-xs space-y-1.5">
+        <div class="flex items-center justify-between font-bold text-blue-900 border-b border-blue-100 pb-1.5 mb-1.5">
+          <span class="flex items-center gap-1.5">
+            <span>📚 Información Académica Asignada</span>
+          </span>
+          <span id="modalCourseBadge" class="bg-blue-600 text-white px-2.5 py-0.5 rounded-full text-[10px]">Curso General</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700">
+          <div>
+            <span class="text-slate-500 font-semibold">Horario / Turno:</span> 
+            <span id="modalScheduleTimeSlot" class="font-bold text-blue-800 ml-1">-</span>
+          </div>
+          <div>
+            <span class="text-slate-500 font-semibold">Días Programados:</span> 
+            <span id="modalScheduleDays" class="font-bold text-slate-800 ml-1">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bitácora Detallada de Asistencias Fecha a Fecha -->
+      <div class="space-y-2 flex-1 overflow-hidden flex flex-col">
+        <div class="flex justify-between items-center px-1">
+          <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Historial de Clases Marcadas</h4>
+          <span id="modalHistoryCountBadge" class="text-[11px] font-bold text-slate-400">0 registros</span>
+        </div>
+
+        <div class="flex-1 overflow-y-auto border border-slate-200 rounded-2xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 sticky top-0 font-semibold">
+              <tr>
+                <th class="p-2.5">Fecha (Día/Mes/Año)</th>
+                <th class="p-2.5">Hora Exacta</th>
+                <th class="p-2.5">Estado Marcado</th>
+                <th class="p-2.5">Curso</th>
+              </tr>
+            </thead>
+            <tbody id="modalHistoryTableBody" class="divide-y divide-slate-100 font-medium">
+              <tr>
+                <td colspan="4" class="p-4 text-center text-slate-400">Cargando fechas...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pie del Modal -->
+      <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+        <a 
+          id="modalWhatsAppBtn" 
+          href="#" 
+          target="_blank" 
+          class="hidden items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm"
+        >
+          <span>💬 Abrir WhatsApp del Alumno</span>
+        </a>
+        <div class="flex-1"></div>
+        <button 
+          onclick="closeVisualStudentModal()" 
+          class="px-5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+        >
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
@@ -620,7 +746,7 @@
             id,
             time_slot,
             days_of_week,
-            students (id, full_name, phone),
+            students (id, full_name, phone, identification),
             courses (name),
             attendances (
               id,
@@ -698,15 +824,114 @@
             </td>
             <td class="p-3 text-center">
               <button 
-                onclick="alert('Alumno: ${studentName}\\nTotal Registros: ${total}\\nPresente: ${countPresente}\\nTarde: ${countTarde}\\nAusente: ${countAusente}')" 
-                class="px-2.5 py-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-lg transition"
+                onclick="openVisualStudentModal('${item.id}')" 
+                class="px-3 py-1.5 text-xs font-bold text-blue-700 hover:text-white hover:bg-blue-600 bg-blue-50 border border-blue-200 rounded-xl transition shadow-sm flex items-center gap-1 mx-auto"
               >
-                Ver Info
+                <span>🔍 Ver Info</span>
               </button>
             </td>
           </tr>
         `;
       }).join('');
+    }
+
+    // =========================================================================
+    // MODAL VISUAL: MUESTRA EL EXPEDIENTE COMPLETO CON DISEÑO ELEGANTE
+    // =========================================================================
+    function openVisualStudentModal(scheduleId) {
+      const scheduleItem = rawTeacherStudentsData.find(s => s.id === scheduleId);
+      if (!scheduleItem) return;
+
+      const student = scheduleItem.students || {};
+      const studentName = student.full_name || 'Sin nombre';
+      const initial = studentName.charAt(0).toUpperCase();
+
+      // Cabecera
+      document.getElementById('modalStudentAvatar').textContent = initial;
+      document.getElementById('modalStudentName').textContent = studentName;
+      document.getElementById('modalStudentIden').textContent = student.identification ? `🪪 Cédula: ${student.identification}` : '🪪 Cédula: No registrada';
+      document.getElementById('modalStudentPhone').textContent = student.phone ? `📞 Tel: ${student.phone}` : '📞 Tel: Sin número';
+
+      // Botón WhatsApp
+      const waBtn = document.getElementById('modalWhatsAppBtn');
+      if (student.phone) {
+        const cleanPhone = student.phone.replace(/[^0-9]/g, '');
+        waBtn.href = `https://wa.me/506${cleanPhone}`;
+        waBtn.classList.remove('hidden');
+        waBtn.classList.add('flex');
+      } else {
+        waBtn.classList.add('hidden');
+      }
+
+      // Conteos
+      const attendances = scheduleItem.attendances || [];
+      const countPresente = attendances.filter(a => a.status === 'presente').length;
+      const countTarde = attendances.filter(a => a.status === 'tarde').length;
+      const countAusente = attendances.filter(a => a.status === 'ausente').length;
+      const total = countPresente + countTarde + countAusente;
+      const pct = total > 0 ? Math.round(((countPresente + countTarde) / total) * 100) : 100;
+
+      document.getElementById('modalMetricTotal').textContent = total;
+      document.getElementById('modalMetricPct').textContent = `${pct}% de asistencia`;
+      document.getElementById('modalMetricPresente').textContent = countPresente;
+      document.getElementById('modalMetricTarde').textContent = countTarde;
+      document.getElementById('modalMetricAusente').textContent = countAusente;
+
+      // Ficha académica
+      document.getElementById('modalCourseBadge').textContent = scheduleItem.courses?.name || 'General';
+      document.getElementById('modalScheduleTimeSlot').textContent = scheduleItem.time_slot || 'No asignado';
+      document.getElementById('modalScheduleDays').textContent = (scheduleItem.days_of_week && scheduleItem.days_of_week.length > 0)
+        ? scheduleItem.days_of_week.join(', ')
+        : 'Todos los días';
+
+      // Bitácora de asistencias
+      document.getElementById('modalHistoryCountBadge').textContent = `${attendances.length} marcaciones`;
+      const historyBody = document.getElementById('modalHistoryTableBody');
+      const list = attendances.slice().sort((a, b) => new Date(b.attendance_date || b.recorded_at) - new Date(a.attendance_date || a.recorded_at));
+
+      if (list.length === 0) {
+        historyBody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">Aún no se registran asistencias para este estudiante.</td></tr>`;
+      } else {
+        historyBody.innerHTML = list.map(a => {
+          let dateStr = a.attendance_date || '-';
+          if (dateStr.includes('-')) {
+            const [y, m, d] = dateStr.split('T')[0].split('-');
+            dateStr = `${d}/${m}/${y}`;
+          }
+
+          let timeStr = '-';
+          if (a.recorded_at) {
+            const d = new Date(a.recorded_at);
+            timeStr = d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          }
+
+          const badgeColor = a.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                             a.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                             'bg-rose-100 text-rose-800 border-rose-300';
+
+          const label = a.status === 'presente' ? '🟢 Sí llegó' :
+                        a.status === 'tarde' ? '🟡 Llegó tarde' : '🔴 No se presentó';
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="p-2.5 font-mono font-bold text-slate-800">${dateStr}</td>
+              <td class="p-2.5 font-mono text-slate-500">${timeStr}</td>
+              <td class="p-2.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeColor}">
+                  ${label}
+                </span>
+              </td>
+              <td class="p-2.5 text-slate-600">${scheduleItem.courses?.name || 'General'}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('modalVisualStudentInfo').classList.remove('hidden');
+    }
+
+    function closeVisualStudentModal() {
+      document.getElementById('modalVisualStudentInfo').classList.add('hidden');
     }
 
     // MONITOR: ADMIN Y RECEPCIÓN
@@ -877,7 +1102,6 @@
         .subscribe();
     }
 
-    // INICIALIZACIÓN Y SEGREGACIÓN DE ROLES
     async function initDashboard() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       
@@ -904,7 +1128,6 @@
       const badgeRole = document.getElementById('badgeRole');
       badgeRole.textContent = profile.role;
 
-      // VALIDACIÓN ESTRICTA: Los botones de Alumnos y Cobros solo se muestran a Admin y Recepción
       const btnAddStudent = document.getElementById('btnHeaderAddStudent');
       const btnBilling = document.getElementById('btnHeaderBilling');
 
@@ -918,7 +1141,6 @@
           btnBilling.classList.add('flex');
         }
       } else {
-        // Para profesores queda 100% oculto
         if (btnAddStudent) btnAddStudent.classList.add('hidden');
         if (btnBilling) btnBilling.classList.add('hidden');
       }
