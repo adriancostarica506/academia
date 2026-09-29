@@ -75,6 +75,12 @@ if (loginForm) {
         .update({ last_seen: new Date().toISOString() })
         .eq('id', authData.user.id);
 
+      // 4. Registrar evento en la bitácora de auditoría
+      await supabaseClient.rpc('record_user_activity', {
+        p_action: 'Inicio de sesión',
+        p_details: `Accedió con el rol: ${profile.role}`
+      });
+
       sessionStorage.setItem('user_role', profile.role);
       sessionStorage.setItem('user_name', profile.full_name);
 
