@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Control - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">// Actualizar actividad Online cada 60 segundos
+    async function updateOnlineStatus() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        await supabaseClient
+          .from('profiles')
+          .update({ last_seen: new Date().toISOString() })
+          .eq('id', session.user.id);
+      }
+    }
+    updateOnlineStatus();
+    setInterval(updateOnlineStatus, 60000);</script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
