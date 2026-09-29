@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asignación de Horarios y Profesores - Academi</title>
+  <title>Asignación de Horarios y Días - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -15,7 +15,7 @@
       <div class="flex items-center space-x-3">
         <a href="dashboard.html" class="text-xl font-bold text-indigo-600 hover:text-indigo-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-600">Asignación de Alumnos a Profesores</span>
+        <span class="text-sm font-semibold text-slate-600">Asignar Alumnos y Días de Asistencia</span>
       </div>
       <div>
         <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
@@ -30,11 +30,11 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- Panel Izquierdo: Configurar y Asignar (Individual o Múltiple) -->
+      <!-- Formulario de Asignación -->
       <div class="lg:col-span-5 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div>
           <h2 class="text-lg font-bold text-slate-800">Asignar Alumnos</h2>
-          <p class="text-xs text-slate-500">Selecciona el profesor, horario y los alumnos que cursarán con él.</p>
+          <p class="text-xs text-slate-500">Selecciona el profesor, turno y marca los días que el alumno asistirá a clases.</p>
         </div>
 
         <div id="alertMsg" class="hidden p-3 rounded-lg text-sm"></div>
@@ -56,19 +56,41 @@
             </select>
           </div>
 
-          <!-- Fecha y Turno -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Clase *</label>
-              <input type="date" id="inputAssignedDate" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Turno *</label>
-              <select id="selectTimeSlot" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white font-medium">
-                <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
-                <option value="2:00 pm a 5:00 pm" selected>2:00 pm a 5:00 pm (Tarde)</option>
-                <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
-              </select>
+          <!-- Turno -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Turno *</label>
+            <select id="selectTimeSlot" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white font-medium">
+              <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
+              <option value="2:00 pm a 5:00 pm" selected>2:00 pm a 5:00 pm (Tarde)</option>
+              <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
+            </select>
+          </div>
+
+          <!-- Días que el alumno asistirá (Marcados con X) -->
+          <div class="border-t border-slate-100 pt-3">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Marcar Días que Asistirá (✓)</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <label class="flex items-center gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-indigo-50">
+                <input type="checkbox" name="dayOfWeek" value="Lunes" checked class="w-4 h-4 text-indigo-600 rounded"> Lunes
+              </label>
+              <label class="flex items-center gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-indigo-50">
+                <input type="checkbox" name="dayOfWeek" value="Martes" checked class="w-4 h-4 text-indigo-600 rounded"> Martes
+              </label>
+              <label class="flex items-center gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-indigo-50">
+                <input type="checkbox" name="dayOfWeek" value="Miércoles" checked class="w-4 h-4 text-indigo-600 rounded"> Miércoles
+              </label>
+              <label class="flex items-center gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-indigo-50">
+                <input type="checkbox" name="dayOfWeek" value="Jueves" checked class="w-4 h-4 text-indigo-600 rounded"> Jueves
+              </label>
+              <label class="flex items-center gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-indigo-50">
+                <input type="checkbox" name="dayOfWeek" value="Viernes" checked class="w-4 h-4 text-indigo-600 rounded"> Viernes
+              </label>
+              <label class="flex items-center gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-indigo-50">
+                <input type="checkbox" name="dayOfWeek" value="Sábado" class="w-4 h-4 text-indigo-600 rounded"> Sábado
+              </label>
+              <label class="flex items-center gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer hover:bg-indigo-50">
+                <input type="checkbox" name="dayOfWeek" value="Domingo" class="w-4 h-4 text-indigo-600 rounded"> Domingo
+              </label>
             </div>
           </div>
 
@@ -81,7 +103,6 @@
               </span>
             </div>
 
-            <!-- Buscador rápido dentro de los alumnos -->
             <div class="mb-2">
               <input 
                 type="text" 
@@ -92,46 +113,37 @@
               >
             </div>
 
-            <!-- Botones de seleccionar todos / ninguno -->
             <div class="flex items-center justify-between text-xs text-slate-500 mb-2 px-1">
               <button type="button" onclick="toggleSelectAll(true)" class="text-indigo-600 hover:underline font-semibold">Seleccionar todos</button>
               <button type="button" onclick="toggleSelectAll(false)" class="text-slate-500 hover:underline">Desmarcar todos</button>
             </div>
 
-            <!-- Contenedor con Scroll de Casillas de Selección -->
-            <div id="studentsCheckboxList" class="border border-slate-200 rounded-lg max-h-56 overflow-y-auto p-2 space-y-1.5 bg-slate-50 text-sm">
-              <p class="text-xs text-slate-400 p-2 text-center">Cargando lista de alumnos...</p>
+            <div id="studentsCheckboxList" class="border border-slate-200 rounded-lg max-h-48 overflow-y-auto p-2 space-y-1.5 bg-slate-50 text-sm">
+              <p class="text-xs text-slate-400 p-2 text-center">Cargando alumnos...</p>
             </div>
           </div>
 
           <button type="submit" id="btnSubmitAssign" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">
-            Asignar Alumnos Seleccionados
+            Guardar Asignación y Días de Asistencia
           </button>
         </form>
       </div>
 
-      <!-- Panel Derecho: Programación y Horarios Activos -->
+      <!-- Panel Derecho: Lista de Asignaciones Actuales -->
       <div class="lg:col-span-7 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-800">Horarios y Alumnos Asignados</h2>
-            <p class="text-xs text-slate-500">Muestra los alumnos registrados con cada profesor.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <input type="date" id="filterDateView" onchange="loadScheduleList()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500">
-            <button onclick="clearDateFilter()" class="text-xs text-slate-500 hover:text-slate-800 underline">Todos</button>
-          </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Alumnos y Días Programados</h2>
+          <p class="text-xs text-slate-500">Muestra qué días de la semana asiste cada alumno con su respectivo profesor.</p>
         </div>
 
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Fecha y Horario</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Profesor</th>
-                <th class="p-3">Curso</th>
+                <th class="p-3">Horario</th>
+                <th class="p-3">Días Asignados</th>
                 <th class="p-3 text-center">Acción</th>
               </tr>
             </thead>
@@ -142,7 +154,6 @@
             </tbody>
           </table>
         </div>
-
       </div>
 
     </div>
@@ -155,7 +166,6 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let allStudents = [];
-    let allSchedules = [];
 
     function showAlert(text, type = 'error') {
       const alertBox = document.getElementById('alertMsg');
@@ -167,48 +177,21 @@
 
     async function loadTeachers() {
       const select = document.getElementById('selectTeacher');
-      const { data, error } = await supabaseClient
-        .from('teachers')
-        .select('id, full_name')
-        .order('full_name');
-
-      if (error || !data || data.length === 0) {
-        select.innerHTML = '<option value="" disabled selected>No hay profesores registrados</option>';
-        return;
-      }
-
+      const { data } = await supabaseClient.from('teachers').select('id, full_name').order('full_name');
       select.innerHTML = '<option value="" disabled selected>Seleccione un profesor...</option>' +
-        data.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
+        (data || []).map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
     }
 
     async function loadCourses() {
       const select = document.getElementById('selectCourse');
-      const { data, error } = await supabaseClient
-        .from('courses')
-        .select('id, name')
-        .order('name');
-
-      if (error || !data || data.length === 0) {
-        select.innerHTML = '<option value="" disabled selected>No hay cursos disponibles</option>';
-        return;
-      }
-
-      select.innerHTML = data.map((c, idx) => `<option value="${c.id}" ${idx === 0 ? 'selected' : ''}>${c.name}</option>`).join('');
+      const { data } = await supabaseClient.from('courses').select('id, name').order('name');
+      select.innerHTML = (data || []).map((c, idx) => `<option value="${c.id}" ${idx === 0 ? 'selected' : ''}>${c.name}</option>`).join('');
     }
 
     async function loadStudentsCheckboxes() {
       const container = document.getElementById('studentsCheckboxList');
-      const { data, error } = await supabaseClient
-        .from('students')
-        .select('id, full_name, phone')
-        .order('full_name');
-
-      if (error || !data || data.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 p-2 text-center">No hay alumnos registrados.</p>';
-        return;
-      }
-
-      allStudents = data;
+      const { data } = await supabaseClient.from('students').select('id, full_name, phone').order('full_name');
+      allStudents = data || [];
       renderStudentsList(allStudents);
     }
 
@@ -221,28 +204,21 @@
 
       container.innerHTML = list.map(s => `
         <label class="flex items-center space-x-2.5 p-1.5 hover:bg-white rounded cursor-pointer transition border border-transparent hover:border-slate-200">
-          <input 
-            type="checkbox" 
-            value="${s.id}" 
-            onchange="updateSelectedCount()" 
-            class="student-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
-          >
+          <input type="checkbox" value="${s.id}" onchange="updateSelectedCount()" class="student-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300">
           <span class="text-xs font-semibold text-slate-800">${s.full_name}</span>
-          ${s.phone ? `<span class="text-[11px] text-slate-400 font-normal">(${s.phone})</span>` : ''}
+          ${s.phone ? `<span class="text-[11px] text-slate-400">(${s.phone})</span>` : ''}
         </label>
       `).join('');
       updateSelectedCount();
     }
 
     function filterStudentList() {
-      const query = document.getElementById('searchStudentInput').value.toLowerCase().trim();
-      const filtered = allStudents.filter(s => s.full_name.toLowerCase().includes(query) || (s.phone && s.phone.includes(query)));
-      renderStudentsList(filtered);
+      const q = document.getElementById('searchStudentInput').value.toLowerCase().trim();
+      renderStudentsList(allStudents.filter(s => s.full_name.toLowerCase().includes(q) || (s.phone && s.phone.includes(q))));
     }
 
     function toggleSelectAll(select) {
-      const checkboxes = document.querySelectorAll('.student-checkbox');
-      checkboxes.forEach(cb => cb.checked = select);
+      document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = select);
       updateSelectedCount();
     }
 
@@ -253,54 +229,34 @@
 
     async function loadScheduleList() {
       const tbody = document.getElementById('schedulesTableBody');
-      const filterDate = document.getElementById('filterDateView').value;
-
-      let query = supabaseClient
+      const { data, error } = await supabaseClient
         .from('student_schedules')
         .select(`
           id,
-          assigned_date,
           time_slot,
+          days_of_week,
           students (full_name),
           teachers (full_name),
           courses (name)
         `)
-        .order('assigned_date', { ascending: false });
+        .order('id', { ascending: false });
 
-      if (filterDate) {
-        query = query.eq('assigned_date', filterDate);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Error al cargar horarios: ${error.message}</td></tr>`;
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No hay asignaciones registradas.</td></tr>`;
         return;
       }
 
-      allSchedules = data || [];
-
-      if (allSchedules.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No hay asignaciones para esta fecha.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = allSchedules.map(item => {
-        let dateFormatted = item.assigned_date;
-        if (item.assigned_date && item.assigned_date.includes('-')) {
-          const [y, m, d] = item.assigned_date.split('-');
-          dateFormatted = `${d}/${m}/${y}`;
-        }
+      tbody.innerHTML = data.map(item => {
+        const days = item.days_of_week && item.days_of_week.length > 0 
+          ? item.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-1">${d}</span>`).join('')
+          : '<span class="text-slate-400 text-xs">Todos los días</span>';
 
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3 text-xs">
-              <span class="font-bold text-slate-700">${dateFormatted}</span><br>
-              <span class="text-indigo-600 font-semibold text-[11px]">${item.time_slot}</span>
-            </td>
-            <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Alumno sin nombre'}</td>
-            <td class="p-3 text-xs font-semibold text-slate-700">${item.teachers?.full_name || 'Sin profesor'}</td>
-            <td class="p-3 text-xs text-slate-600">${item.courses?.name || 'General'}</td>
+            <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
+            <td class="p-3 text-xs text-slate-700 font-semibold">${item.teachers?.full_name || 'Sin profesor'}</td>
+            <td class="p-3 text-xs text-blue-700 font-semibold">${item.time_slot}</td>
+            <td class="p-3">${days}</td>
             <td class="p-3 text-center whitespace-nowrap">
               <button onclick="deleteScheduleItem('${item.id}')" class="text-xs text-red-600 hover:underline font-semibold">
                 Quitar
@@ -311,77 +267,64 @@
       }).join('');
     }
 
-    function clearDateFilter() {
-      document.getElementById('filterDateView').value = '';
+    async function deleteScheduleItem(id) {
+      if (!confirm('¿Deseas desasignar este alumno de este horario?')) return;
+      await supabaseClient.from('student_schedules').delete().eq('id', id);
       loadScheduleList();
     }
 
-    async function deleteScheduleItem(id) {
-      if (!confirm('¿Deseas desasignar este alumno de este horario?')) return;
-      const { error } = await supabaseClient
-        .from('student_schedules')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert('Error al quitar horario: ' + error.message);
-      } else {
-        loadScheduleList();
-      }
-    }
-
-    // FORMULARIO: ASIGNAR UNO O MÚLTIPLES ALUMNOS
     document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const teacherId = document.getElementById('selectTeacher').value;
       const courseId = document.getElementById('selectCourse').value;
-      const assignedDate = document.getElementById('inputAssignedDate').value;
       const timeSlot = document.getElementById('selectTimeSlot').value;
 
       const checkedBoxes = document.querySelectorAll('.student-checkbox:checked');
       const studentIds = Array.from(checkedBoxes).map(cb => cb.value);
 
-      if (!teacherId || !courseId || !assignedDate || !timeSlot) {
-        showAlert('Por favor completa todos los campos de configuración.');
+      const checkedDays = Array.from(document.querySelectorAll('input[name="dayOfWeek"]:checked')).map(cb => cb.value);
+
+      if (!teacherId || !courseId || !timeSlot) {
+        showAlert('Completa los campos obligatorios.');
         return;
       }
 
       if (studentIds.length === 0) {
-        showAlert('Debes marcar al menos un alumno de la lista.');
+        showAlert('Selecciona al menos un alumno.');
         return;
       }
 
-      const btnSubmit = document.getElementById('btnSubmitAssign');
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = `Asignando ${studentIds.length} alumno(s)...`;
+      if (checkedDays.length === 0) {
+        showAlert('Debes marcar al menos un día de asistencia de la semana.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitAssign');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
 
       try {
-        const { data, error } = await supabaseClient.rpc('assign_multiple_students_schedule', {
+        const { error } = await supabaseClient.rpc('assign_multiple_students_schedule', {
           p_student_ids: studentIds,
           p_teacher_id: teacherId,
           p_course_id: courseId,
-          p_assigned_date: assignedDate,
-          p_time_slot: timeSlot
+          p_assigned_date: new Date().toISOString().split('T')[0],
+          p_time_slot: timeSlot,
+          p_days_of_week: checkedDays
         });
 
         if (error) throw error;
 
-        showAlert(`¡Éxito! Se asignaron ${studentIds.length} alumno(s) al profesor en tiempo real.`, 'success');
-
-        // Desmarcar lista
+        showAlert(`¡Asignado con éxito! Se guardaron los días seleccionados.`, 'success');
         toggleSelectAll(false);
-        document.getElementById('searchStudentInput').value = '';
-        renderStudentsList(allStudents);
-
-        // Recargar tabla de la derecha
         await loadScheduleList();
 
       } catch (err) {
-        showAlert(err.message || 'Error al procesar la asignación.');
+        showAlert(err.message || 'Error al guardar asignación.');
       } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Asignar Alumnos Seleccionados';
+        btn.disabled = false;
+        btn.textContent = 'Guardar Asignación y Días de Asistencia';
       }
     });
 
@@ -392,10 +335,6 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('inputAssignedDate').value = today;
-      document.getElementById('filterDateView').value = today;
-
       loadTeachers();
       loadCourses();
       loadStudentsCheckboxes();
