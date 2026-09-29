@@ -29,14 +29,14 @@
   <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40 no-print">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <a href="dashboard.html" class="flex items-center space-x-2 text-white hover:text-indigo-200 transition font-semibold text-sm">
+        <a href="dashboard.html" class="text-white hover:text-indigo-200 transition font-semibold text-sm">
           ← Volver al Panel
         </a>
         <span class="text-indigo-400">|</span>
         <h1 class="text-lg font-bold tracking-tight">Caja y Cobros</h1>
       </div>
       <div class="flex items-center space-x-4 text-xs sm:text-sm">
-        <span id="userBadge" class="bg-indigo-800/80 px-3 py-1.5 rounded-full border border-indigo-700 font-medium">Iniciando...</span>
+        <span id="userBadge" class="bg-indigo-800/80 px-3 py-1.5 rounded-full border border-indigo-700 font-medium">Panel Academi</span>
         <button id="btnLogout" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg transition font-medium">
           Salir
         </button>
@@ -77,15 +77,15 @@
     <!-- Barra de Acciones y Filtros -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <button id="btnOpenNewPayment" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center justify-center space-x-2 shadow-sm transition">
+        <button id="btnOpenNewPayment" onclick="openPaymentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center justify-center space-x-2 shadow-sm transition">
           <span>+ Registrar Nuevo Pago</span>
         </button>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 lg:max-w-2xl lg:justify-end">
-          <input type="text" id="searchInput" placeholder="Buscar por alumno, concepto o ref..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <input type="date" id="filterStartDate" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <input type="date" id="filterEndDate" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <button id="btnClearFilters" title="Limpiar Filtros" class="px-3 py-2 border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-600 text-xs font-bold transition">
+          <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar alumno, concepto o ref..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <input type="date" id="filterStartDate" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <input type="date" id="filterEndDate" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <button onclick="clearFilters()" title="Limpiar Filtros" class="px-3 py-2 border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-600 text-xs font-bold transition">
             Limpiar
           </button>
         </div>
@@ -124,10 +124,10 @@
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
       <div class="flex items-center justify-between border-b pb-3">
         <h3 class="text-lg font-bold text-slate-800">Registrar Cobro</h3>
-        <button id="btnCloseNewModal" class="text-slate-400 hover:text-slate-600 p-1 font-bold text-lg leading-none">✕</button>
+        <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 p-1 font-bold text-lg leading-none">✕</button>
       </div>
 
-      <form id="formNewPayment" class="space-y-4">
+      <form id="formNewPayment" onsubmit="handlePaymentSubmit(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Alumno *</label>
           <select id="selectStudent" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
@@ -149,7 +149,7 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Concepto *</label>
-          <select id="selectConcept" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+          <select id="selectConcept" onchange="toggleCustomConcept(this.value)" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
             <option value="Matrícula">Matrícula</option>
             <option value="Mensualidad" selected>Mensualidad</option>
             <option value="Uniforme">Uniforme</option>
@@ -180,7 +180,7 @@
         <div id="paymentError" class="text-rose-600 text-xs font-semibold hidden"></div>
 
         <div class="pt-3 border-t flex justify-end space-x-3">
-          <button type="button" id="btnCancelPayment" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
+          <button type="button" onclick="closePaymentModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
           <button type="submit" id="btnSubmitPayment" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow-md transition">
             Guardar y Emitir Recibo
           </button>
@@ -211,14 +211,13 @@
           </div>
           <div class="flex justify-between">
             <span class="text-slate-500">Cajero(a):</span>
-            <span id="recCashier" class="font-semibold text-slate-700">-</span>
+            <span id="recCashier" class="font-semibold text-slate-700">Personal Academi</span>
           </div>
         </div>
 
         <div class="border-t pt-3 space-y-1 text-xs">
           <span class="text-slate-500 block">Alumno:</span>
           <p id="recStudent" class="font-bold text-slate-900 text-sm">-</p>
-          <p id="recStudentPhone" class="text-slate-500">-</p>
         </div>
 
         <div class="border-t border-b py-3 space-y-2 text-xs">
@@ -247,8 +246,8 @@
       </div>
 
       <div class="flex justify-end space-x-3 no-print">
-        <button id="btnCloseReceipt" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cerrar</button>
-        <button id="btnPrintReceipt" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm shadow-md transition">
+        <button onclick="closeReceiptModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cerrar</button>
+        <button onclick="window.print()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm shadow-md transition">
           Imprimir Recibo
         </button>
       </div>
@@ -258,139 +257,120 @@
   <script>
     const SUPABASE_URL = "https://ianektdgzoohzrktuzph.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUser = null;
-    let paymentsList = [];
-    let studentsMap = new Map();
+    let rawPayments = [];
+    let studentsCache = [];
 
-    const userBadge = document.getElementById('userBadge');
-    const btnLogout = document.getElementById('btnLogout');
-    const paymentsTableBody = document.getElementById('paymentsTableBody');
-    const statToday = document.getElementById('statToday');
-    const statCount = document.getElementById('statCount');
-    const statFiltered = document.getElementById('statFiltered');
+    const formatColones = (num) => '₡' + Number(num || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    const btnOpenNewPayment = document.getElementById('btnOpenNewPayment');
-    const modalNewPayment = document.getElementById('modalNewPayment');
-    const btnCloseNewModal = document.getElementById('btnCloseNewModal');
-    const btnCancelPayment = document.getElementById('btnCancelPayment');
-    const formNewPayment = document.getElementById('formNewPayment');
-    const selectStudent = document.getElementById('selectStudent');
-    const inputAmount = document.getElementById('inputAmount');
-    const inputPaymentDate = document.getElementById('inputPaymentDate');
-    const selectConcept = document.getElementById('selectConcept');
-    const inputOtherConcept = document.getElementById('inputOtherConcept');
-    const selectMethod = document.getElementById('selectMethod');
-    const inputReference = document.getElementById('inputReference');
-    const paymentError = document.getElementById('paymentError');
-
-    const searchInput = document.getElementById('searchInput');
-    const filterStartDate = document.getElementById('filterStartDate');
-    const filterEndDate = document.getElementById('filterEndDate');
-    const btnClearFilters = document.getElementById('btnClearFilters');
-
-    const modalReceipt = document.getElementById('modalReceipt');
-    const btnCloseReceipt = document.getElementById('btnCloseReceipt');
-    const btnPrintReceipt = document.getElementById('btnPrintReceipt');
-
-    const recNumber = document.getElementById('recNumber');
-    const recDate = document.getElementById('recDate');
-    const recCashier = document.getElementById('recCashier');
-    const recStudent = document.getElementById('recStudent');
-    const recStudentPhone = document.getElementById('recStudentPhone');
-    const recConcept = document.getElementById('recConcept');
-    const recMethod = document.getElementById('recMethod');
-    const recRef = document.getElementById('recRef');
-    const recAmount = document.getElementById('recAmount');
-
-    const formatCurrency = (amount) => {
-      return '₡' + Number(amount || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
-
-    async function initApp() {
-      inputPaymentDate.value = new Date().toISOString().split('T')[0];
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = 'index.html';
-        return;
-      }
-
-      currentUser = session.user;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .maybeSingle();
-
-      const userRole = profile?.role || 'admin';
-      const displayName = profile?.full_name || profile?.username || 'Usuario';
-      userBadge.textContent = `${displayName} (${userRole.toUpperCase()})`;
-
-      await loadStudents();
-      await fetchPayments();
-      setupRealtime();
+    function openPaymentModal() {
+      document.getElementById('formNewPayment').reset();
+      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('inputOtherConcept').classList.add('hidden');
+      document.getElementById('paymentError').classList.add('hidden');
+      document.getElementById('modalNewPayment').classList.remove('hidden');
     }
 
-    async function loadStudents() {
-      const { data, error } = await supabase
-        .from('students')
-        .select('id, full_name, phone')
-        .order('full_name', { ascending: true });
-
-      if (error) {
-        console.error('Error cargando alumnos:', error);
-        return;
-      }
-
-      selectStudent.innerHTML = '<option value="">Seleccione un alumno...</option>';
-      (data || []).forEach(s => {
-        studentsMap.set(s.id, s);
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = `${s.full_name} ${s.phone ? '(' + s.phone + ')' : ''}`;
-        selectStudent.appendChild(opt);
-      });
+    function closePaymentModal() {
+      document.getElementById('modalNewPayment').classList.add('hidden');
     }
 
-    async function fetchPayments() {
-      const search = searchInput.value.trim();
-      const start = filterStartDate.value || null;
-      const end = filterEndDate.value || null;
+    function closeReceiptModal() {
+      document.getElementById('modalReceipt').classList.add('hidden');
+    }
 
+    function toggleCustomConcept(val) {
+      const otherInput = document.getElementById('inputOtherConcept');
+      if (val === 'Otro') {
+        otherInput.classList.remove('hidden');
+        otherInput.required = true;
+        otherInput.focus();
+      } else {
+        otherInput.classList.add('hidden');
+        otherInput.required = false;
+      }
+    }
+
+    async function loadStudentsDropdown() {
+      const select = document.getElementById('selectStudent');
       try {
-        const { data, error } = await supabase.rpc('get_payments_summary', {
-          p_search: search,
-          p_start_date: start,
-          p_end_date: end
-        });
+        const { data, error } = await supabaseClient
+          .from('students')
+          .select('id, full_name, phone')
+          .order('full_name', { ascending: true });
+
+        if (error) throw error;
+        studentsCache = data || [];
+
+        if (studentsCache.length === 0) {
+          select.innerHTML = '<option value="">No hay alumnos registrados</option>';
+          return;
+        }
+
+        select.innerHTML = '<option value="">Seleccione un alumno...</option>' + 
+          studentsCache.map(s => `<option value="${s.id}">${s.full_name} ${s.phone ? '(' + s.phone + ')' : ''}</option>`).join('');
+      } catch (err) {
+        select.innerHTML = '<option value="">Error cargando alumnos</option>';
+      }
+    }
+
+    async function loadPaymentsTable() {
+      const tbody = document.getElementById('paymentsTableBody');
+      try {
+        const { data, error } = await supabaseClient
+          .from('payments')
+          .select(`
+            id,
+            receipt_number,
+            payment_date,
+            amount,
+            concept,
+            payment_method,
+            reference_number,
+            students (full_name)
+          `)
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        paymentsList = data || [];
-        renderPayments();
-        computeMetrics();
+        rawPayments = (data || []).map(p => ({
+          id: p.id,
+          receipt_number: p.receipt_number,
+          payment_date: p.payment_date,
+          amount: p.amount,
+          concept: p.concept,
+          payment_method: p.payment_method,
+          reference_number: p.reference_number,
+          student_name: p.students?.full_name || 'Alumno sin nombre'
+        }));
+
+        renderPayments(rawPayments);
+        calculateStats(rawPayments);
+
       } catch (err) {
-        console.error('Error al consultar pagos:', err);
-        paymentsTableBody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-rose-500 font-semibold">Error al cargar registros: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-rose-500 font-semibold">Error al cargar registros: ${err.message}</td></tr>`;
       }
     }
 
-    function renderPayments() {
-      if (paymentsList.length === 0) {
-        paymentsTableBody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 font-medium">No se encontraron cobros registrados con los criterios seleccionados.</td></tr>`;
+    function renderPayments(list) {
+      const tbody = document.getElementById('paymentsTableBody');
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 font-medium">No hay cobros registrados.</td></tr>`;
         return;
       }
 
-      paymentsTableBody.innerHTML = paymentsList.map(p => {
-        const displayDate = p.date_formatted || p.payment_date;
+      tbody.innerHTML = list.map(p => {
+        let dateStr = p.payment_date || '-';
+        if (p.payment_date && p.payment_date.includes('-')) {
+          const [y, m, d] = p.payment_date.split('-');
+          dateStr = `${d}/${m}/${y}`;
+        }
 
         return `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
             <td class="py-3 px-4 font-mono font-bold text-xs text-blue-700 whitespace-nowrap">#${p.receipt_number || '-'}</td>
-            <td class="py-3 px-4 text-slate-600 whitespace-nowrap text-xs">${displayDate}</td>
+            <td class="py-3 px-4 text-slate-600 whitespace-nowrap text-xs">${dateStr}</td>
             <td class="py-3 px-4 font-bold text-slate-900">${p.student_name}</td>
             <td class="py-3 px-4 text-slate-700 font-semibold">${p.concept}</td>
             <td class="py-3 px-4">
@@ -403,9 +383,9 @@
               </span>
             </td>
             <td class="py-3 px-4 font-mono text-xs text-slate-500">${p.reference_number || '-'}</td>
-            <td class="py-3 px-4 text-right font-mono font-bold text-emerald-600">${formatCurrency(p.amount)}</td>
+            <td class="py-3 px-4 text-right font-mono font-bold text-emerald-600">${formatColones(p.amount)}</td>
             <td class="py-3 px-4 text-center whitespace-nowrap">
-              <button onclick="viewReceipt('${p.payment_id}')" class="text-indigo-600 hover:text-indigo-900 font-semibold text-xs py-1 px-2 rounded hover:bg-indigo-50 transition">
+              <button onclick="displayReceipt('${p.id}')" class="text-indigo-600 hover:text-indigo-900 font-semibold text-xs py-1 px-2.5 rounded bg-indigo-50 hover:bg-indigo-100 transition">
                 Ver Recibo
               </button>
             </td>
@@ -414,139 +394,140 @@
       }).join('');
     }
 
-    function computeMetrics() {
+    function calculateStats(list) {
       const todayStr = new Date().toISOString().split('T')[0];
       let todayTotal = 0;
-      let todayTransactions = 0;
+      let todayCount = 0;
       let filteredTotal = 0;
 
-      paymentsList.forEach(p => {
+      list.forEach(p => {
         const amt = parseFloat(p.amount) || 0;
         filteredTotal += amt;
         if (p.payment_date === todayStr) {
           todayTotal += amt;
-          todayTransactions++;
+          todayCount++;
         }
       });
 
-      statToday.textContent = formatCurrency(todayTotal);
-      statCount.textContent = todayTransactions;
-      statFiltered.textContent = formatCurrency(filteredTotal);
+      document.getElementById('statToday').textContent = formatColones(todayTotal);
+      document.getElementById('statCount').textContent = todayCount;
+      document.getElementById('statFiltered').textContent = formatColones(filteredTotal);
     }
 
-    window.viewReceipt = function(paymentId) {
-      const payment = paymentsList.find(p => p.payment_id === paymentId);
-      if (!payment) return;
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const start = document.getElementById('filterStartDate').value;
+      const end = document.getElementById('filterEndDate').value;
 
-      recNumber.textContent = `#${payment.receipt_number || payment.payment_id.split('-')[0].toUpperCase()}`;
-      recDate.textContent = payment.date_formatted || payment.payment_date;
-      recCashier.textContent = payment.cashier_username || 'Personal Academi';
-      recStudent.textContent = payment.student_name;
-      recStudentPhone.textContent = payment.student_phone ? `Tel: ${payment.student_phone}` : '';
-      recConcept.textContent = payment.concept;
-      recMethod.textContent = payment.payment_method;
-      recRef.textContent = payment.reference_number || 'N/A';
-      recAmount.textContent = formatCurrency(payment.amount);
+      const filtered = rawPayments.filter(p => {
+        const matchSearch = !search || 
+          p.student_name.toLowerCase().includes(search) || 
+          p.concept.toLowerCase().includes(search) || 
+          String(p.receipt_number).includes(search) ||
+          (p.reference_number && p.reference_number.toLowerCase().includes(search));
 
-      modalReceipt.classList.remove('hidden');
-    };
+        const matchStart = !start || p.payment_date >= start;
+        const matchEnd = !end || p.payment_date <= end;
 
-    selectConcept.addEventListener('change', () => {
-      if (selectConcept.value === 'Otro') {
-        inputOtherConcept.classList.remove('hidden');
-        inputOtherConcept.required = true;
-        inputOtherConcept.focus();
-      } else {
-        inputOtherConcept.classList.add('hidden');
-        inputOtherConcept.required = false;
-      }
-    });
-
-    btnOpenNewPayment.addEventListener('click', () => {
-      formNewPayment.reset();
-      inputPaymentDate.value = new Date().toISOString().split('T')[0];
-      inputOtherConcept.classList.add('hidden');
-      paymentError.classList.add('hidden');
-      modalNewPayment.classList.remove('hidden');
-    });
-
-    btnCloseNewModal.addEventListener('click', () => modalNewPayment.classList.add('hidden'));
-    btnCancelPayment.addEventListener('click', () => modalNewPayment.classList.add('hidden'));
-    btnCloseReceipt.addEventListener('click', () => modalReceipt.classList.add('hidden'));
-    btnPrintReceipt.addEventListener('click', () => window.print());
-
-    searchInput.addEventListener('input', () => fetchPayments());
-    filterStartDate.addEventListener('change', () => fetchPayments());
-    filterEndDate.addEventListener('change', () => fetchPayments());
-    btnClearFilters.addEventListener('click', () => {
-      searchInput.value = '';
-      filterStartDate.value = '';
-      filterEndDate.value = '';
-      fetchPayments();
-    });
-
-    formNewPayment.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      paymentError.classList.add('hidden');
-
-      const studentId = selectStudent.value;
-      const amount = parseFloat(inputAmount.value);
-      const date = inputPaymentDate.value;
-      const concept = selectConcept.value === 'Otro' ? inputOtherConcept.value.trim() : selectConcept.value;
-      const method = selectMethod.value;
-      const ref = inputReference.value.trim();
-
-      if (!studentId || !amount || amount <= 0 || !concept) {
-        paymentError.textContent = 'Por favor complete todos los campos obligatorios con valores válidos.';
-        paymentError.classList.remove('hidden');
-        return;
-      }
-
-      const btnSubmit = document.getElementById('btnSubmitPayment');
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = 'Guardando...';
-
-      const { data, error } = await supabase.rpc('register_student_payment', {
-        p_student_id: studentId,
-        p_amount: amount,
-        p_concept: concept,
-        p_payment_method: method,
-        p_reference_number: ref || null,
-        p_payment_date: date
+        return matchSearch && matchStart && matchEnd;
       });
 
-      btnSubmit.disabled = false;
-      btnSubmit.textContent = 'Guardar y Emitir Recibo';
+      renderPayments(filtered);
+      calculateStats(filtered);
+    }
 
-      if (error) {
-        paymentError.textContent = error.message;
-        paymentError.classList.remove('hidden');
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterStartDate').value = '';
+      document.getElementById('filterEndDate').value = '';
+      renderPayments(rawPayments);
+      calculateStats(rawPayments);
+    }
+
+    function displayReceipt(paymentId) {
+      const item = rawPayments.find(p => p.id === paymentId);
+      if (!item) return;
+
+      let dateFormatted = item.payment_date;
+      if (item.payment_date && item.payment_date.includes('-')) {
+        const [y, m, d] = item.payment_date.split('-');
+        dateFormatted = `${d}/${m}/${y}`;
+      }
+
+      document.getElementById('recNumber').textContent = `#${item.receipt_number || '-'}`;
+      document.getElementById('recDate').textContent = dateFormatted;
+      document.getElementById('recStudent').textContent = item.student_name;
+      document.getElementById('recConcept').textContent = item.concept;
+      document.getElementById('recMethod').textContent = item.payment_method;
+      document.getElementById('recRef').textContent = item.reference_number || 'N/A';
+      document.getElementById('recAmount').textContent = formatColones(item.amount);
+
+      document.getElementById('modalReceipt').classList.remove('hidden');
+    }
+
+    async function handlePaymentSubmit(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('paymentError');
+      errBox.classList.add('hidden');
+
+      const studentId = document.getElementById('selectStudent').value;
+      const amount = parseFloat(document.getElementById('inputAmount').value);
+      const date = document.getElementById('inputPaymentDate').value;
+      const conceptSelect = document.getElementById('selectConcept').value;
+      const otherConcept = document.getElementById('inputOtherConcept').value.trim();
+      const concept = conceptSelect === 'Otro' ? otherConcept : conceptSelect;
+      const method = document.getElementById('selectMethod').value;
+      const ref = document.getElementById('inputReference').value.trim();
+
+      if (!studentId || !amount || amount <= 0 || !concept) {
+        errBox.textContent = 'Por favor complete todos los datos requeridos con valores válidos.';
+        errBox.classList.remove('hidden');
         return;
       }
 
-      modalNewPayment.classList.add('hidden');
-      await fetchPayments();
+      const submitBtn = document.getElementById('btnSubmitPayment');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Guardando...';
 
-      if (data && data.payment_id) {
-        viewReceipt(data.payment_id);
+      try {
+        const { data, error } = await supabaseClient.rpc('register_student_payment', {
+          p_student_id: studentId,
+          p_amount: amount,
+          p_concept: concept,
+          p_payment_method: method,
+          p_reference_number: ref || null,
+          p_payment_date: date
+        });
+
+        if (error) throw error;
+
+        closePaymentModal();
+        await loadPaymentsTable();
+
+        if (data && data.payment_id) {
+          displayReceipt(data.payment_id);
+        }
+
+      } catch (err) {
+        errBox.textContent = err.message || 'Error al guardar el pago.';
+        errBox.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Guardar y Emitir Recibo';
       }
-    });
+    }
 
-    btnLogout.addEventListener('click', async () => {
-      await supabase.auth.signOut();
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
       window.location.href = 'index.html';
     });
 
-    function setupRealtime() {
-      supabase
-        .channel('public:payments')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
-          fetchPayments();
-        })
-        .subscribe();
-    }
-
-    document.addEventListener('DOMContentLoaded', initApp);
+    // Inicio directo garantizado
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+      loadStudentsDropdown();
+      loadPaymentsTable();
+    });
   </script>
 </body>
 </html>
