@@ -451,37 +451,74 @@
       }
     }
 
-    // MONITOR: CARGA TODOS LOS DÍAS Y PROFESORES
+    // MONITOR: CARGA TODOS LOS DÍAS Y PROFESORES SIN ERRORES DE RED
     async function loadAttendanceMonitor() {
       const isAdm = (currentUserRole === 'admin');
       const dateEl = document.getElementById(isAdm ? 'adminAttendanceDate' : 'recepcionAttendanceDate');
       const statusEl = document.getElementById(isAdm ? 'adminStatusFilter' : 'recepcionStatusFilter');
       const teacherEl = document.getElementById(isAdm ? 'adminTeacherFilter' : 'recepcionTeacherFilter');
 
-      const selectedDate = dateEl?.value || null; // Si está vacío, carga todos los días
-      const selectedStatus = statusEl?.value || null;
-      const selectedTeacher = teacherEl?.value || null;
+      const selectedDate = dateEl?.value?.trim() || null;
+      const selectedStatus = statusEl?.value?.trim() || null;
+      const selectedTeacher = teacherEl?.value?.trim() || null;
 
       const targetTbody = document.getElementById(isAdm ? 'adminAttendanceTableBody' : 'recepcionAttendanceTableBody');
       if (!targetTbody) return;
 
-      const { data, error } = await supabaseClient.rpc('get_attendance_monitor', {
-        p_date: selectedDate,
-        p_status_filter: selectedStatus,
-        p_teacher_filter: selectedTeacher
-      });
+      try {
+        // Enviar solo los parámetros que tengan valor para evitar fallos HTTP en PostgREST
+        const params = {};
+        if (selectedDate) params.p_date = selectedDate;
+        if (selectedStatus) params.p_status_filter = selectedStatus;
+        if (selectedTeacher) params.p_teacher_filter = selectedTeacher;
 
-      if (error) {
-        targetTbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error: ${error.message}</td></tr>`;
-        return;
+        const { data, error } = await supabaseClient.rpc('get_attendance_monitor', params);
+
+        if (error) {
+          // Si falla la función, consulta directa como respaldo de alta disponibilidad
+          let directQuery = supabaseClient
+            .from('attendances')
+            .select(`
+              id,
+              status,
+              attendance_date,
+              recorded_at,
+              student_schedules (
+                time_slot,
+                teacher_id,
+                teachers (full_name),
+                courses (name)
+              ),
+              students (full_name)
+            `)
+            .order('attendance_date', { ascending: false })
+            .order('recorded_at', { ascending: false });
+
+          if (selectedDate) directQuery = directQuery.eq('attendance_date', selectedDate);
+          if (selectedStatus) directQuery = directQuery.eq('status', selectedStatus);
+
+          const directRes = await directQuery;
+          if (directRes.error) throw directRes.error;
+
+          renderDirectAttendanceRows(directRes.data || [], targetTbody, selectedTeacher);
+          return;
+        }
+
+        renderRpcAttendanceRows(data || [], targetTbody);
+
+      } catch (err) {
+        console.error('Error cargando monitor:', err);
+        targetTbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar datos: ${err.message}</td></tr>`;
       }
+    }
 
-      if (!data || data.length === 0) {
+    function renderRpcAttendanceRows(list, targetTbody) {
+      if (!list || list.length === 0) {
         targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias para los criterios seleccionados.</td></tr>`;
         return;
       }
 
-      targetTbody.innerHTML = data.map(item => {
+      targetTbody.innerHTML = list.map(item => {
         const badgeColor = item.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
                            item.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
                            'bg-rose-100 text-rose-800 border-rose-300';
@@ -490,17 +527,70 @@
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
             <td class="p-3">
               <span class="px-2.5 py-1 rounded text-xs font-semibold border ${badgeColor}">
-                ${item.status === 'presente' ? '🟢 ' : item.status === 'tarde' ? '🟡 ' : '🔴 '} ${item.status_label}
+                ${item.status === 'presente' ? '🟢 ' : item.status === 'tarde' ? '🟡 ' : '🔴 '} ${item.status_label || item.status}
               </span>
             </td>
             <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
-              <span class="font-bold text-slate-800">${item.date_formatted}</span>
-              <span class="text-slate-500 ml-1.5 font-medium">${item.time_formatted}</span>
+              <span class="font-bold text-slate-800">${item.date_formatted || item.attendance_date}</span>
+              <span class="text-slate-500 ml-1.5 font-medium">${item.time_formatted || ''}</span>
             </td>
-            <td class="p-3 font-bold text-slate-800">${item.student_name}</td>
-            <td class="p-3 text-slate-700 font-medium">${item.teacher_name}</td>
-            <td class="p-3 font-semibold text-xs text-indigo-700">${item.time_slot}</td>
-            <td class="p-3 text-slate-600 text-xs">${item.course_name}</td>
+            <td class="p-3 font-bold text-slate-800">${item.student_name || 'Sin nombre'}</td>
+            <td class="p-3 text-slate-700 font-medium">${item.teacher_name || 'Sin profesor'}</td>
+            <td class="p-3 font-semibold text-xs text-indigo-700">${item.time_slot || '-'}</td>
+            <td class="p-3 text-slate-600 text-xs">${item.course_name || 'General'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderDirectAttendanceRows(list, targetTbody, teacherFilterId) {
+      let filtered = list;
+      if (teacherFilterId) {
+        filtered = filtered.filter(item => item.student_schedules?.teacher_id === teacherFilterId);
+      }
+
+      if (filtered.length === 0) {
+        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias para los criterios seleccionados.</td></tr>`;
+        return;
+      }
+
+      targetTbody.innerHTML = filtered.map(item => {
+        const status = item.status;
+        const statusLabel = status === 'presente' ? 'Sí llegó' :
+                            status === 'tarde' ? 'Llegó tarde' :
+                            status === 'ausente' ? 'No se presentó' : 'Pendiente';
+
+        const badgeColor = status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                           status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                           'bg-rose-100 text-rose-800 border-rose-300';
+
+        let dateFormatted = item.attendance_date;
+        if (item.attendance_date && item.attendance_date.includes('-')) {
+          const [y, m, d] = item.attendance_date.split('T')[0].split('-');
+          dateFormatted = `${d}/${m}/${y}`;
+        }
+
+        let timeFormatted = '';
+        if (item.recorded_at) {
+          const recDate = new Date(item.recorded_at);
+          timeFormatted = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        return `
+          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+            <td class="p-3">
+              <span class="px-2.5 py-1 rounded text-xs font-semibold border ${badgeColor}">
+                ${status === 'presente' ? '🟢 ' : status === 'tarde' ? '🟡 ' : '🔴 '} ${statusLabel}
+              </span>
+            </td>
+            <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
+              <span class="font-bold text-slate-800">${dateFormatted}</span>
+              <span class="text-slate-500 ml-1.5 font-medium">${timeFormatted}</span>
+            </td>
+            <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
+            <td class="p-3 text-slate-700 font-medium">${item.student_schedules?.teachers?.full_name || 'Sin profesor'}</td>
+            <td class="p-3 font-semibold text-xs text-indigo-700">${item.student_schedules?.time_slot || '-'}</td>
+            <td class="p-3 text-slate-600 text-xs">${item.student_schedules?.courses?.name || 'General'}</td>
           </tr>
         `;
       }).join('');
@@ -561,7 +651,6 @@
       if (profile.role === 'admin') {
         badgeRole.classList.add('bg-purple-100', 'text-purple-800');
         document.getElementById('sectionAdmin').classList.remove('hidden');
-        // Por defecto muestra el histórico completo sin forzar fecha de hoy
         await loadAttendanceMonitor();
 
       } else if (profile.role === 'profesor') {
@@ -578,7 +667,6 @@
           currentTeacherId = teacher.id;
         }
 
-        // El profesor inicia en la fecha de hoy para tomar lista
         document.getElementById('teacherDateFilter').value = new Date().toISOString().split('T')[0];
         await loadTeacherStudents();
 
