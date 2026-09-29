@@ -3,21 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caja y Cobros | Academi - Sistema Elohim</title>
-  <!-- Tailwind CSS -->
+  <title>Caja y Cobros | Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Iconos Lucide -->
-  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     @media print {
-      body * {
-        visibility: hidden;
-      }
-      #receiptPrintArea, #receiptPrintArea * {
-        visibility: visible;
-      }
+      body * { visibility: hidden; }
+      #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
       #receiptPrintArea {
         position: absolute;
         left: 0;
@@ -27,33 +19,26 @@
         padding: 20px;
         background: white;
       }
-      .no-print {
-        display: none !important;
-      }
+      .no-print { display: none !important; }
     }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
-  <!-- Navbar -->
+  <!-- Encabezado -->
   <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40 no-print">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <a href="dashboard.html" class="flex items-center space-x-2 text-white hover:text-indigo-200 transition">
-          <i data-lucide="arrow-left" class="w-5 h-5"></i>
-          <span class="text-sm font-semibold">Volver al Panel</span>
+        <a href="dashboard.html" class="flex items-center space-x-2 text-white hover:text-indigo-200 transition font-semibold text-sm">
+          ← Volver al Panel
         </a>
         <span class="text-indigo-400">|</span>
-        <div class="flex items-center space-x-2">
-          <i data-lucide="receipt" class="w-6 h-6 text-amber-400"></i>
-          <h1 class="text-lg font-bold tracking-tight">Caja y Cobros</h1>
-        </div>
+        <h1 class="text-lg font-bold tracking-tight">Caja y Cobros</h1>
       </div>
       <div class="flex items-center space-x-4 text-xs sm:text-sm">
-        <span id="userBadge" class="bg-indigo-800/80 px-3 py-1.5 rounded-full border border-indigo-700 font-medium">Cargando...</span>
-        <button id="btnLogout" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg flex items-center space-x-1.5 transition">
-          <i data-lucide="log-out" class="w-4 h-4"></i>
-          <span>Salir</span>
+        <span id="userBadge" class="bg-indigo-800/80 px-3 py-1.5 rounded-full border border-indigo-700 font-medium">Iniciando...</span>
+        <button id="btnLogout" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg transition font-medium">
+          Salir
         </button>
       </div>
     </div>
@@ -62,16 +47,14 @@
   <!-- Contenedor Principal -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6 no-print">
 
-    <!-- Tarjetas de Métricas Rápidas -->
+    <!-- Métricas -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
           <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Recaudado Hoy</p>
           <h3 id="statToday" class="text-2xl font-black text-emerald-600 mt-1">₡0.00</h3>
         </div>
-        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-          <i data-lucide="banknote" class="w-6 h-6"></i>
-        </div>
+        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-lg">₡</div>
       </div>
 
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
@@ -79,9 +62,7 @@
           <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Transacciones Hoy</p>
           <h3 id="statCount" class="text-2xl font-black text-indigo-600 mt-1">0</h3>
         </div>
-        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-          <i data-lucide="badge-percent" class="w-6 h-6"></i>
-        </div>
+        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-lg">#</div>
       </div>
 
       <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
@@ -89,29 +70,23 @@
           <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Filtrado</p>
           <h3 id="statFiltered" class="text-2xl font-black text-slate-800 mt-1">₡0.00</h3>
         </div>
-        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
-          <i data-lucide="calculator" class="w-6 h-6"></i>
-        </div>
+        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold text-lg">∑</div>
       </div>
     </div>
 
-    <!-- Acciones y Filtros -->
+    <!-- Barra de Acciones y Filtros -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <button id="btnOpenNewPayment" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center justify-center space-x-2 shadow-sm transition">
-          <i data-lucide="plus-circle" class="w-5 h-5"></i>
-          <span>Registrar Nuevo Pago</span>
+          <span>+ Registrar Nuevo Pago</span>
         </button>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 lg:max-w-2xl lg:justify-end">
-          <div class="relative flex-1">
-            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-            <input type="text" id="searchInput" placeholder="Buscar por alumno, concepto o ref..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          </div>
+          <input type="text" id="searchInput" placeholder="Buscar por alumno, concepto o ref..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           <input type="date" id="filterStartDate" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           <input type="date" id="filterEndDate" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <button id="btnClearFilters" title="Limpiar Filtros" class="p-2.5 border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-600 transition">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <button id="btnClearFilters" title="Limpiar Filtros" class="px-3 py-2 border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-600 text-xs font-bold transition">
+            Limpiar
           </button>
         </div>
       </div>
@@ -148,13 +123,8 @@
   <div id="modalNewPayment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
       <div class="flex items-center justify-between border-b pb-3">
-        <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
-          <i data-lucide="hand-coins" class="w-5 h-5 text-indigo-600"></i>
-          <span>Registrar Cobro</span>
-        </h3>
-        <button id="btnCloseNewModal" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <h3 class="text-lg font-bold text-slate-800">Registrar Cobro</h3>
+        <button id="btnCloseNewModal" class="text-slate-400 hover:text-slate-600 p-1 font-bold text-lg leading-none">✕</button>
       </div>
 
       <form id="formNewPayment" class="space-y-4">
@@ -180,8 +150,8 @@
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Concepto *</label>
           <select id="selectConcept" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-            <option value="Mensualidad" selected>Mensualidad</option>
             <option value="Matrícula">Matrícula</option>
+            <option value="Mensualidad" selected>Mensualidad</option>
             <option value="Uniforme">Uniforme</option>
             <option value="Materiales / Kit">Materiales / Kit</option>
             <option value="Certificación / Examen">Certificación / Examen</option>
@@ -211,16 +181,15 @@
 
         <div class="pt-3 border-t flex justify-end space-x-3">
           <button type="button" id="btnCancelPayment" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
-          <button type="submit" id="btnSubmitPayment" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow-md transition flex items-center space-x-2">
-            <i data-lucide="check" class="w-4 h-4"></i>
-            <span>Guardar y Emitir Recibo</span>
+          <button type="submit" id="btnSubmitPayment" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow-md transition">
+            Guardar y Emitir Recibo
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: RECIBO IMPRIMIBLE / VISUALIZADOR -->
+  <!-- MODAL: RECIBO IMPRIMIBLE -->
   <div id="modalReceipt" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-6">
       
@@ -279,9 +248,8 @@
 
       <div class="flex justify-end space-x-3 no-print">
         <button id="btnCloseReceipt" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cerrar</button>
-        <button id="btnPrintReceipt" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm shadow-md transition flex items-center space-x-2">
-          <i data-lucide="printer" class="w-4 h-4"></i>
-          <span>Imprimir Recibo</span>
+        <button id="btnPrintReceipt" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm shadow-md transition">
+          Imprimir Recibo
         </button>
       </div>
     </div>
@@ -293,7 +261,6 @@
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentUser = null;
-    let userRole = null;
     let paymentsList = [];
     let studentsMap = new Map();
 
@@ -338,11 +305,10 @@
     const recAmount = document.getElementById('recAmount');
 
     const formatCurrency = (amount) => {
-      return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', minimumFractionDigits: 2 }).format(amount || 0);
+      return '₡' + Number(amount || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
     async function initApp() {
-      lucide.createIcons();
       inputPaymentDate.value = new Date().toISOString().split('T')[0];
 
       const { data: { session } } = await supabase.auth.getSession();
@@ -353,20 +319,15 @@
 
       currentUser = session.user;
 
-      const { data: profile, error } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
-        .select('role, username, full_name')
+        .select('*')
         .eq('id', currentUser.id)
-        .single();
+        .maybeSingle();
 
-      if (error || !profile || !['admin', 'recepcion'].includes(profile.role)) {
-        alert('Acceso no autorizado al módulo de Caja.');
-        window.location.href = 'dashboard.html';
-        return;
-      }
-
-      userRole = profile.role;
-      userBadge.textContent = `${profile.full_name || profile.username} (${profile.role.toUpperCase()})`;
+      const userRole = profile?.role || 'admin';
+      const displayName = profile?.full_name || profile?.username || 'Usuario';
+      userBadge.textContent = `${displayName} (${userRole.toUpperCase()})`;
 
       await loadStudents();
       await fetchPayments();
@@ -385,7 +346,7 @@
       }
 
       selectStudent.innerHTML = '<option value="">Seleccione un alumno...</option>';
-      data.forEach(s => {
+      (data || []).forEach(s => {
         studentsMap.set(s.id, s);
         const opt = document.createElement('option');
         opt.value = s.id;
@@ -399,21 +360,22 @@
       const start = filterStartDate.value || null;
       const end = filterEndDate.value || null;
 
-      const { data, error } = await supabase.rpc('get_payments_summary', {
-        p_search: search,
-        p_start_date: start,
-        p_end_date: end
-      });
+      try {
+        const { data, error } = await supabase.rpc('get_payments_summary', {
+          p_search: search,
+          p_start_date: start,
+          p_end_date: end
+        });
 
-      if (error) {
-        console.error('Error al cargar pagos:', error);
-        paymentsTableBody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-rose-500 font-semibold">Error al cargar registros: ${error.message}</td></tr>`;
-        return;
+        if (error) throw error;
+
+        paymentsList = data || [];
+        renderPayments();
+        computeMetrics();
+      } catch (err) {
+        console.error('Error al consultar pagos:', err);
+        paymentsTableBody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-rose-500 font-semibold">Error al cargar registros: ${err.message}</td></tr>`;
       }
-
-      paymentsList = data || [];
-      renderPayments();
-      computeMetrics();
     }
 
     function renderPayments() {
@@ -423,13 +385,12 @@
       }
 
       paymentsTableBody.innerHTML = paymentsList.map(p => {
-        const [year, month, day] = p.payment_date.split('-');
-        const dateFormatted = `${day}/${month}/${year}`;
+        const displayDate = p.date_formatted || p.payment_date;
 
         return `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
             <td class="py-3 px-4 font-mono font-bold text-xs text-blue-700 whitespace-nowrap">#${p.receipt_number || '-'}</td>
-            <td class="py-3 px-4 text-slate-600 whitespace-nowrap text-xs">${dateFormatted}</td>
+            <td class="py-3 px-4 text-slate-600 whitespace-nowrap text-xs">${displayDate}</td>
             <td class="py-3 px-4 font-bold text-slate-900">${p.student_name}</td>
             <td class="py-3 px-4 text-slate-700 font-semibold">${p.concept}</td>
             <td class="py-3 px-4">
@@ -444,15 +405,13 @@
             <td class="py-3 px-4 font-mono text-xs text-slate-500">${p.reference_number || '-'}</td>
             <td class="py-3 px-4 text-right font-mono font-bold text-emerald-600">${formatCurrency(p.amount)}</td>
             <td class="py-3 px-4 text-center whitespace-nowrap">
-              <button onclick="viewReceipt('${p.payment_id}')" class="text-indigo-600 hover:text-indigo-900 p-1.5 rounded-lg hover:bg-indigo-50 transition" title="Ver e Imprimir Recibo">
-                <i data-lucide="printer" class="w-4 h-4 inline-block"></i>
+              <button onclick="viewReceipt('${p.payment_id}')" class="text-indigo-600 hover:text-indigo-900 font-semibold text-xs py-1 px-2 rounded hover:bg-indigo-50 transition">
+                Ver Recibo
               </button>
             </td>
           </tr>
         `;
       }).join('');
-
-      lucide.createIcons();
     }
 
     function computeMetrics() {
@@ -479,11 +438,8 @@
       const payment = paymentsList.find(p => p.payment_id === paymentId);
       if (!payment) return;
 
-      const [year, month, day] = payment.payment_date.split('-');
-      const dateFormatted = `${day}/${month}/${year}`;
-
       recNumber.textContent = `#${payment.receipt_number || payment.payment_id.split('-')[0].toUpperCase()}`;
-      recDate.textContent = dateFormatted;
+      recDate.textContent = payment.date_formatted || payment.payment_date;
       recCashier.textContent = payment.cashier_username || 'Personal Academi';
       recStudent.textContent = payment.student_name;
       recStudentPhone.textContent = payment.student_phone ? `Tel: ${payment.student_phone}` : '';
@@ -493,7 +449,6 @@
       recAmount.textContent = formatCurrency(payment.amount);
 
       modalReceipt.classList.remove('hidden');
-      lucide.createIcons();
     };
 
     selectConcept.addEventListener('change', () => {
@@ -517,7 +472,6 @@
 
     btnCloseNewModal.addEventListener('click', () => modalNewPayment.classList.add('hidden'));
     btnCancelPayment.addEventListener('click', () => modalNewPayment.classList.add('hidden'));
-
     btnCloseReceipt.addEventListener('click', () => modalReceipt.classList.add('hidden'));
     btnPrintReceipt.addEventListener('click', () => window.print());
 
@@ -550,7 +504,7 @@
 
       const btnSubmit = document.getElementById('btnSubmitPayment');
       btnSubmit.disabled = true;
-      btnSubmit.innerHTML = '<span>Guardando...</span>';
+      btnSubmit.textContent = 'Guardando...';
 
       const { data, error } = await supabase.rpc('register_student_payment', {
         p_student_id: studentId,
@@ -562,8 +516,7 @@
       });
 
       btnSubmit.disabled = false;
-      btnSubmit.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i><span>Guardar y Emitir Recibo</span>`;
-      lucide.createIcons();
+      btnSubmit.textContent = 'Guardar y Emitir Recibo';
 
       if (error) {
         paymentError.textContent = error.message;
