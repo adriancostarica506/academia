@@ -4,7 +4,6 @@
 const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
 
-// Inicializar cliente
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const loginForm = document.getElementById('loginForm');
@@ -41,7 +40,6 @@ if (loginForm) {
     btnLogin.disabled = true;
     btnLogin.textContent = 'Verificando...';
 
-    // Si escribió 'admin', usamos el correo registrado; si puso un correo, lo dejamos tal cual
     let loginEmail = userInput;
     if (userInput === 'admin') {
       loginEmail = 'adrian2799024@yahoo.com';
@@ -71,10 +69,16 @@ if (loginForm) {
         throw new Error('No se encontró el perfil del usuario.');
       }
 
+      // 3. Registrar última conexión activa al iniciar sesión
+      await supabaseClient
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('id', authData.user.id);
+
       sessionStorage.setItem('user_role', profile.role);
       sessionStorage.setItem('user_name', profile.full_name);
 
-      // Redirigir al panel
+      // Redirigir al panel principal
       window.location.href = 'dashboard.html';
 
     } catch (err) {
