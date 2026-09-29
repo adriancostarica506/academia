@@ -40,7 +40,6 @@ if (loginForm) {
     btnLogin.disabled = true;
     btnLogin.textContent = 'Verificando...';
 
-    // Determinar el email correspondiente
     let loginEmail = userInput;
     if (userInput === 'admin') {
       loginEmail = 'adrian2799024@yahoo.com';
@@ -56,7 +55,7 @@ if (loginForm) {
       });
 
       if (authError) {
-        throw new Error('Usuario o contraseña incorrectos.');
+        throw new Error(authError.message || 'Usuario o contraseña incorrectos.');
       }
 
       // 2. Consultar perfil y rol
@@ -67,25 +66,20 @@ if (loginForm) {
         .single();
 
       if (profileError || !profile) {
-        throw new Error('No se encontró el perfil del usuario.');
+        throw new Error('Error al cargar perfil: ' + (profileError ? profileError.message : 'no encontrado'));
       }
 
-      // 3. Registrar última conexión activa al iniciar sesión
+      // 3. Registrar última conexión activa
       await supabaseClient
         .from('profiles')
         .update({ last_seen: new Date().toISOString() })
         .eq('id', authData.user.id);
 
-      // 4. Registrar evento en la bitácora de auditoría
-      await supabaseClient.rpc('record_user_activity', {
-        p_action: 'Inicio de sesión',
-        p_details: `Accedió con el rol: ${profile.role}`
-      });
-
+      // 4. Guardar datos en la sesión del navegador
       sessionStorage.setItem('user_role', profile.role);
       sessionStorage.setItem('user_name', profile.full_name);
 
-      // Redirigir al panel principal
+      // 5. Redirigir al panel principal
       window.location.href = 'dashboard.html';
 
     } catch (err) {
