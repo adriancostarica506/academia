@@ -15,7 +15,7 @@
       <div class="flex items-center space-x-3">
         <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-700">Directorio de Alumnos</span>
+        <span class="text-sm font-semibold text-slate-700">Directorio y Matrícula de Alumnos</span>
       </div>
       <div class="flex items-center space-x-3">
         <span id="userName" class="text-xs font-semibold text-slate-600">Usuario</span>
@@ -29,11 +29,11 @@
   <!-- Contenedor Principal -->
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- Encabezado con Métricas y Botón Nuevo Alumno -->
+    <!-- Encabezado con Botón Destacado para Agregar Nuevo Alumno -->
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h2 class="text-lg font-bold text-slate-800">Expediente de Alumnos Matriculados</h2>
-        <p class="text-xs text-slate-500">Agrega, edita y administra los datos personales de los estudiantes.</p>
+        <h2 class="text-lg font-bold text-slate-800">Expediente de Alumnos</h2>
+        <p class="text-xs text-slate-500">Registra nuevos estudiantes o edita su información personal y de contacto.</p>
       </div>
 
       <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -41,11 +41,14 @@
           <span class="text-xs text-blue-700 font-semibold">Total Alumnos:</span>
           <span id="totalStudentsCount" class="text-sm font-black text-blue-900">0</span>
         </div>
+        
+        <!-- BOTÓN PRINCIPAL -->
         <button 
-          onclick="openStudentModal()" 
+          onclick="openStudentModal(false)" 
           class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm whitespace-nowrap"
         >
-          <span>➕ Agregar Nuevo Alumno</span>
+          <span class="text-base leading-none">➕</span>
+          <span>Registrar Nuevo Alumno</span>
         </button>
       </div>
     </div>
@@ -58,7 +61,7 @@
           type="text" 
           id="searchInput" 
           oninput="filterStudents()" 
-          placeholder="Buscar alumno por nombre, teléfono o identificación..." 
+          placeholder="Buscar alumno por nombre, teléfono o cédula..." 
           class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
         >
       </div>
@@ -67,16 +70,16 @@
       </button>
     </div>
 
-    <!-- Tabla de Estudiantes -->
+    <!-- Tabla de Alumnos -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
             <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
               <th class="p-3.5">Nombre Completo</th>
-              <th class="p-3.5">Identificación / Cédula</th>
-              <th class="p-3.5">Teléfono</th>
-              <th class="p-3.5">Correo Electrónico</th>
+              <th class="p-3.5">Cédula / Identificación</th>
+              <th class="p-3.5">Teléfono Móvil</th>
+              <th class="p-3.5">Correo</th>
               <th class="p-3.5">Contacto Emergencia</th>
               <th class="p-3.5">Fecha Registro</th>
               <th class="p-3.5 text-center">Acciones</th>
@@ -97,7 +100,7 @@
   <div id="studentModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center border-b pb-3">
-        <h3 id="modalTitle" class="text-base font-bold text-slate-900">Agregar Nuevo Alumno</h3>
+        <h3 id="modalTitle" class="text-base font-bold text-slate-900">Registrar Nuevo Alumno</h3>
         <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg leading-none">✕</button>
       </div>
 
@@ -165,7 +168,7 @@
             <input 
               type="text" 
               id="inputEmergencyContact" 
-              placeholder="Nombre del encargado" 
+              placeholder="Nombre del familiar o tutor" 
               class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
             >
           </div>
@@ -174,7 +177,7 @@
             <input 
               type="text" 
               id="inputEmergencyPhone" 
-              placeholder="Teléfono encargado" 
+              placeholder="Teléfono del contacto" 
               class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
             >
           </div>
@@ -203,7 +206,7 @@
             id="btnSubmitStudent" 
             class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow-sm"
           >
-            Guardar Alumno
+            Guardar en Base de Datos
           </button>
         </div>
       </form>
@@ -313,7 +316,11 @@
 
     function openStudentModal(isEdit = false) {
       document.getElementById('modalAlert').classList.add('hidden');
-      document.getElementById('modalTitle').textContent = isEdit ? 'Editar Datos del Alumno' : 'Agregar Nuevo Alumno';
+      document.getElementById('modalTitle').textContent = isEdit ? 'Editar Datos del Alumno' : 'Registrar Nuevo Alumno';
+      if (!isEdit) {
+        document.getElementById('studentForm').reset();
+        document.getElementById('studentId').value = '';
+      }
       document.getElementById('studentModal').classList.remove('hidden');
       document.getElementById('inputFullName').focus();
     }
@@ -343,7 +350,7 @@
 
     async function deleteStudent(id, nameEscaped) {
       const name = decodeURIComponent(nameEscaped);
-      if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente a "${name}"? Esta acción no se puede deshacer.`)) {
+      if (!confirm(`¿Deseas eliminar permanentemente a "${name}" de la base de datos?`)) {
         return;
       }
 
@@ -361,6 +368,7 @@
       }
     }
 
+    // GUARDAR O ACTUALIZAR ALUMNO EN SUPABASE
     document.getElementById('studentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       document.getElementById('modalAlert').classList.add('hidden');
@@ -376,13 +384,13 @@
       const notes = document.getElementById('inputNotes').value.trim() || null;
 
       if (!fullName || !phone) {
-        showModalAlert('El nombre completo y el teléfono son campos obligatorios.');
+        showModalAlert('El nombre completo y el teléfono son obligatorios.');
         return;
       }
 
       const btn = document.getElementById('btnSubmitStudent');
       btn.disabled = true;
-      btn.textContent = 'Guardando en la base de datos...';
+      btn.textContent = 'Guardando...';
 
       try {
         const studentPayload = {
@@ -397,7 +405,7 @@
         };
 
         if (id) {
-          // Actualizar existente
+          // Edición
           const { error } = await supabaseClient
             .from('students')
             .update(studentPayload)
@@ -405,7 +413,7 @@
 
           if (error) throw error;
         } else {
-          // Insertar nuevo
+          // Inserción nuevo
           const { error } = await supabaseClient
             .from('students')
             .insert(studentPayload);
@@ -417,10 +425,10 @@
         await loadStudents();
 
       } catch (err) {
-        showModalAlert('Error: ' + err.message);
+        showModalAlert('Error al guardar: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Guardar Alumno';
+        btn.textContent = 'Guardar en Base de Datos';
       }
     });
 
