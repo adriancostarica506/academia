@@ -17,6 +17,9 @@
         <span id="badgeRole" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-700 capitalize">Cargando...</span>
       </div>
       <div class="flex items-center space-x-4">
+        <a href="cobros_pendientes.html" class="flex items-center gap-1.5 text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-300 font-bold px-3 py-1.5 rounded-lg transition shadow-sm">
+          🔔 Cobros Pendientes
+        </a>
         <a href="chat.html" class="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-bold px-3 py-1.5 rounded-lg transition">
           💬 Abrir Chat Online
         </a>
@@ -35,53 +38,49 @@
     <div id="sectionAdmin" class="hidden space-y-6">
       <h2 class="text-lg font-bold text-slate-700">Panel de Administración General</h2>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Tarjeta 1: Cobros Pendientes (Nueva y Destacada) -->
+        <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Personal y Profesores</h3>
-            <p class="text-sm text-slate-500 mb-4">Gestionar personal docente y administrativo.</p>
+            <div class="flex justify-between items-center mb-1">
+              <h3 class="font-bold text-amber-900">Cobros y Mensualidades</h3>
+              <span class="text-xs bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded-full">Alerta</span>
+            </div>
+            <p class="text-xs text-amber-800 mb-4">Ver quiénes tienen mensualidad vencida o están por pagar para recordarles.</p>
           </div>
-          <a href="profesores.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Gestionar</a>
+          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
+            Control de Cobros Pendientes
+          </a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Horarios y Días</h3>
-            <p class="text-sm text-slate-500 mb-4">Asignar alumnos con días de la semana marcados.</p>
+            <h3 class="font-semibold text-slate-800 mb-1">Caja y Pagos</h3>
+            <p class="text-xs text-slate-500 mb-4">Historial de recibos emitidos y reportes en Excel.</p>
           </div>
-          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar</a>
+          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-medium transition">
+            Ver Pagos y Recibos
+          </a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Alumnos</h3>
-            <p class="text-sm text-slate-500 mb-4">Registro general, fichas y expedientes.</p>
+            <h3 class="font-semibold text-slate-800 mb-1">Horarios y Días</h3>
+            <p class="text-xs text-slate-500 mb-4">Asignar alumnos con días de clase semanales.</p>
           </div>
-          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Alumnos</a>
+          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-medium transition">
+            Asignar Alumnos
+          </a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Caja y Pagos</h3>
-            <p class="text-sm text-slate-500 mb-4">Historial de pagos, reportes Excel y cobros.</p>
+            <h3 class="font-semibold text-slate-800 mb-1">Personal Docente</h3>
+            <p class="text-xs text-slate-500 mb-4">Gestionar cuentas de profesores y recepción.</p>
           </div>
-          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 rounded-lg font-medium transition">Ver Pagos</a>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Chat y Supervisión</h3>
-            <p class="text-sm text-slate-500 mb-4">Supervisar en vivo charlas entre personal.</p>
-          </div>
-          <a href="chat.html" class="block text-center w-full bg-purple-700 hover:bg-purple-800 text-white text-sm py-2 rounded-lg font-medium transition">Supervisar Chat</a>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Auditoría</h3>
-            <p class="text-sm text-slate-500 mb-4">Registro cronológico de acciones del sistema.</p>
-          </div>
-          <a href="auditoria.html" class="block text-center w-full bg-slate-800 hover:bg-slate-900 text-white text-sm py-2 rounded-lg font-medium transition">Auditoría</a>
+          <a href="profesores.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg font-medium transition">
+            Personal y Profesores
+          </a>
         </div>
       </div>
 
@@ -91,26 +90,26 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias (Todos los Días Marcados)</h3>
+              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias</h3>
             </div>
-            <p class="text-xs text-slate-500">Muestra todos los días y horas que han marcado cada uno de los profesores en tiempo real.</p>
+            <p class="text-xs text-slate-500">Muestra todos los días y horas que han marcado los profesores.</p>
           </div>
 
           <!-- Filtros de Consulta -->
           <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Profesor</label>
-              <select id="adminTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <select id="adminTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">👨‍🏫 Todos los profesores</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Día</label>
-              <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+              <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Estado</label>
-              <select id="adminStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <select id="adminStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">Todos los Estados</option>
                 <option value="presente">🟢 Sí llegó</option>
                 <option value="tarde">🟡 Llegó tarde</option>
@@ -152,37 +151,49 @@
     <div id="sectionRecepcion" class="hidden space-y-6">
       <h2 class="text-lg font-bold text-slate-700">Módulo de Recepción</h2>
       
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Acceso directo de Recepción a Cobros Pendientes -->
+        <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Horarios y Días</h3>
-            <p class="text-sm text-slate-500 mb-4">Agendar alumnos con días de clase semanales.</p>
+            <div class="flex justify-between items-center mb-1">
+              <h3 class="font-bold text-amber-900">Cobros y Mensualidades</h3>
+              <span class="text-xs bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded-full">Alerta</span>
+            </div>
+            <p class="text-xs text-amber-800 mb-4">Supervisar alumnos vencidos y enviar recordatorios por WhatsApp.</p>
           </div>
-          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar</a>
+          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
+            Cobros Pendientes
+          </a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Alumnos</h3>
-            <p class="text-sm text-slate-500 mb-4">Expedientes y datos de estudiantes.</p>
+            <h3 class="font-semibold text-slate-800 mb-1">Caja y Cobros</h3>
+            <p class="text-xs text-slate-500 mb-4">Registrar nuevos pagos y emitir comprobantes.</p>
           </div>
-          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Alumnos</a>
+          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-medium transition">
+            Registrar Pagos
+          </a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Caja y Cobros</h3>
-            <p class="text-sm text-slate-500 mb-4">Registrar nuevos pagos y emitir recibos.</p>
+            <h3 class="font-semibold text-slate-800 mb-1">Horarios y Alumnos</h3>
+            <p class="text-xs text-slate-500 mb-4">Agendar estudiantes en turnos y profesores.</p>
           </div>
-          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 rounded-lg font-medium transition">Registrar Pagos</a>
+          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-medium transition">
+            Asignar Horarios
+          </a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Chat con Profesores</h3>
-            <p class="text-sm text-slate-500 mb-4">Comunicación directa en tiempo real.</p>
+            <h3 class="font-semibold text-slate-800 mb-1">Chat con Profesores</h3>
+            <p class="text-xs text-slate-500 mb-4">Comunicación directa en tiempo real.</p>
           </div>
-          <a href="chat.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Abrir Chat</a>
+          <a href="chat.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg font-medium transition">
+            Abrir Chat
+          </a>
         </div>
       </div>
 
@@ -192,7 +203,7 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias (Todos los Días Marcados)</h3>
+              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias</h3>
             </div>
             <p class="text-xs text-slate-500">Consulta los días anteriores y el día actual marcados por cada profesor.</p>
           </div>
@@ -200,17 +211,17 @@
           <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Profesor</label>
-              <select id="recepcionTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <select id="recepcionTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">👨‍🏫 Todos los profesores</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Día</label>
-              <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+              <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Estado</label>
-              <select id="recepcionStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <select id="recepcionStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">Todos los Estados</option>
                 <option value="presente">🟢 Sí llegó</option>
                 <option value="tarde">🟡 Llegó tarde</option>
@@ -314,7 +325,6 @@
         </div>
 
         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <!-- Buscador por nombre escrito -->
           <div class="flex flex-col sm:flex-row items-center gap-3">
             <div class="relative flex-1 w-full">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
@@ -331,7 +341,6 @@
             </button>
           </div>
 
-          <!-- Tabla de Alumnos con Resumen de Conteos -->
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
@@ -360,7 +369,7 @@
 
   </main>
 
-  <!-- MODAL: DETALLE DE TODAS LAS FECHAS DEL ALUMNO (DÍA, MES, AÑO Y HORA) -->
+  <!-- MODAL: DETALLE DE ASISTENCIAS DEL ALUMNO -->
   <div id="modalStudentAttendanceHistory" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-start border-b pb-3">
@@ -406,8 +415,7 @@
     let currentTeacherId = null;
     let currentUserRole = null;
     let teachersCache = [];
-
-    let rawTeacherStudentsData = []; // Datos completos del profesor para estadísticas
+    let rawTeacherStudentsData = [];
 
     const daysMap = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -418,7 +426,6 @@
       return daysMap[dateObj.getDay()];
     }
 
-    // Pestañas de profesor
     function switchTeacherTab(tab) {
       const btnMark = document.getElementById('tabTeacherMark');
       const btnStats = document.getElementById('tabTeacherStats');
@@ -454,7 +461,6 @@
       if (recepSelect) recepSelect.innerHTML = options;
     }
 
-    // TOMA DE ASISTENCIA DIARIA DEL PROFESOR
     async function loadTeacherStudents() {
       const container = document.getElementById('teacherStudentsContainer');
       const dateVal = document.getElementById('teacherDateFilter').value;
@@ -580,9 +586,6 @@
       }
     }
 
-    // =========================================================================
-    // 📊 EXPEDIENTE, BUSCADOR Y CONTEO DE ASISTENCIAS DEL PROFESOR
-    // =========================================================================
     async function loadTeacherStudentStats() {
       const tbody = document.getElementById('teacherStudentStatsTableBody');
       if (!currentTeacherId) return;
@@ -684,7 +687,6 @@
       }).join('');
     }
 
-    // Modal con desglose de días, meses, años y horas
     function openStudentAttendanceHistory(scheduleId, studentNameEscaped, scheduleInfoEscaped) {
       const studentName = decodeURIComponent(studentNameEscaped);
       const scheduleInfo = decodeURIComponent(scheduleInfoEscaped);
@@ -743,9 +745,6 @@
       document.getElementById('modalStudentAttendanceHistory').classList.add('hidden');
     }
 
-    // =========================================================================
-    // MONITOR: ADMIN Y RECEPCIÓN
-    // =========================================================================
     async function loadAttendanceMonitor() {
       const isAdm = (currentUserRole === 'admin');
       const dateEl = document.getElementById(isAdm ? 'adminAttendanceDate' : 'recepcionAttendanceDate');
