@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Control - Elohim</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+  <!-- Barra Superior -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <h1 class="text-xl font-bold text-blue-600">Elohim Admin</h1>
+        <span id="badgeRole" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-700 capitalize">Cargando...</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span id="userName" class="text-sm font-medium text-slate-600">Usuario</span>
+        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- Sección Exclusiva: Administrador -->
+    <div id="sectionAdmin" class="hidden space-y-6">
+      <h2 class="text-lg font-bold text-slate-700">Panel de Administración General</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-semibold text-slate-800 mb-2">Profesores</h3>
+          <p class="text-sm text-slate-500 mb-4">Crear profesores nuevos y asignar contraseñas.</p>
+          <button class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Gestionar Profesores</button>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-semibold text-slate-800 mb-2">Alumnos</h3>
+          <p class="text-sm text-slate-500 mb-4">Registro general, asignaciones y cursos.</p>
+          <button class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Gestionar Alumnos</button>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h3 class="font-semibold text-slate-800 mb-2">Caja y Pagos</h3>
+          <p class="text-sm text-slate-500 mb-4">Historial de pagos guardados y cobros.</p>
+          <button class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Ver Pagos</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Exclusiva: Profesores -->
+    <div id="sectionProfesor" class="hidden space-y-6">
+      <h2 class="text-lg font-bold text-slate-700">Control de Asistencia de Clases</h2>
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-sm text-slate-500 mb-4">Registra la asistencia de tus alumnos por fecha y hora:</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
+            <input type="date" id="attendanceDate" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Hora</label>
+            <input type="time" id="attendanceTime" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Curso / Asignatura</label>
+            <select id="courseSelect" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+              <option value="">Cargando cursos...</option>
+            </select>
+          </div>
+        </div>
+        <div class="border-t border-slate-200 pt-4">
+          <h4 class="text-sm font-semibold text-slate-700 mb-2">Alumnos del curso</h4>
+          <div id="studentListContainer" class="text-sm text-slate-500 italic">
+            Selecciona un curso para ver tu lista de alumnos.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección Exclusiva: Recepción -->
+    <div id="sectionRecepcion" class="hidden space-y-6">
+      <h2 class="text-lg font-bold text-slate-700">Módulo de Recepción y Pagos</h2>
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <p class="text-sm text-slate-500 mb-4">Registro de nuevos cobros y verificación rápida de alumnos.</p>
+        <button class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 px-4 rounded-lg font-medium transition">
+          + Registrar Nuevo Pago
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Inicializar Supabase con tus credenciales
+    const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Verificar si hay sesión activa
+    async function initDashboard() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Obtener datos del perfil
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Mostrar datos de usuario
+      document.getElementById('userName').textContent = profile.full_name || 'Usuario';
+      const badgeRole = document.getElementById('badgeRole');
+      badgeRole.textContent = profile.role;
+
+      // Mostrar vistas según el rol
+      if (profile.role === 'admin') {
+        badgeRole.classList.add('bg-purple-100', 'text-purple-800');
+        document.getElementById('sectionAdmin').classList.remove('hidden');
+      } else if (profile.role === 'profesor') {
+        badgeRole.classList.add('bg-blue-100', 'text-blue-800');
+        document.getElementById('sectionProfesor').classList.remove('hidden');
+        // Fijar fecha y hora actual por defecto
+        const now = new Date();
+        document.getElementById('attendanceDate').value = now.toISOString().split('T')[0];
+        document.getElementById('attendanceTime').value = now.toTimeString().slice(0, 5);
+      } else if (profile.role === 'recepcion') {
+        badgeRole.classList.add('bg-emerald-100', 'text-emerald-800');
+        document.getElementById('sectionRecepcion').classList.remove('hidden');
+      }
+    }
+
+    // Botón de salir
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    });
+
+    initDashboard();
+  </script>
+</body>
+</html>
