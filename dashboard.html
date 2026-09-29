@@ -5,18 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Control - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">// Actualizar actividad Online cada 60 segundos
-    async function updateOnlineStatus() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        await supabaseClient
-          .from('profiles')
-          .update({ last_seen: new Date().toISOString() })
-          .eq('id', session.user.id);
-      }
-    }
-    updateOnlineStatus();
-    setInterval(updateOnlineStatus, 60000);</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
@@ -44,9 +33,9 @@
       <h2 class="text-lg font-bold text-slate-700">Panel de Administración General</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <h3 class="font-semibold text-slate-800 mb-2">Profesores</h3>
-          <p class="text-sm text-slate-500 mb-4">Crear profesores nuevos y asignar contraseñas.</p>
-          <a href="profesores.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Gestionar Profesores</a>
+          <h3 class="font-semibold text-slate-800 mb-2">Personal y Profesores</h3>
+          <p class="text-sm text-slate-500 mb-4">Crear profesores, recepcionistas y ver estados online.</p>
+          <a href="profesores.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Gestionar Personal</a>
         </div>
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <h3 class="font-semibold text-slate-800 mb-2">Alumnos</h3>
@@ -105,12 +94,21 @@
   </main>
 
   <script>
-    // Configuración de Supabase
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Verificar si hay sesión activa
+    let currentUserId = null;
+
+    async function updateOnlineHeartbeat() {
+      if (currentUserId) {
+        await supabaseClient
+          .from('profiles')
+          .update({ last_seen: new Date().toISOString() })
+          .eq('id', currentUserId);
+      }
+    }
+
     async function initDashboard() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       
@@ -119,11 +117,12 @@
         return;
       }
 
-      // Obtener datos del perfil
+      currentUserId = session.user.id;
+
       const { data: profile } = await supabaseClient
         .from('profiles')
         .select('role, full_name')
-        .eq('id', session.user.id)
+        .eq('id', currentUserId)
         .single();
 
       if (!profile) {
@@ -131,19 +130,16 @@
         return;
       }
 
-      // Mostrar datos de usuario
       document.getElementById('userName').textContent = profile.full_name || 'Usuario';
       const badgeRole = document.getElementById('badgeRole');
       badgeRole.textContent = profile.role;
 
-      // Mostrar vistas según el rol
       if (profile.role === 'admin') {
         badgeRole.classList.add('bg-purple-100', 'text-purple-800');
         document.getElementById('sectionAdmin').classList.remove('hidden');
       } else if (profile.role === 'profesor') {
         badgeRole.classList.add('bg-blue-100', 'text-blue-800');
         document.getElementById('sectionProfesor').classList.remove('hidden');
-        
         const now = new Date();
         document.getElementById('attendanceDate').value = now.toISOString().split('T')[0];
         document.getElementById('attendanceTime').value = now.toTimeString().slice(0, 5);
@@ -151,10 +147,19 @@
         badgeRole.classList.add('bg-emerald-100', 'text-emerald-800');
         document.getElementById('sectionRecepcion').classList.remove('hidden');
       }
+
+      // Actualizar estado online de inmediato y luego cada 60 segundos
+      await updateOnlineHeartbeat();
+      setInterval(updateOnlineHeartbeat, 60000);
     }
 
-    // Botón de salir
     document.getElementById('btnLogout').addEventListener('click', async () => {
+      if (currentUserId) {
+        await supabaseClient
+          .from('profiles')
+          .update({ last_seen: null })
+          .eq('id', currentUserId);
+      }
       await supabaseClient.auth.signOut();
       sessionStorage.clear();
       window.location.href = 'index.html';
