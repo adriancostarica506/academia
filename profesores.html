@@ -187,7 +187,7 @@
 
       <div class="flex justify-end space-x-2 mt-5">
         <button onclick="closePasswordModal()" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Cancelar</button>
-        <button id="btnSavePassword" onclick="saveNewPassword()" class="px-4 py-1.5 text-sm rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium">Actualizar Contraseña</button>
+        <button id="btnSavePassword" onclick="saveNewPassword()" class="px-4 py-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium">Actualizar Contraseña</button>
       </div>
     </div>
   </div>
@@ -199,7 +199,6 @@
 
     let staffList = [];
 
-    // Ocultar campo de especialidad si se elige recepción
     document.getElementById('staffRole').addEventListener('change', (e) => {
       const field = document.getElementById('fieldSpecialty');
       if (e.target.value === 'recepcion') {
@@ -227,7 +226,6 @@
       }
     }
 
-    // Calcula si está online (activo en los últimos 3 minutos)
     function isOnline(lastSeen) {
       if (!lastSeen) return false;
       const diffMinutes = (new Date() - new Date(lastSeen)) / (1000 * 60);
@@ -274,14 +272,16 @@
             <td class="p-3 text-center space-x-2">
               <button onclick="openEditModal('${u.id}')" class="text-xs text-blue-600 hover:underline font-semibold">Editar</button>
               <span class="text-slate-300">|</span>
-              <button onclick="openPasswordModal('${u.id}')" class="text-xs text-red-600 hover:underline font-semibold">Clave</button>
+              <button onclick="openPasswordModal('${u.id}')" class="text-xs text-amber-600 hover:underline font-semibold">Clave</button>
+              <span class="text-slate-300">|</span>
+              <button onclick="deleteStaffMember('${u.id}', '${u.full_name}')" class="text-xs text-red-600 hover:underline font-semibold">Eliminar</button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    // Modal de edición de datos personales
+    // Modal de edición
     function openEditModal(userId) {
       const user = staffList.find(s => s.id === userId);
       if (!user) return;
@@ -334,7 +334,7 @@
       }
     }
 
-    // Modal de cambio de contraseña
+    // Modal contraseña
     function openPasswordModal(userId) {
       const user = staffList.find(s => s.id === userId);
       if (!user) return;
@@ -385,6 +385,25 @@
       } finally {
         btn.disabled = false;
         btn.textContent = 'Actualizar Contraseña';
+      }
+    }
+
+    // Eliminar personal
+    async function deleteStaffMember(userId, fullName) {
+      const confirmed = confirm(`¿Estás seguro de que deseas eliminar permanentemente a "${fullName}"?\nEsta acción no se puede deshacer.`);
+      if (!confirmed) return;
+
+      try {
+        const { error } = await supabaseClient.rpc('admin_delete_staff', {
+          p_user_id: userId
+        });
+
+        if (error) throw error;
+
+        alert(`El usuario "${fullName}" ha sido eliminado exitosamente.`);
+        loadStaff();
+      } catch (err) {
+        alert('Error al eliminar: ' + (err.message || 'No se pudo completar la operación.'));
       }
     }
 
