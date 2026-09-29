@@ -4,8 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Caja y Pagos - Academi</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SheetJS para generar archivos Excel nativos (.xlsx) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     @media print {
       body * { visibility: hidden; }
@@ -49,7 +53,7 @@
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
           <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recaudado Hoy</p>
-          <h3 id="statTotalToday" class="text-2xl font-black text-emerald-600 mt-1">₡0.00</h3>
+          <h3 id="statTotalToday" class="text-2xl font-black text-emerald-600 mt-1">₡0,00</h3>
         </div>
         <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg border border-emerald-100">
           ₡
@@ -69,11 +73,60 @@
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
           <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" id="statFilterLabel">Total Filtrado</p>
-          <h3 id="statFilteredTotal" class="text-2xl font-black text-slate-800 mt-1">₡0.00</h3>
+          <h3 id="statFilteredTotal" class="text-2xl font-black text-slate-800 mt-1">₡0,00</h3>
         </div>
         <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg border border-amber-100">
           ∑
         </div>
+      </div>
+    </div>
+
+    <!-- Barra de Herramientas y Exportaciones a Excel -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div>
+        <h3 class="text-sm font-bold text-slate-800">Reportes Financieros y Control de Estudiantes</h3>
+        <p class="text-xs text-slate-500">Descarga los ingresos por período y supervisa qué alumnos deben o están próximos a pagar.</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2.5">
+        <!-- Dropdown Descargar Ingresos Excel -->
+        <div class="relative inline-block text-left">
+          <button 
+            type="button" 
+            onclick="toggleIncomeDropdown()" 
+            class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-2 shadow-sm"
+          >
+            <span>📊 Descargar Ingresos (Excel)</span>
+            <span>▼</span>
+          </button>
+          
+          <div id="incomeDropdownMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl shadow-xl bg-white border border-slate-200 ring-1 ring-black ring-opacity-5 z-20 py-1.5 divide-y divide-slate-100">
+            <button onclick="exportIncomeToExcel('semanal')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 font-semibold flex items-center justify-between">
+              <span>📅 Ingreso Semanal (7 días)</span>
+              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
+            </button>
+            <button onclick="exportIncomeToExcel('quincenal')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 font-semibold flex items-center justify-between">
+              <span>📅 Ingreso Quincenal (15 días)</span>
+              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
+            </button>
+            <button onclick="exportIncomeToExcel('mensual')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 font-semibold flex items-center justify-between">
+              <span>📅 Ingreso Mensual (30 días)</span>
+              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
+            </button>
+            <button onclick="exportIncomeToExcel('filtrado')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold flex items-center justify-between">
+              <span>🔍 Ingresos según Filtro Actual</span>
+              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Botón Alumnos Pendientes y Próximos a Pagar -->
+        <button 
+          onclick="openPendingStatusModal()" 
+          class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
+        >
+          <span>🔔 Control de Pagos de Alumnos</span>
+        </button>
       </div>
     </div>
 
@@ -239,6 +292,73 @@
     </div>
   </main>
 
+  <!-- MODAL: ESTADO DE PAGOS (PENDIENTES Y PRÓXIMOS A PAGAR) -->
+  <div id="modalPendingStatus" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+      
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-slate-800">Estado de Pagos de Alumnos</h3>
+          <p class="text-xs text-slate-500">Supervisión de alumnos pendientes y con cobro próximo a vencer (Base mensual estándar de 30 días).</p>
+        </div>
+        <button onclick="closePendingStatusModal()" class="text-slate-400 hover:text-slate-600 font-black text-xl leading-none">✕</button>
+      </div>
+
+      <!-- Resumen y Filtro de Estado -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+        <div class="flex gap-2">
+          <button onclick="filterStatusTab('all')" id="btnTabStatusAll" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 shadow-sm border border-slate-200">
+            Todos (<span id="countAll">0</span>)
+          </button>
+          <button onclick="filterStatusTab('vencido')" id="btnTabStatusPending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+            🔴 Vencidos / Sin Pago (<span id="countPending">0</span>)
+          </button>
+          <button onclick="filterStatusTab('proximo')" id="btnTabStatusUpcoming" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+            🟡 Próximos a Vencer (<span id="countUpcoming">0</span>)
+          </button>
+          <button onclick="filterStatusTab('aldia')" id="btnTabStatusOk" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            🟢 Al Día (<span id="countOk">0</span>)
+          </button>
+        </div>
+
+        <button 
+          onclick="exportPendingStudentsToExcel()" 
+          class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm"
+        >
+          <span>📥 Descargar Estado en Excel (.xlsx)</span>
+        </button>
+      </div>
+
+      <!-- Tabla de Alumnos y Estados -->
+      <div class="flex-1 overflow-y-auto border border-slate-200 rounded-xl">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="bg-slate-100 text-slate-600 font-semibold sticky top-0 border-b border-slate-200">
+            <tr>
+              <th class="p-3">Estado</th>
+              <th class="p-3">Alumno</th>
+              <th class="p-3">Teléfono</th>
+              <th class="p-3">Último Pago</th>
+              <th class="p-3">Concepto Reciente</th>
+              <th class="p-3 text-right">Días Transcurridos</th>
+            </tr>
+          </thead>
+          <tbody id="pendingStatusTableBody" class="divide-y divide-slate-100 font-medium">
+            <tr>
+              <td colspan="6" class="p-6 text-center text-slate-400">Analizando estados...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-100">
+        <button onclick="closePendingStatusModal()" class="px-4 py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- MODAL: RECIBO IMPRIMIBLE -->
   <div id="receiptModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
@@ -279,7 +399,7 @@
 
         <div class="bg-slate-50 p-3 rounded-lg flex justify-between items-center border border-slate-200 mt-3">
           <span class="text-xs font-bold uppercase text-slate-600">Total Pagado:</span>
-          <span class="text-2xl font-black text-emerald-600" id="rcptAmount">₡0.00</span>
+          <span class="text-2xl font-black text-emerald-600" id="rcptAmount">₡0,00</span>
         </div>
 
         <div class="pt-3 text-center text-xs text-slate-400">
@@ -306,6 +426,9 @@
 
     let allPayments = [];
     let allStudents = [];
+    let currentFilteredPayments = [];
+    let analyzedStudentStatuses = [];
+    let activeStatusFilter = 'all';
 
     const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -328,6 +451,19 @@
         return '';
       }
     }
+
+    function toggleIncomeDropdown() {
+      const menu = document.getElementById('incomeDropdownMenu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Cerrar dropdown si se hace clic afuera
+    window.addEventListener('click', (e) => {
+      const menu = document.getElementById('incomeDropdownMenu');
+      if (menu && !e.target.closest('.relative.inline-block')) {
+        menu.classList.add('hidden');
+      }
+    });
 
     function showAlert(text, type = 'error') {
       const alertMsg = document.getElementById('alertMsg');
@@ -393,7 +529,7 @@
             reference_number,
             payment_date,
             created_at,
-            students (id, full_name)
+            students (id, full_name, phone)
           `)
           .order('created_at', { ascending: false });
 
@@ -403,7 +539,7 @@
         filterPayments();
 
       } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error al cargar pagos: ${err.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error al cargar pagos: ${error ? error.message : err.message}</td></tr>`;
       }
     }
 
@@ -460,7 +596,6 @@
       let countToday = 0;
       let totalFiltered = 0;
 
-      // Calcular hoy global
       allPayments.forEach(p => {
         const cleanDate = p.payment_date ? String(p.payment_date).split('T')[0] : '';
         if (cleanDate === today) {
@@ -469,7 +604,6 @@
         }
       });
 
-      // Calcular total filtrado
       filteredList.forEach(p => {
         totalFiltered += Number(p.amount) || 0;
       });
@@ -478,7 +612,6 @@
       document.getElementById('statCountToday').textContent = countToday;
       document.getElementById('statFilteredTotal').textContent = formatCurrency(totalFiltered);
 
-      // Etiqueta dinámica
       const studentFilter = document.getElementById('filterStudentSelect').value;
       const label = document.getElementById('statFilterLabel');
       if (studentFilter) {
@@ -504,7 +637,7 @@
         badge.classList.add('hidden');
       }
 
-      const filtered = allPayments.filter(p => {
+      currentFilteredPayments = allPayments.filter(p => {
         const concept = (p.concept || p.payment_concept || '').toLowerCase();
         const student = (p.students?.full_name || '').toLowerCase();
         const ref = (p.reference_number || '').toLowerCase();
@@ -521,11 +654,10 @@
         return matchSearch && matchDate && matchStudent;
       });
 
-      renderPayments(filtered);
-      calculateStats(filtered);
+      renderPayments(currentFilteredPayments);
+      calculateStats(currentFilteredPayments);
     }
 
-    // Filtrar directamente haciendo click en el nombre
     function filterByStudentId(studentId) {
       if (!studentId) return;
       document.getElementById('filterStudentSelect').value = studentId;
@@ -539,6 +671,290 @@
       filterPayments();
     }
 
+    // ==========================================
+    // 📊 FUNCIÓN: DESCARGAR INGRESOS A EXCEL
+    // ==========================================
+    function exportIncomeToExcel(period) {
+      document.getElementById('incomeDropdownMenu').classList.add('hidden');
+
+      let targetList = [];
+      let periodTitle = '';
+      const now = new Date();
+
+      if (period === 'semanal') {
+        const past7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        targetList = allPayments.filter(p => {
+          const d = p.payment_date ? String(p.payment_date).split('T')[0] : '';
+          return d >= past7Days;
+        });
+        periodTitle = 'Ingresos_Semanales_7_Dias';
+      } else if (period === 'quincenal') {
+        const past15Days = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        targetList = allPayments.filter(p => {
+          const d = p.payment_date ? String(p.payment_date).split('T')[0] : '';
+          return d >= past15Days;
+        });
+        periodTitle = 'Ingresos_Quincenales_15_Dias';
+      } else if (period === 'mensual') {
+        const past30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        targetList = allPayments.filter(p => {
+          const d = p.payment_date ? String(p.payment_date).split('T')[0] : '';
+          return d >= past30Days;
+        });
+        periodTitle = 'Ingresos_Mensuales_30_Dias';
+      } else {
+        targetList = currentFilteredPayments;
+        periodTitle = 'Ingresos_Filtrados';
+      }
+
+      if (targetList.length === 0) {
+        alert('No hay registros de cobros para el período seleccionado.');
+        return;
+      }
+
+      let grandTotal = 0;
+
+      // Desglose con Día, Mes y Año independientes
+      const excelRows = targetList.map(p => {
+        let dia = '', mes = '', anio = '', fechaCompleta = '';
+        if (p.payment_date) {
+          const cleanDate = String(p.payment_date).split('T')[0];
+          const parts = cleanDate.split('-');
+          if (parts.length === 3) {
+            anio = parts[0];
+            mes = parts[1];
+            dia = parts[2];
+            fechaCompleta = `${dia}/${mes}/${anio}`;
+          }
+        }
+
+        const hora = formatSafeTime(p.created_at);
+        const montoNum = Number(p.amount) || 0;
+        grandTotal += montoNum;
+
+        return {
+          'N° Recibo': p.receipt_number || 'S/N',
+          'Fecha (DD/MM/AAAA)': fechaCompleta,
+          'Día': dia,
+          'Mes': mes,
+          'Año': anio,
+          'Hora': hora,
+          'Alumno': p.students?.full_name || 'Desconocido',
+          'Teléfono Alumno': p.students?.phone || '-',
+          'Concepto': p.concept || p.payment_concept || 'Mensualidad',
+          'Método de Pago': p.payment_method || 'Efectivo',
+          'N° Referencia': p.reference_number || 'N/A',
+          'Monto (₡)': montoNum
+        };
+      });
+
+      // Fila de resumen total
+      excelRows.push({
+        'N° Recibo': 'TOTAL GENERAL',
+        'Fecha (DD/MM/AAAA)': '',
+        'Día': '',
+        'Mes': '',
+        'Año': '',
+        'Hora': '',
+        'Alumno': '',
+        'Teléfono Alumno': '',
+        'Concepto': '',
+        'Método de Pago': '',
+        'N° Referencia': '',
+        'Monto (₡)': grandTotal
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      
+      // Anchos de columna automáticos para que se lea perfecto
+      worksheet['!cols'] = [
+        { wch: 12 }, { wch: 18 }, { wch: 6 }, { wch: 6 }, { wch: 8 }, { wch: 12 },
+        { wch: 28 }, { wch: 16 }, { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 16 }
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Ingresos');
+
+      const fileName = `Academi_${periodTitle}_${now.toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+    }
+
+    // ==========================================
+    // 🔔 CONTROL DE PAGOS (PENDIENTES / PRÓXIMOS)
+    // ==========================================
+    function analyzeStudentPaymentStatuses() {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      analyzedStudentStatuses = allStudents.map(student => {
+        // Buscar pagos del alumno
+        const studentPayments = allPayments.filter(p => {
+          const sid = p.student_id || p.students?.id;
+          return sid === student.id;
+        });
+
+        if (studentPayments.length === 0) {
+          return {
+            studentId: student.id,
+            studentName: student.full_name,
+            phone: student.phone || '-',
+            lastPaymentDate: 'Sin registros',
+            lastPaymentDateObj: null,
+            lastConcept: 'Ninguno',
+            daysPassed: 9999,
+            status: 'vencido', // Nunca ha pagado
+            statusLabel: 'Sin Pago Registrado'
+          };
+        }
+
+        // Ordenar para obtener el pago más reciente
+        studentPayments.sort((a, b) => new Date(b.payment_date || b.created_at) - new Date(a.payment_date || a.created_at));
+        const lastPay = studentPayments[0];
+        
+        let lastDateObj = null;
+        let lastDateFormatted = '--/--/----';
+        let daysPassed = 9999;
+
+        if (lastPay.payment_date) {
+          const cleanDate = String(lastPay.payment_date).split('T')[0];
+          lastDateFormatted = formatSafeDate(cleanDate);
+          lastDateObj = new Date(cleanDate + 'T00:00:00');
+          const diffTime = now.getTime() - lastDateObj.getTime();
+          daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // Clasificación:
+        // Más de 30 días: Vencido / Pendiente
+        // Entre 21 y 30 días: Próximo a vencer (pronto a pagar)
+        // Menos de 21 días: Al día
+        let status = 'aldia';
+        let statusLabel = 'Al Día';
+
+        if (daysPassed > 30) {
+          status = 'vencido';
+          statusLabel = 'Vencido / Pendiente';
+        } else if (daysPassed >= 20 && daysPassed <= 30) {
+          status = 'proximo';
+          statusLabel = 'Próximo a Pagar';
+        }
+
+        return {
+          studentId: student.id,
+          studentName: student.full_name,
+          phone: student.phone || '-',
+          lastPaymentDate: lastDateFormatted,
+          lastPaymentDateObj: lastDateObj,
+          lastConcept: lastPay.concept || lastPay.payment_concept || 'Mensualidad',
+          daysPassed: daysPassed === 9999 ? 'N/A' : daysPassed,
+          status: status,
+          statusLabel: statusLabel
+        };
+      });
+
+      // Actualizar contadores
+      const countPending = analyzedStudentStatuses.filter(s => s.status === 'vencido').length;
+      const countUpcoming = analyzedStudentStatuses.filter(s => s.status === 'proximo').length;
+      const countOk = analyzedStudentStatuses.filter(s => s.status === 'aldia').length;
+
+      document.getElementById('countAll').textContent = analyzedStudentStatuses.length;
+      document.getElementById('countPending').textContent = countPending;
+      document.getElementById('countUpcoming').textContent = countUpcoming;
+      document.getElementById('countOk').textContent = countOk;
+    }
+
+    function openPendingStatusModal() {
+      analyzeStudentPaymentStatuses();
+      filterStatusTab('all');
+      document.getElementById('modalPendingStatus').classList.remove('hidden');
+    }
+
+    function closePendingStatusModal() {
+      document.getElementById('modalPendingStatus').classList.add('hidden');
+    }
+
+    function filterStatusTab(tab) {
+      activeStatusFilter = tab;
+
+      // Estilo de botones
+      ['all', 'vencido', 'proximo', 'aldia'].forEach(t => {
+        const btn = document.getElementById(
+          t === 'all' ? 'btnTabStatusAll' :
+          t === 'vencido' ? 'btnTabStatusPending' :
+          t === 'proximo' ? 'btnTabStatusUpcoming' : 'btnTabStatusOk'
+        );
+        if (t === tab) {
+          btn.classList.add('ring-2', 'ring-slate-800', 'shadow-md');
+        } else {
+          btn.classList.remove('ring-2', 'ring-slate-800', 'shadow-md');
+        }
+      });
+
+      const filtered = activeStatusFilter === 'all' 
+        ? analyzedStudentStatuses 
+        : analyzedStudentStatuses.filter(s => s.status === activeStatusFilter);
+
+      renderPendingStatusTable(filtered);
+    }
+
+    function renderPendingStatusTable(list) {
+      const tbody = document.getElementById('pendingStatusTableBody');
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay estudiantes en esta categoría.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(s => {
+        const badgeColor = s.status === 'vencido' ? 'bg-rose-100 text-rose-800 border-rose-200' :
+                           s.status === 'proximo' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                           'bg-emerald-100 text-emerald-800 border-emerald-200';
+
+        return `
+          <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
+            <td class="p-3">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeColor}">
+                ${s.statusLabel}
+              </span>
+            </td>
+            <td class="p-3 font-bold text-slate-900">${s.studentName}</td>
+            <td class="p-3 text-slate-600 font-mono">${s.phone}</td>
+            <td class="p-3 font-mono text-slate-700">${s.lastPaymentDate}</td>
+            <td class="p-3 text-slate-700 font-semibold">${s.lastConcept}</td>
+            <td class="p-3 text-right font-mono font-bold ${s.status === 'vencido' ? 'text-rose-600' : 'text-slate-700'}">
+              ${s.daysPassed !== 'N/A' ? `${s.daysPassed} días` : 'Sin registro'}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportPendingStudentsToExcel() {
+      if (analyzedStudentStatuses.length === 0) {
+        alert('No hay alumnos para exportar.');
+        return;
+      }
+
+      const rows = analyzedStudentStatuses.map(s => ({
+        'Estado': s.statusLabel,
+        'Alumno': s.studentName,
+        'Teléfono': s.phone,
+        'Fecha Último Pago': s.lastPaymentDate,
+        'Último Concepto Cancelado': s.lastConcept,
+        'Días Desde Último Pago': s.daysPassed === 'N/A' ? 'Nunca' : s.daysPassed
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      worksheet['!cols'] = [
+        { wch: 22 }, { wch: 28 }, { wch: 16 }, { wch: 18 }, { wch: 22 }, { wch: 24 }
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Estado_Pagos_Alumnos');
+
+      const fileName = `Academi_Estado_Pagos_Alumnos_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+    }
+
+    // REGISTRAR PAGO
     document.getElementById('paymentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       document.getElementById('alertMsg').classList.add('hidden');
