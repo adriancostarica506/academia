@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Librería para generar imagen JPG del comprobante -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
@@ -81,7 +80,6 @@
         <div id="alertMsg" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
 
         <form id="payrollForm" class="space-y-4">
-          <!-- 1. Profesor -->
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Profesor Destinatario *</label>
             <select id="selectTeacher" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium">
@@ -89,7 +87,6 @@
             </select>
           </div>
 
-          <!-- 2. Fecha de Emisión (Día, Mes y Año seleccionables) -->
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
             <div class="flex justify-between items-center">
               <label class="block text-xs font-bold text-slate-700">📅 Fecha de Emisión del Pago *</label>
@@ -104,7 +101,6 @@
             <p class="text-[10px] text-slate-400">Puedes cambiar el día, mes o año en que se efectúa el pago.</p>
           </div>
 
-          <!-- 3. Monto Pagado -->
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Monto Pagado en Colones (₡) *</label>
             <input 
@@ -118,7 +114,6 @@
             >
           </div>
 
-          <!-- 4. Selección Intuitiva del Periodo Laborado -->
           <div class="bg-indigo-50/60 p-3.5 rounded-xl border border-indigo-100 space-y-2.5">
             <div class="flex justify-between items-center">
               <label class="block text-[11px] font-black text-indigo-900 uppercase">Periodo Laborado *</label>
@@ -142,7 +137,6 @@
             <p id="periodPreviewText" class="text-[11px] font-semibold text-indigo-700 italic">Selecciona el rango</p>
           </div>
 
-          <!-- 5. Método y Referencia -->
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Método *</label>
@@ -201,7 +195,6 @@
             </button>
           </div>
 
-          <!-- Filtros por Profesor, Día exacto y Mes -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Profesor</label>
@@ -223,7 +216,6 @@
           </div>
         </div>
 
-        <!-- Tabla -->
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
             <thead>
@@ -251,17 +243,27 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- PLANTILLA OCULTA DEL COMPROBANTE OFICIAL PARA CONVERSIÓN A JPG            -->
+  <!-- PLANTILLA OCULTA DEL COMPROBANTE OFICIAL CON LOGO (CONVERSIÓN A JPG)       -->
   <!-- ========================================================================= -->
   <div class="fixed left-[-9999px] top-[-9999px]">
     <div id="voucherCard" class="w-[520px] bg-white p-8 rounded-3xl border border-slate-300 text-slate-800 space-y-5 font-sans shadow-none">
       
-      <!-- Cabecera Oficial -->
+      <!-- Cabecera Oficial con LOGO DE LA ACADEMIA -->
       <div class="flex justify-between items-center border-b border-slate-200 pb-4">
-        <div>
-          <h2 class="text-2xl font-black text-blue-700 tracking-tight">ACADEMI</h2>
-          <p class="text-xs font-semibold text-slate-500">Sistema Escolar Elohim • Costa Rica</p>
-          <p class="text-[10px] text-slate-400">Comprobante Oficial de Pago a Docente</p>
+        <div class="flex items-center space-x-3">
+          <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center overflow-hidden">
+            <img 
+              src="logo.png" 
+              alt="Logo" 
+              class="w-full h-full object-contain"
+              onerror="this.onerror=null; this.src='assets/logo.png';"
+            >
+          </div>
+          <div>
+            <h2 class="text-xl font-black text-blue-700 tracking-tight leading-tight">ACADEMI ELOHIM</h2>
+            <p class="text-[11px] font-semibold text-slate-500">Sistema Escolar y Nómina Docente</p>
+            <p class="text-[10px] text-slate-400">Costa Rica</p>
+          </div>
         </div>
         <div class="text-right">
           <span class="bg-indigo-50 border border-indigo-200 text-indigo-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
@@ -309,7 +311,7 @@
       <!-- Pie del Comprobante -->
       <div class="pt-3 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-400 font-medium">
         <span>Emitido por Administración Academi</span>
-        <span>Documento Válido de Pago</span>
+        <span>Documento Oficial de Liquidación</span>
       </div>
     </div>
   </div>
@@ -508,7 +510,6 @@
             </td>
             <td class="p-3 text-center whitespace-nowrap">
               <div class="flex items-center justify-center gap-1.5">
-                <!-- Botón Manual de Descarga -->
                 <button 
                   onclick="downloadPayrollJPG('${p.id}')" 
                   class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1"
@@ -536,7 +537,7 @@
       filterPayroll();
     }
 
-    // DESCARGAR COMPROBANTE EN FORMATO JPG (MANUAL)
+    // DESCARGAR COMPROBANTE EN FORMATO JPG CON LOGO
     async function downloadPayrollJPG(payrollId) {
       const item = allPayroll.find(p => p.id === payrollId);
       if (!item) return;
@@ -571,12 +572,11 @@
 
       try {
         const canvas = await html2canvas(voucherElement, {
-          scale: 2, // Calidad HD
+          scale: 2,
           backgroundColor: '#ffffff',
           useCORS: true
         });
 
-        // Convertir a formato JPEG
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const link = document.createElement('a');
         const cleanName = teacherName.replace(/\s+/g, '_');
@@ -602,7 +602,7 @@
       }
     }
 
-    // REGISTRAR PAGO (SIN DESCARGA AUTOMÁTICA)
+    // REGISTRAR PAGO
     document.getElementById('payrollForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       document.getElementById('alertMsg').classList.add('hidden');
@@ -644,7 +644,6 @@
 
         if (error) throw error;
 
-        // Alerta de guardado sin disparar descarga automática
         showAlert(`¡Pago de ${formatCurrency(amount)} guardado con éxito para ${data.teacher_name}! Puedes descargar el comprobante en la tabla cuando gustes.`, 'success');
         document.getElementById('payrollForm').reset();
         
@@ -686,7 +685,6 @@
       XLSX.writeFile(wb, `Academi_Nomina_Profesores_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
-    // SEGURIDAD: Solo Admin y Recepción
     async function init() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
