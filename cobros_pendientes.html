@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Mensualidades y Cobros Pendientes - Academi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
+
+  <!-- Barra Superior -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <span class="text-slate-400">|</span>
+        <span class="text-sm font-semibold text-slate-700">Módulo de Seguimiento de Cobros</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <span id="userName" class="text-xs font-semibold text-slate-600">Usuario</span>
+        <button id="btnLogout" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Salir
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- Tarjetas Resumen de Estado -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div onclick="setFilter('vencido')" class="bg-white p-5 rounded-xl border border-rose-200 shadow-sm cursor-pointer hover:border-rose-400 transition flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-rose-600 uppercase tracking-wider">🔴 Vencidos / No Han Pagado</p>
+          <h3 id="countVencidos" class="text-3xl font-black text-rose-700 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Requieren cobro inmediato</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xl border border-rose-100">
+          ⚠️
+        </div>
+      </div>
+
+      <div onclick="setFilter('proximo')" class="bg-white p-5 rounded-xl border border-amber-200 shadow-sm cursor-pointer hover:border-amber-400 transition flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">🟡 Próximos a Cobrar (Recordatorio)</p>
+          <h3 id="countProximos" class="text-3xl font-black text-amber-700 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Cobro vence en los próximos 7 días</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl border border-amber-100">
+          🔔
+        </div>
+      </div>
+
+      <div onclick="setFilter('aldia')" class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm cursor-pointer hover:border-emerald-400 transition flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">🟢 Al Día</p>
+          <h3 id="countAlDia" class="text-3xl font-black text-emerald-700 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Mensualidad vigente</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl border border-emerald-100">
+          ✓
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Herramientas y Filtros -->
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div class="flex-1 w-full md:w-auto flex flex-col sm:flex-row gap-3 items-center">
+        <!-- Buscador por nombre escrito -->
+        <div class="relative w-full sm:w-80">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="renderTable()" 
+            placeholder="Buscar por nombre de alumno o teléfono..." 
+            class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+
+        <!-- Selector de Estado -->
+        <div class="w-full sm:w-auto">
+          <select id="statusFilter" onchange="renderTable()" class="w-full sm:w-auto border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white font-semibold">
+            <option value="todos">Todos los Alumnos</option>
+            <option value="vencido" selected>🔴 Solo Vencidos / No Han Pagado</option>
+            <option value="proximo">🟡 Solo Próximos a Cobrar</option>
+            <option value="aldia">🟢 Solo Al Día</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Botón Exportar a Excel -->
+      <button 
+        onclick="exportToExcel()" 
+        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+      >
+        <span>📊 Descargar Lista en Excel (.xlsx)</span>
+      </button>
+    </div>
+
+    <!-- Tabla Principal de Alumnos y Estados de Cobro -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+              <th class="p-3.5">Estado Financiero</th>
+              <th class="p-3.5">Alumno</th>
+              <th class="p-3.5">Teléfono</th>
+              <th class="p-3.5">Último Pago Realizado</th>
+              <th class="p-3.5">Concepto Reciente</th>
+              <th class="p-3.5 text-center">Días Desde Último Pago</th>
+              <th class="p-3.5 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="studentsBillingTableBody" class="divide-y divide-slate-100 font-medium">
+            <tr>
+              <td colspan="7" class="p-6 text-center text-slate-400">Analizando registros de pago...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allStudents = [];
+    let allPayments = [];
+    let billingList = [];
+
+    function setFilter(status) {
+      document.getElementById('statusFilter').value = status;
+      renderTable();
+    }
+
+    function formatSafeDate(rawDate) {
+      if (!rawDate) return '--/--/----';
+      const clean = String(rawDate).split('T')[0];
+      const parts = clean.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return clean;
+    }
+
+    async function loadData() {
+      try {
+        // 1. Obtener todos los alumnos
+        const { data: students, error: errSt } = await supabaseClient
+          .from('students')
+          .select('id, full_name, phone, created_at')
+          .order('full_name');
+
+        if (errSt) throw errSt;
+        allStudents = students || [];
+
+        // 2. Obtener todos los pagos
+        const { data: payments, error: errPy } = await supabaseClient
+          .from('payments')
+          .select('id, student_id, amount, concept, payment_concept, payment_date, created_at')
+          .order('payment_date', { ascending: false });
+
+        if (errPy) throw errPy;
+        allPayments = payments || [];
+
+        analyzeBillingStatuses();
+
+      } catch (err) {
+        console.error('Error cargando cobros:', err);
+        document.getElementById('studentsBillingTableBody').innerHTML = `
+          <tr><td colspan="7" class="p-6 text-center text-red-500">Error al conectar con la base de datos: ${err.message}</td></tr>
+        `;
+      }
+    }
+
+    function analyzeBillingStatuses() {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      billingList = allStudents.map(student => {
+        // Filtrar pagos del estudiante
+        const pays = allPayments.filter(p => p.student_id === student.id);
+
+        let lastPayment = null;
+        let daysPassed = 999;
+        let lastDateFormatted = 'Nunca ha pagado';
+        let concept = 'Ninguno';
+
+        if (pays.length > 0) {
+          // El pago más reciente
+          lastPayment = pays[0];
+          concept = lastPayment.concept || lastPayment.payment_concept || 'Mensualidad';
+
+          if (lastPayment.payment_date) {
+            const cleanDate = String(lastPayment.payment_date).split('T')[0];
+            lastDateFormatted = formatSafeDate(cleanDate);
+            const payDate = new Date(cleanDate + 'T00:00:00');
+            const diffTime = now.getTime() - payDate.getTime();
+            daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          }
+        }
+
+        // Clasificación:
+        // - Más de 30 días (o nunca): VENCIDO / EN MORA
+        // - Entre 23 y 30 días: PRÓXIMO A VENCER (Ventana de 7 días para avisarle)
+        // - Menos de 23 días: AL DÍA
+        let status = 'aldia';
+        let statusLabel = 'Al Día';
+        let badgeColor = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        let urgency = 'Vigente';
+
+        if (daysPassed > 30) {
+          status = 'vencido';
+          statusLabel = 'Vencido / No ha Pagado';
+          badgeColor = 'bg-rose-100 text-rose-800 border-rose-300 font-black';
+          const atraso = daysPassed === 999 ? 'Sin registro' : `${daysPassed - 30} días vencido`;
+          urgency = atraso;
+        } else if (daysPassed >= 23 && daysPassed <= 30) {
+          status = 'proximo';
+          statusLabel = 'Próximo a Cobrar';
+          badgeColor = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
+          const faltan = 30 - daysPassed;
+          urgency = faltan === 0 ? 'Vence hoy' : `Vence en ${faltan} día(s)`;
+        }
+
+        return {
+          id: student.id,
+          name: student.full_name || 'Sin nombre',
+          phone: student.phone || '',
+          lastDateFormatted: lastDateFormatted,
+          daysPassed: daysPassed,
+          daysPassedLabel: daysPassed === 999 ? 'N/A' : `${daysPassed} días`,
+          concept: concept,
+          status: status,
+          statusLabel: statusLabel,
+          badgeColor: badgeColor,
+          urgency: urgency
+        };
+      });
+
+      // Actualizar Contadores Superiores
+      const v = billingList.filter(x => x.status === 'vencido').length;
+      const p = billingList.filter(x => x.status === 'proximo').length;
+      const a = billingList.filter(x => x.status === 'aldia').length;
+
+      document.getElementById('countVencidos').textContent = v;
+      document.getElementById('countProximos').textContent = p;
+      document.getElementById('countAlDia').textContent = a;
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('studentsBillingTableBody');
+      const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+      const filter = document.getElementById('statusFilter').value;
+
+      const filtered = billingList.filter(item => {
+        const matchName = item.name.toLowerCase().includes(search) || item.phone.includes(search);
+        const matchStatus = (filter === 'todos') ? true : (item.status === filter);
+        return matchName && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">No se encontraron alumnos con los criterios seleccionados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        // Mensaje para WhatsApp cordial
+        let waText = '';
+        if (item.status === 'vencido') {
+          waText = encodeURIComponent(`Hola ${item.name}, te saludamos cordialmente de Academi Elohim. Te escribimos para recordarte que tu mensualidad presenta un saldo pendiente (${item.urgency}). Quedamos a tu disposición para coordinar tu pago. ¡Muchas gracias!`);
+        } else {
+          waText = encodeURIComponent(`Hola ${item.name}, te saludamos de Academi Elohim. Te recordamos con aprecio que tu mensualidad está próxima a vencer (${item.urgency}). ¡Que tengas un excelente día!`);
+        }
+
+        const cleanPhone = item.phone.replace(/[^0-9]/g, '');
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3.5 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs border ${item.badgeColor}">
+                ${item.status === 'vencido' ? '🔴 ' : item.status === 'proximo' ? '🟡 ' : '🟢 '} ${item.statusLabel}
+              </span>
+              <p class="text-[10px] text-slate-500 font-semibold mt-1 ml-1">${item.urgency}</p>
+            </td>
+            <td class="p-3.5 font-bold text-slate-900 text-sm">
+              ${item.name}
+            </td>
+            <td class="p-3.5 font-mono text-slate-600">
+              ${item.phone ? item.phone : '<span class="text-slate-400">Sin número</span>'}
+            </td>
+            <td class="p-3.5 font-mono text-slate-700">
+              ${item.lastDateFormatted}
+            </td>
+            <td class="p-3.5 text-slate-700">
+              ${item.concept}
+            </td>
+            <td class="p-3.5 text-center font-mono font-bold ${item.status === 'vencido' ? 'text-rose-600' : 'text-slate-700'}">
+              ${item.daysPassedLabel}
+            </td>
+            <td class="p-3.5 text-center whitespace-nowrap">
+              <div class="flex items-center justify-center gap-2">
+                ${cleanPhone ? `
+                  <a 
+                    href="https://wa.me/506${cleanPhone}?text=${waText}" 
+                    target="_blank" 
+                    title="Enviar recordatorio por WhatsApp"
+                    class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                  >
+                    <span>💬 WhatsApp</span>
+                  </a>
+                ` : ''}
+                
+                <a 
+                  href="pagos.html" 
+                  title="Ir a registrar el cobro"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm"
+                >
+                  Cobrar ₡
+                </a>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportToExcel() {
+      if (billingList.length === 0) {
+        alert('No hay datos para exportar.');
+        return;
+      }
+
+      const rows = billingList.map(item => ({
+        'Estado': item.statusLabel,
+        'Detalle Vencimiento': item.urgency,
+        'Alumno': item.name,
+        'Teléfono': item.phone || 'S/N',
+        'Fecha Último Pago': item.lastDateFormatted,
+        'Último Concepto': item.concept,
+        'Días Transcurridos': item.daysPassed === 999 ? 'Nunca' : item.daysPassed
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      worksheet['!cols'] = [
+        { wch: 24 }, { wch: 20 }, { wch: 28 }, { wch: 16 }, { wch: 20 }, { wch: 20 }, { wch: 18 }
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Cobros_Pendientes');
+
+      const fileName = `Academi_Cobros_Pendientes_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+    }
+
+    async function init() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
+        alert('Acceso restringido a Administrador y Recepción.');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      document.getElementById('userName').textContent = `${profile.full_name || 'Personal'} (${profile.role.toUpperCase()})`;
+
+      await loadData();
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    });
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
