@@ -3,79 +3,184 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitácora de Actividades - Academi</title>
+  <title>Bitácora de Auditoría - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
   <!-- Barra Superior -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-600">Registro de Actividad y Auditoría</span>
+        <span class="text-sm font-semibold text-slate-700">Bitácora General de Acciones</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-800 border border-purple-200 uppercase">
+          Exclusivo Admin
+        </span>
       </div>
-      <div>
-        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
-          Cerrar Sesión
+      <div class="flex items-center space-x-3">
+        <span id="userName" class="text-xs font-semibold text-slate-600">Verificando...</span>
+        <button id="btnLogout" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Salir
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Contenido -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-      
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  <!-- Contenedor Principal (Bloqueado a no-admin) -->
+  <main id="mainContainer" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- Encabezado y Estadísticas Rápidas -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">Historial de Eventos</h2>
-          <p class="text-xs text-slate-500">Muestra las acciones realizadas por fecha, hora y usuario.</p>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total de Acciones</p>
+          <h3 id="statTotalLogs" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Histórico completo</p>
         </div>
-        <button onclick="loadLogs()" class="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-2 rounded-lg font-medium border border-blue-200">
-          Refrescar Bitácora
+        <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xl border border-purple-100">
+          📋
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Eventos de Hoy</p>
+          <h3 id="statTodayLogs" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Registrados en el día</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl border border-emerald-100">
+          ⚡
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Acciones Profesores</p>
+          <h3 id="statTeacherLogs" class="text-2xl font-black text-blue-600 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Asistencias marcadas</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl border border-blue-100">
+          👨‍🏫
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Recepción / Caja</p>
+          <h3 id="statRecepLogs" class="text-2xl font-black text-amber-600 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-1">Cobros y matrículas</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl border border-amber-100">
+          💼
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros y Búsqueda -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Registro Cronológico de Actividad</h2>
+          <p class="text-xs text-slate-500">Supervisa en tiempo real qué usuario realizó cada movimiento con fecha y hora exacta.</p>
+        </div>
+        <button 
+          onclick="exportLogsToExcel()" 
+          class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+        >
+          <span>📊 Descargar Bitácora (.xlsx)</span>
         </button>
       </div>
 
-      <!-- Filtros -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 border-y border-slate-100 py-3">
+      <!-- Filtros Múltiples -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5 text-xs">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Filtrar por Usuario / Rol</label>
-          <input type="text" id="filterUser" placeholder="Buscar por nombre o rol..." onkeyup="applyFilter()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Buscar en Detalle</label>
+          <input 
+            type="text" 
+            id="filterSearch" 
+            oninput="applyFilters()" 
+            placeholder="Usuario, acción o detalle..." 
+            class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:ring-1 focus:ring-blue-500"
+          >
         </div>
+
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Filtrar por Acción</label>
-          <input type="text" id="filterAction" placeholder="Ej: Inició sesión, Creó profesor..." onkeyup="applyFilter()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filtrar por Rol</label>
+          <select id="filterRole" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg p-2 outline-none bg-white">
+            <option value="">Todos los roles</option>
+            <option value="admin">Administrador</option>
+            <option value="recepcion">Recepción</option>
+            <option value="profesor">Profesor</option>
+          </select>
         </div>
+
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
-          <input type="date" id="filterDate" onchange="applyFilter()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tipo de Acción</label>
+          <select id="filterAction" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg p-2 outline-none bg-white">
+            <option value="">Todas las acciones</option>
+            <option value="Toma de Asistencia">Toma de Asistencia</option>
+            <option value="Registro de Pago">Cobro a Alumno</option>
+            <option value="Pago a Profesor">Pago de Nómina Docente</option>
+            <option value="Matrícula de Alumno">Matrícula de Alumno</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Día Exacto</label>
+          <input 
+            type="date" 
+            id="filterDate" 
+            onchange="applyFilters()" 
+            class="w-full border border-slate-300 rounded-lg p-1.5 outline-none bg-white"
+          >
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mes y Año</label>
+          <input 
+            type="month" 
+            id="filterMonth" 
+            onchange="applyFilters()" 
+            class="w-full border border-slate-300 rounded-lg p-1.5 outline-none bg-white"
+          >
         </div>
       </div>
 
-      <!-- Tabla de Logs -->
+      <div class="flex justify-between items-center text-xs text-slate-500 pt-1 border-t border-slate-100">
+        <span>Mostrando: <b id="filteredCount" class="text-slate-800">0</b> registros</span>
+        <button onclick="clearFilters()" class="text-blue-600 hover:text-blue-800 font-semibold underline">
+          Limpiar todos los filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla Principal de la Bitácora -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
+        <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-              <th class="p-3">Fecha y Hora</th>
-              <th class="p-3">Usuario</th>
-              <th class="p-3">Rol</th>
-              <th class="p-3">Acción</th>
-              <th class="p-3">Detalles</th>
+            <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+              <th class="p-3.5">Fecha (Día/Mes/Año)</th>
+              <th class="p-3.5">Hora Exacta</th>
+              <th class="p-3.5">Usuario</th>
+              <th class="p-3.5">Rol</th>
+              <th class="p-3.5">Acción Realizada</th>
+              <th class="p-3.5">Detalle Completo</th>
             </tr>
           </thead>
-          <tbody id="logsTableBody">
+          <tbody id="logsTableBody" class="divide-y divide-slate-100 font-medium">
             <tr>
-              <td colspan="5" class="p-4 text-center text-slate-400">Cargando registros...</td>
+              <td colspan="6" class="p-8 text-center text-slate-400">Cargando registros de auditoría...</td>
             </tr>
           </tbody>
         </table>
       </div>
-
     </div>
+
   </main>
 
   <script>
@@ -84,86 +189,216 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let allLogs = [];
+    let currentFiltered = [];
 
-    async function checkAdmin() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) {
-        window.location.href = 'index.html';
-        return;
+    function formatSafeDate(rawTimestamp) {
+      if (!rawTimestamp) return '--/--/----';
+      try {
+        const d = new Date(rawTimestamp);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+      } catch (e) {
+        return String(rawTimestamp).split('T')[0];
       }
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
+    }
 
-      if (!profile || profile.role !== 'admin') {
-        alert('Acceso exclusivo para administradores.');
-        window.location.href = 'dashboard.html';
+    function formatSafeTime(rawTimestamp) {
+      if (!rawTimestamp) return '--:--:--';
+      try {
+        const d = new Date(rawTimestamp);
+        return d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      } catch (e) {
+        return '';
       }
     }
 
     async function loadLogs() {
-      const tableBody = document.getElementById('logsTableBody');
-      const { data, error } = await supabaseClient
-        .from('activity_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(200);
+      const tbody = document.getElementById('logsTableBody');
+      try {
+        const { data, error } = await supabaseClient
+          .from('activity_logs')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Error al cargar bitácora: ${error.message}</td></tr>`;
-        return;
+        if (error) throw error;
+        allLogs = data || [];
+
+        calculateStats();
+        applyFilters();
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Error al cargar la bitácora: ${err.message}</td></tr>`;
       }
-
-      allLogs = data || [];
-      renderTable(allLogs);
     }
 
-    function renderTable(logs) {
-      const tableBody = document.getElementById('logsTableBody');
-      if (logs.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No hay acciones registradas que coincidan.</td></tr>`;
+    function calculateStats() {
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      let todayCount = 0;
+      let teacherCount = 0;
+      let recepCount = 0;
+
+      allLogs.forEach(log => {
+        const logDate = log.created_at ? String(log.created_at).split('T')[0] : '';
+        if (logDate === todayStr) todayCount++;
+        if (log.user_role === 'profesor') teacherCount++;
+        if (log.user_role === 'recepcion' || log.action === 'Registro de Pago') recepCount++;
+      });
+
+      document.getElementById('statTotalLogs').textContent = allLogs.length;
+      document.getElementById('statTodayLogs').textContent = todayCount;
+      document.getElementById('statTeacherLogs').textContent = teacherCount;
+      document.getElementById('statRecepLogs').textContent = recepCount;
+    }
+
+    function applyFilters() {
+      const search = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+      const role = document.getElementById('filterRole').value;
+      const action = document.getElementById('filterAction').value;
+      const exactDate = document.getElementById('filterDate').value;
+      const monthYear = document.getElementById('filterMonth').value;
+
+      currentFiltered = allLogs.filter(item => {
+        const userName = (item.user_name || '').toLowerCase();
+        const actionText = (item.action || '').toLowerCase();
+        const details = (item.details || '').toLowerCase();
+
+        const matchSearch = !search || userName.includes(search) || actionText.includes(search) || details.includes(search);
+        const matchRole = !role || item.user_role === role;
+        const matchAction = !action || item.action === action;
+
+        const cleanDate = item.created_at ? String(item.created_at).split('T')[0] : '';
+        const matchExactDate = !exactDate || cleanDate === exactDate;
+        const matchMonth = !monthYear || cleanDate.startsWith(monthYear);
+
+        return matchSearch && matchRole && matchAction && matchExactDate && matchMonth;
+      });
+
+      document.getElementById('filteredCount').textContent = currentFiltered.length;
+      renderTable(currentFiltered);
+    }
+
+    function renderTable(list) {
+      const tbody = document.getElementById('logsTableBody');
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">No hay registros de auditoría que coincidan con estos filtros.</td></tr>`;
         return;
       }
 
-      tableBody.innerHTML = logs.map(l => {
-        const dateObj = new Date(l.created_at);
-        const formattedDate = dateObj.toLocaleDateString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const formattedTime = dateObj.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      tbody.innerHTML = list.map(item => {
+        const dateFormatted = formatSafeDate(item.created_at);
+        const timeFormatted = formatSafeTime(item.created_at);
+
+        let roleBadge = 'bg-slate-100 text-slate-700 border-slate-200';
+        if (item.user_role === 'admin') roleBadge = 'bg-purple-100 text-purple-800 border-purple-300';
+        else if (item.user_role === 'recepcion') roleBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        else if (item.user_role === 'profesor') roleBadge = 'bg-blue-100 text-blue-800 border-blue-300';
+
+        let actionBadge = 'text-slate-800 font-bold';
+        if (item.action.includes('Asistencia')) actionBadge = 'text-blue-700 font-bold';
+        else if (item.action.includes('Pago') || item.action.includes('Cobro')) actionBadge = 'text-emerald-700 font-bold';
+        else if (item.action.includes('Matrícula')) actionBadge = 'text-indigo-700 font-bold';
 
         return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="p-3 font-mono text-xs text-slate-500 whitespace-nowrap">
-              ${formattedDate} <span class="text-slate-800 font-semibold">${formattedTime}</span>
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3.5 font-mono font-bold text-slate-900 whitespace-nowrap">
+              📅 ${dateFormatted}
             </td>
-            <td class="p-3 font-medium text-slate-800">${l.user_name}</td>
-            <td class="p-3">
-              <span class="px-2 py-0.5 rounded text-xs capitalize font-semibold ${
-                l.user_role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                l.user_role === 'profesor' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
-              }">${l.user_role}</span>
+            <td class="p-3.5 font-mono text-slate-600 whitespace-nowrap">
+              ⏰ ${timeFormatted}
             </td>
-            <td class="p-3 font-medium text-slate-700">${l.action}</td>
-            <td class="p-3 text-xs text-slate-500">${l.details || '-'}</td>
+            <td class="p-3.5 font-bold text-slate-800">
+              ${escapeHtml(item.user_name || 'Personal')}
+            </td>
+            <td class="p-3.5">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize ${roleBadge}">
+                ${item.user_role || 'personal'}
+              </span>
+            </td>
+            <td class="p-3.5 ${actionBadge} whitespace-nowrap">
+              ${escapeHtml(item.action)}
+            </td>
+            <td class="p-3.5 text-slate-700 text-xs">
+              ${escapeHtml(item.details || '-')}
+            </td>
           </tr>
         `;
       }).join('');
     }
 
-    function applyFilter() {
-      const userText = document.getElementById('filterUser').value.toLowerCase();
-      const actionText = document.getElementById('filterAction').value.toLowerCase();
-      const dateVal = document.getElementById('filterDate').value;
+    function clearFilters() {
+      document.getElementById('filterSearch').value = '';
+      document.getElementById('filterRole').value = '';
+      document.getElementById('filterAction').value = '';
+      document.getElementById('filterDate').value = '';
+      document.getElementById('filterMonth').value = '';
+      applyFilters();
+    }
 
-      const filtered = allLogs.filter(item => {
-        const matchesUser = item.user_name.toLowerCase().includes(userText) || item.user_role.toLowerCase().includes(userText);
-        const matchesAction = item.action.toLowerCase().includes(actionText);
-        const matchesDate = !dateVal || item.created_at.startsWith(dateVal);
-        return matchesUser && matchesAction && matchesDate;
-      });
+    function exportLogsToExcel() {
+      if (currentFiltered.length === 0) {
+        alert('No hay registros de auditoría para exportar.');
+        return;
+      }
 
-      renderTable(filtered);
+      const rows = currentFiltered.map(log => ({
+        'Fecha (Día/Mes/Año)': formatSafeDate(log.created_at),
+        'Hora': formatSafeTime(log.created_at),
+        'Usuario': log.user_name || 'Personal',
+        'Rol': log.user_role || 'personal',
+        'Acción': log.action,
+        'Detalle': log.details || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{ wch: 18 }, { wch: 14 }, { wch: 22 }, { wch: 14 }, { wch: 24 }, { wch: 50 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Bitacora_Auditoria');
+      XLSX.writeFile(wb, `Academi_Bitacora_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // SEGURIDAD ESTRICTA: SOLO ADMINISTRADOR
+    async function init() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile || profile.role !== 'admin') {
+        alert('Acceso restringido: Únicamente el Administrador tiene permiso para consultar la bitácora de auditoría.');
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      document.getElementById('userName').textContent = `${profile.full_name || 'Admin'} (ADMINISTRADOR)`;
+      document.getElementById('mainContainer').classList.remove('hidden');
+
+      await loadLogs();
+
+      // Escuchar eventos en vivo para que la bitácora se actualice en tiempo real
+      supabaseClient
+        .channel('realtime_activity_logs')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, (payload) => {
+          allLogs.unshift(payload.new);
+          calculateStats();
+          applyFilters();
+        })
+        .subscribe();
     }
 
     document.getElementById('btnLogout').addEventListener('click', async () => {
@@ -172,7 +407,7 @@
       window.location.href = 'index.html';
     });
 
-    checkAdmin().then(loadLogs);
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
