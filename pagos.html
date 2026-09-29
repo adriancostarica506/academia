@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caja y Cobros | Academi</title>
+  <title>Caja y Pagos - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @media print {
       body * { visibility: hidden; }
-      #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
-      #receiptPrintArea {
+      #printArea, #printArea * { visibility: visible; }
+      #printArea {
         position: absolute;
         left: 0;
         top: 0;
@@ -23,147 +23,107 @@
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
-  <!-- Encabezado -->
-  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40 no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+  <!-- Barra Superior -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <a href="dashboard.html" class="text-white hover:text-indigo-200 transition font-semibold text-sm">
-          ← Volver al Panel
-        </a>
-        <span class="text-indigo-400">|</span>
-        <h1 class="text-lg font-bold tracking-tight">Caja y Cobros</h1>
+        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <span class="text-slate-400">|</span>
+        <span class="text-sm font-semibold text-slate-600">Caja y Cobros</span>
       </div>
-      <div class="flex items-center space-x-4 text-xs sm:text-sm">
-        <span id="userBadge" class="bg-indigo-800/80 px-3 py-1.5 rounded-full border border-indigo-700 font-medium">Panel Academi</span>
-        <button id="btnLogout" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg transition font-medium">
-          Salir
+      <div>
+        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Cerrar Sesión
         </button>
       </div>
     </div>
   </header>
 
   <!-- Contenedor Principal -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6 no-print">
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 no-print">
 
-    <!-- Métricas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+    <!-- Tarjetas de Resumen Diario -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Recaudado Hoy</p>
-          <h3 id="statToday" class="text-2xl font-black text-emerald-600 mt-1">₡0.00</h3>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recaudado Hoy</p>
+          <h3 id="statTotalToday" class="text-2xl font-black text-emerald-600 mt-1">₡0.00</h3>
         </div>
-        <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-lg">₡</div>
+        <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg border border-emerald-100">
+          ₡
+        </div>
       </div>
 
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Transacciones Hoy</p>
-          <h3 id="statCount" class="text-2xl font-black text-indigo-600 mt-1">0</h3>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recibos Emitidos Hoy</p>
+          <h3 id="statCountToday" class="text-2xl font-black text-blue-600 mt-1">0</h3>
         </div>
-        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-lg">#</div>
+        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg border border-blue-100">
+          #
+        </div>
       </div>
 
-      <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Filtrado</p>
-          <h3 id="statFiltered" class="text-2xl font-black text-slate-800 mt-1">₡0.00</h3>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Filtrado</p>
+          <h3 id="statFilteredTotal" class="text-2xl font-black text-slate-800 mt-1">₡0.00</h3>
         </div>
-        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold text-lg">∑</div>
-      </div>
-    </div>
-
-    <!-- Barra de Acciones y Filtros -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <button id="btnOpenNewPayment" onclick="openPaymentModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center justify-center space-x-2 shadow-sm transition">
-          <span>+ Registrar Nuevo Pago</span>
-        </button>
-
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 lg:max-w-2xl lg:justify-end">
-          <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar alumno, concepto o ref..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <input type="date" id="filterStartDate" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <input type="date" id="filterEndDate" onchange="applyFilters()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          <button onclick="clearFilters()" title="Limpiar Filtros" class="px-3 py-2 border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-600 text-xs font-bold transition">
-            Limpiar
-          </button>
+        <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg border border-amber-100">
+          ∑
         </div>
       </div>
     </div>
 
-    <!-- Tabla de Pagos -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold border-b border-slate-200">
-              <th class="py-3.5 px-4">Recibo #</th>
-              <th class="py-3.5 px-4">Fecha</th>
-              <th class="py-3.5 px-4">Alumno</th>
-              <th class="py-3.5 px-4">Concepto</th>
-              <th class="py-3.5 px-4">Método</th>
-              <th class="py-3.5 px-4">Referencia</th>
-              <th class="py-3.5 px-4 text-right">Monto</th>
-              <th class="py-3.5 px-4 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="paymentsTableBody" class="divide-y divide-slate-100 font-medium">
-            <tr>
-              <td colspan="8" class="py-8 text-center text-slate-400">Cargando registros...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <!-- Panel de Registro y Tabla -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  </main>
+      <!-- Formulario para Registrar Cobro -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
+        <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar Cobro</h2>
+        <p class="text-xs text-slate-500 mb-4">Ingresa el pago del alumno para generar su recibo.</p>
 
-  <!-- MODAL: REGISTRAR NUEVO PAGO -->
-  <div id="modalNewPayment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-      <div class="flex items-center justify-between border-b pb-3">
-        <h3 class="text-lg font-bold text-slate-800">Registrar Cobro</h3>
-        <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 p-1 font-bold text-lg leading-none">✕</button>
-      </div>
+        <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
 
-      <form id="formNewPayment" onsubmit="handlePaymentSubmit(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Alumno *</label>
-          <select id="selectStudent" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-            <option value="">Seleccione un alumno...</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form id="paymentForm" class="space-y-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Monto (₡) *</label>
-            <input type="number" step="any" min="1" id="inputAmount" placeholder="Ej. 25000" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Alumno *</label>
+            <select id="selectStudent" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="" disabled selected>Cargando alumnos...</option>
+            </select>
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Fecha de Cobro *</label>
-            <input type="date" id="inputPaymentDate" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Concepto *</label>
+            <select id="paymentConcept" onchange="toggleOtherConcept(this.value)" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="Matrícula">Matrícula</option>
+              <option value="Mensualidad" selected>Mensualidad</option>
+              <option value="Uniforme">Uniforme</option>
+              <option value="Materiales / Kit">Materiales / Kit</option>
+              <option value="Certificación / Examen">Certificación / Examen</option>
+              <option value="Otro">Otro concepto...</option>
+            </select>
+            <input type="text" id="otherConceptInput" placeholder="Especifique el concepto..." class="w-full mt-2 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none hidden">
           </div>
-        </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Concepto *</label>
-          <select id="selectConcept" onchange="toggleCustomConcept(this.value)" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-            <option value="Matrícula">Matrícula</option>
-            <option value="Mensualidad" selected>Mensualidad</option>
-            <option value="Uniforme">Uniforme</option>
-            <option value="Materiales / Kit">Materiales / Kit</option>
-            <option value="Certificación / Examen">Certificación / Examen</option>
-            <option value="Otro">Otro concepto...</option>
-          </select>
-          <input type="text" id="inputOtherConcept" placeholder="Especificar concepto..." class="w-full mt-2 border border-slate-300 rounded-lg px-3 py-2 text-sm hidden focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Método de Pago *</label>
-            <select id="selectMethod" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Monto en Colones (₡) *</label>
+            <input 
+              type="number" 
+              id="paymentAmount" 
+              placeholder="Ej: 25000" 
+              required 
+              min="1" 
+              step="any"
+              class="w-full border border-slate-300 rounded-lg p-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Método de Pago *</label>
+            <select id="paymentMethod" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
               <option value="SINPE Móvil" selected>SINPE Móvil</option>
               <option value="Efectivo">Efectivo</option>
               <option value="Transferencia">Transferencia Bancaria</option>
@@ -172,116 +132,156 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">N° Comprobante / Ref</label>
-            <input type="text" id="inputReference" placeholder="Ej. #849302" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">N° Comprobante / Referencia (Opcional)</label>
+            <input 
+              type="text" 
+              id="paymentReference" 
+              placeholder="Ej: SINPE #98214" 
+              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Cobro *</label>
+            <input 
+              type="date" 
+              id="paymentDate" 
+              required 
+              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+          </div>
+
+          <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm">
+            Guardar Pago y Emitir Recibo
+          </button>
+        </form>
+      </div>
+
+      <!-- Tabla y Búsqueda de Recibos -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">Historial de Recibos</h2>
+            <p class="text-xs text-slate-500">Expedientes de pagos registrados en el sistema.</p>
+          </div>
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input 
+              type="text" 
+              id="searchInput" 
+              oninput="filterPayments()" 
+              placeholder="Buscar alumno, concepto o recibo..." 
+              class="border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500 w-full md:w-56"
+            >
+            <input 
+              type="date" 
+              id="filterDate" 
+              onchange="filterPayments()" 
+              class="border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+            >
+            <button onclick="clearFilters()" class="text-xs text-slate-500 hover:text-slate-800 underline px-1">Todos</button>
           </div>
         </div>
 
-        <div id="paymentError" class="text-rose-600 text-xs font-semibold hidden"></div>
-
-        <div class="pt-3 border-t flex justify-end space-x-3">
-          <button type="button" onclick="closePaymentModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cancelar</button>
-          <button type="submit" id="btnSubmitPayment" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow-md transition">
-            Guardar y Emitir Recibo
-          </button>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
+                <th class="p-3">Recibo #</th>
+                <th class="p-3">Fecha</th>
+                <th class="p-3">Alumno</th>
+                <th class="p-3">Concepto</th>
+                <th class="p-3">Método</th>
+                <th class="p-3 text-right">Monto</th>
+                <th class="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="paymentsTableBody">
+              <tr>
+                <td colspan="7" class="p-4 text-center text-slate-400">Cargando pagos...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </form>
+      </div>
+
     </div>
-  </div>
+  </main>
 
   <!-- MODAL: RECIBO IMPRIMIBLE -->
-  <div id="modalReceipt" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-6">
+  <div id="receiptModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
       
-      <div id="receiptPrintArea" class="border border-slate-300 p-6 rounded-xl bg-white space-y-4">
-        <div class="text-center border-b pb-3">
-          <h2 class="text-xl font-black text-indigo-950 uppercase tracking-wider">Academi</h2>
-          <p class="text-xs text-slate-500 font-semibold">Sistema Escolar Elohim</p>
-          <p class="text-[11px] text-slate-400 mt-1">Comprobante Oficial de Pago</p>
+      <div id="printArea" class="border border-slate-200 rounded-xl p-6 bg-white space-y-4">
+        <div class="text-center border-b border-slate-200 pb-3">
+          <h2 class="text-xl font-black text-slate-900">ACADEMI</h2>
+          <p class="text-xs text-slate-500">Sistema Escolar Elohim</p>
+          <p class="text-xs text-slate-400">Comprobante de Ingreso Oficial</p>
         </div>
 
-        <div class="text-xs space-y-1.5">
-          <div class="flex justify-between">
-            <span class="text-slate-500">Recibo N°:</span>
-            <span id="recNumber" class="font-mono font-bold text-slate-700">-</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Fecha:</span>
-            <span id="recDate" class="font-semibold text-slate-700">-</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Cajero(a):</span>
-            <span id="recCashier" class="font-semibold text-slate-700">Personal Academi</span>
-          </div>
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200" id="rcptNumber">RECIBO #0000</span>
+          <span class="text-slate-500" id="rcptDate">Fecha: --/--/----</span>
         </div>
 
-        <div class="border-t pt-3 space-y-1 text-xs">
-          <span class="text-slate-500 block">Alumno:</span>
-          <p id="recStudent" class="font-bold text-slate-900 text-sm">-</p>
-        </div>
-
-        <div class="border-t border-b py-3 space-y-2 text-xs">
-          <div class="flex justify-between font-semibold">
-            <span class="text-slate-600">Concepto:</span>
-            <span id="recConcept" class="text-slate-800 text-right">-</span>
+        <div class="space-y-2 text-sm pt-2">
+          <div class="flex justify-between border-b border-slate-100 py-1">
+            <span class="text-xs font-semibold text-slate-500">Recibido de:</span>
+            <span class="font-bold text-slate-800 text-right" id="rcptStudent">-</span>
           </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Método de pago:</span>
-            <span id="recMethod" class="font-medium text-slate-700">-</span>
+          <div class="flex justify-between border-b border-slate-100 py-1">
+            <span class="text-xs font-semibold text-slate-500">Concepto:</span>
+            <span class="font-semibold text-slate-800 text-right" id="rcptConcept">-</span>
           </div>
-          <div class="flex justify-between">
-            <span class="text-slate-500">Comprobante / Ref:</span>
-            <span id="recRef" class="font-mono text-slate-700">-</span>
+          <div class="flex justify-between border-b border-slate-100 py-1">
+            <span class="text-xs font-semibold text-slate-500">Método de Pago:</span>
+            <span class="text-slate-700 font-medium" id="rcptMethod">-</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-100 py-1" id="rcptRefContainer">
+            <span class="text-xs font-semibold text-slate-500">Referencia:</span>
+            <span class="font-mono text-xs text-slate-600" id="rcptRef">-</span>
           </div>
         </div>
 
-        <div class="flex justify-between items-center pt-2">
-          <span class="text-sm font-bold text-slate-800">TOTAL PAGADO:</span>
-          <span id="recAmount" class="text-xl font-black text-emerald-600 font-mono">₡0.00</span>
+        <div class="bg-slate-50 p-3 rounded-lg flex justify-between items-center border border-slate-200 mt-3">
+          <span class="text-xs font-bold uppercase text-slate-600">Total Pagado:</span>
+          <span class="text-2xl font-black text-emerald-600" id="rcptAmount">₡0.00</span>
         </div>
 
-        <div class="text-[10px] text-center text-slate-400 pt-3 border-t">
+        <div class="pt-3 text-center text-xs text-slate-400">
           ¡Gracias por su puntualidad y confianza!
         </div>
       </div>
 
-      <div class="flex justify-end space-x-3 no-print">
-        <button onclick="closeReceiptModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-600 hover:bg-slate-100 transition">Cerrar</button>
-        <button onclick="window.print()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm shadow-md transition">
+      <div class="flex justify-end space-x-2 pt-4 no-print">
+        <button onclick="closeReceiptModal()" class="px-4 py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 transition">
+          Cerrar
+        </button>
+        <button onclick="window.print()" class="px-5 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm">
           Imprimir Recibo
         </button>
       </div>
+
     </div>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ianektdgzoohzrktuzph.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c";
+    const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let rawPayments = [];
-    let studentsCache = [];
+    let allPayments = [];
 
-    const formatColones = (num) => '₡' + Number(num || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    function openPaymentModal() {
-      document.getElementById('formNewPayment').reset();
-      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
-      document.getElementById('inputOtherConcept').classList.add('hidden');
-      document.getElementById('paymentError').classList.add('hidden');
-      document.getElementById('modalNewPayment').classList.remove('hidden');
+    function showAlert(text, type = 'error') {
+      const alertMsg = document.getElementById('alertMsg');
+      alertMsg.textContent = text;
+      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      alertMsg.classList.remove('hidden');
     }
 
-    function closePaymentModal() {
-      document.getElementById('modalNewPayment').classList.add('hidden');
-    }
-
-    function closeReceiptModal() {
-      document.getElementById('modalReceipt').classList.add('hidden');
-    }
-
-    function toggleCustomConcept(val) {
-      const otherInput = document.getElementById('inputOtherConcept');
+    function toggleOtherConcept(val) {
+      const otherInput = document.getElementById('otherConceptInput');
       if (val === 'Otro') {
         otherInput.classList.remove('hidden');
         otherInput.required = true;
@@ -292,7 +292,7 @@
       }
     }
 
-    async function loadStudentsDropdown() {
+    async function loadStudentsSelect() {
       const select = document.getElementById('selectStudent');
       try {
         const { data, error } = await supabaseClient
@@ -301,80 +301,70 @@
           .order('full_name', { ascending: true });
 
         if (error) throw error;
-        studentsCache = data || [];
 
-        if (studentsCache.length === 0) {
-          select.innerHTML = '<option value="">No hay alumnos registrados</option>';
+        if (!data || data.length === 0) {
+          select.innerHTML = '<option value="" disabled selected>No hay alumnos registrados</option>';
           return;
         }
 
-        select.innerHTML = '<option value="">Seleccione un alumno...</option>' + 
-          studentsCache.map(s => `<option value="${s.id}">${s.full_name} ${s.phone ? '(' + s.phone + ')' : ''}</option>`).join('');
+        select.innerHTML = '<option value="" disabled selected>Selecciona un alumno...</option>' +
+          data.map(s => `<option value="${s.id}">${s.full_name} ${s.phone ? '(' + s.phone + ')' : ''}</option>`).join('');
+
       } catch (err) {
-        select.innerHTML = '<option value="">Error cargando alumnos</option>';
+        select.innerHTML = '<option value="" disabled selected>Error al cargar alumnos</option>';
       }
     }
 
-    async function loadPaymentsTable() {
-      const tbody = document.getElementById('paymentsTableBody');
+    async function loadPayments() {
+      const tableBody = document.getElementById('paymentsTableBody');
       try {
         const { data, error } = await supabaseClient
           .from('payments')
           .select(`
             id,
             receipt_number,
-            payment_date,
             amount,
             concept,
             payment_method,
             reference_number,
+            payment_date,
             students (full_name)
           `)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        rawPayments = (data || []).map(p => ({
-          id: p.id,
-          receipt_number: p.receipt_number,
-          payment_date: p.payment_date,
-          amount: p.amount,
-          concept: p.concept,
-          payment_method: p.payment_method,
-          reference_number: p.reference_number,
-          student_name: p.students?.full_name || 'Alumno sin nombre'
-        }));
-
-        renderPayments(rawPayments);
-        calculateStats(rawPayments);
+        allPayments = data || [];
+        renderPayments(allPayments);
+        calculateStats(allPayments);
 
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-rose-500 font-semibold">Error al cargar registros: ${err.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error al cargar pagos: ${err.message}</td></tr>`;
       }
     }
 
     function renderPayments(list) {
-      const tbody = document.getElementById('paymentsTableBody');
+      const tableBody = document.getElementById('paymentsTableBody');
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400 font-medium">No hay cobros registrados.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No hay pagos registrados.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = list.map(p => {
-        let dateStr = p.payment_date || '-';
+      tableBody.innerHTML = list.map(p => {
+        let dateFormatted = p.payment_date || '-';
         if (p.payment_date && p.payment_date.includes('-')) {
           const [y, m, d] = p.payment_date.split('-');
-          dateStr = `${d}/${m}/${y}`;
+          dateFormatted = `${d}/${m}/${y}`;
         }
 
         return `
-          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="py-3 px-4 font-mono font-bold text-xs text-blue-700 whitespace-nowrap">#${p.receipt_number || '-'}</td>
-            <td class="py-3 px-4 text-slate-600 whitespace-nowrap text-xs">${dateStr}</td>
-            <td class="py-3 px-4 font-bold text-slate-900">${p.student_name}</td>
-            <td class="py-3 px-4 text-slate-700 font-semibold">${p.concept}</td>
-            <td class="py-3 px-4">
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
+          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+            <td class="p-3 font-mono font-bold text-xs text-blue-600 whitespace-nowrap">#${p.receipt_number || '-'}</td>
+            <td class="p-3 text-xs text-slate-600 whitespace-nowrap">${dateFormatted}</td>
+            <td class="p-3 font-bold text-slate-800">${p.students?.full_name || 'Sin nombre'}</td>
+            <td class="p-3 text-xs text-slate-700 font-semibold">${p.concept}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-xs font-semibold ${
                 p.payment_method === 'SINPE Móvil' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
                 p.payment_method === 'Efectivo' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                 'bg-slate-100 text-slate-700 border border-slate-200'
@@ -382,10 +372,9 @@
                 ${p.payment_method}
               </span>
             </td>
-            <td class="py-3 px-4 font-mono text-xs text-slate-500">${p.reference_number || '-'}</td>
-            <td class="py-3 px-4 text-right font-mono font-bold text-emerald-600">${formatColones(p.amount)}</td>
-            <td class="py-3 px-4 text-center whitespace-nowrap">
-              <button onclick="displayReceipt('${p.id}')" class="text-indigo-600 hover:text-indigo-900 font-semibold text-xs py-1 px-2.5 rounded bg-indigo-50 hover:bg-indigo-100 transition">
+            <td class="p-3 text-right font-mono font-bold text-slate-900">${formatCurrency(p.amount)}</td>
+            <td class="p-3 text-center whitespace-nowrap">
+              <button onclick="viewReceipt('${p.id}')" class="text-xs text-blue-600 hover:underline font-semibold">
                 Ver Recibo
               </button>
             </td>
@@ -395,41 +384,35 @@
     }
 
     function calculateStats(list) {
-      const todayStr = new Date().toISOString().split('T')[0];
-      let todayTotal = 0;
-      let todayCount = 0;
-      let filteredTotal = 0;
+      const today = new Date().toISOString().split('T')[0];
+      let totalToday = 0;
+      let countToday = 0;
+      let totalFiltered = 0;
 
       list.forEach(p => {
-        const amt = parseFloat(p.amount) || 0;
-        filteredTotal += amt;
-        if (p.payment_date === todayStr) {
-          todayTotal += amt;
-          todayCount++;
+        const amt = Number(p.amount) || 0;
+        totalFiltered += amt;
+        if (p.payment_date === today) {
+          totalToday += amt;
+          countToday++;
         }
       });
 
-      document.getElementById('statToday').textContent = formatColones(todayTotal);
-      document.getElementById('statCount').textContent = todayCount;
-      document.getElementById('statFiltered').textContent = formatColones(filteredTotal);
+      document.getElementById('statTotalToday').textContent = formatCurrency(totalToday);
+      document.getElementById('statCountToday').textContent = countToday;
+      document.getElementById('statFilteredTotal').textContent = formatCurrency(totalFiltered);
     }
 
-    function applyFilters() {
+    function filterPayments() {
       const search = document.getElementById('searchInput').value.toLowerCase().trim();
-      const start = document.getElementById('filterStartDate').value;
-      const end = document.getElementById('filterEndDate').value;
+      const dateVal = document.getElementById('filterDate').value;
 
-      const filtered = rawPayments.filter(p => {
-        const matchSearch = !search || 
-          p.student_name.toLowerCase().includes(search) || 
-          p.concept.toLowerCase().includes(search) || 
-          String(p.receipt_number).includes(search) ||
-          (p.reference_number && p.reference_number.toLowerCase().includes(search));
-
-        const matchStart = !start || p.payment_date >= start;
-        const matchEnd = !end || p.payment_date <= end;
-
-        return matchSearch && matchStart && matchEnd;
+      const filtered = allPayments.filter(p => {
+        const matchText = (p.students?.full_name && p.students.full_name.toLowerCase().includes(search)) ||
+                          (p.concept && p.concept.toLowerCase().includes(search)) ||
+                          String(p.receipt_number).includes(search);
+        const matchDate = dateVal ? p.payment_date === dateVal : true;
+        return matchText && matchDate;
       });
 
       renderPayments(filtered);
@@ -438,56 +421,32 @@
 
     function clearFilters() {
       document.getElementById('searchInput').value = '';
-      document.getElementById('filterStartDate').value = '';
-      document.getElementById('filterEndDate').value = '';
-      renderPayments(rawPayments);
-      calculateStats(rawPayments);
+      document.getElementById('filterDate').value = '';
+      renderPayments(allPayments);
+      calculateStats(allPayments);
     }
 
-    function displayReceipt(paymentId) {
-      const item = rawPayments.find(p => p.id === paymentId);
-      if (!item) return;
-
-      let dateFormatted = item.payment_date;
-      if (item.payment_date && item.payment_date.includes('-')) {
-        const [y, m, d] = item.payment_date.split('-');
-        dateFormatted = `${d}/${m}/${y}`;
-      }
-
-      document.getElementById('recNumber').textContent = `#${item.receipt_number || '-'}`;
-      document.getElementById('recDate').textContent = dateFormatted;
-      document.getElementById('recStudent').textContent = item.student_name;
-      document.getElementById('recConcept').textContent = item.concept;
-      document.getElementById('recMethod').textContent = item.payment_method;
-      document.getElementById('recRef').textContent = item.reference_number || 'N/A';
-      document.getElementById('recAmount').textContent = formatColones(item.amount);
-
-      document.getElementById('modalReceipt').classList.remove('hidden');
-    }
-
-    async function handlePaymentSubmit(e) {
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const errBox = document.getElementById('paymentError');
-      errBox.classList.add('hidden');
+      document.getElementById('alertMsg').classList.add('hidden');
 
       const studentId = document.getElementById('selectStudent').value;
-      const amount = parseFloat(document.getElementById('inputAmount').value);
-      const date = document.getElementById('inputPaymentDate').value;
-      const conceptSelect = document.getElementById('selectConcept').value;
-      const otherConcept = document.getElementById('inputOtherConcept').value.trim();
+      const amount = parseFloat(document.getElementById('paymentAmount').value);
+      const date = document.getElementById('paymentDate').value;
+      const conceptSelect = document.getElementById('paymentConcept').value;
+      const otherConcept = document.getElementById('otherConceptInput').value.trim();
       const concept = conceptSelect === 'Otro' ? otherConcept : conceptSelect;
-      const method = document.getElementById('selectMethod').value;
-      const ref = document.getElementById('inputReference').value.trim();
+      const method = document.getElementById('paymentMethod').value;
+      const reference = document.getElementById('paymentReference').value.trim();
+      const btnSubmit = document.getElementById('btnSubmit');
 
       if (!studentId || !amount || amount <= 0 || !concept) {
-        errBox.textContent = 'Por favor complete todos los datos requeridos con valores válidos.';
-        errBox.classList.remove('hidden');
+        showAlert('Por favor completa todos los campos con valores válidos.');
         return;
       }
 
-      const submitBtn = document.getElementById('btnSubmitPayment');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Guardando...';
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Guardando...';
 
       try {
         const { data, error } = await supabaseClient.rpc('register_student_payment', {
@@ -495,38 +454,76 @@
           p_amount: amount,
           p_concept: concept,
           p_payment_method: method,
-          p_reference_number: ref || null,
+          p_reference_number: reference || null,
           p_payment_date: date
         });
 
         if (error) throw error;
 
-        closePaymentModal();
-        await loadPaymentsTable();
+        showAlert(`¡Pago registrado con éxito! Recibo #${data.receipt_number}`, 'success');
+
+        document.getElementById('paymentAmount').value = '';
+        document.getElementById('paymentReference').value = '';
+        document.getElementById('otherConceptInput').value = '';
+        document.getElementById('paymentConcept').value = 'Mensualidad';
+        document.getElementById('otherConceptInput').classList.add('hidden');
+
+        await loadPayments();
 
         if (data && data.payment_id) {
-          displayReceipt(data.payment_id);
+          viewReceipt(data.payment_id);
         }
 
       } catch (err) {
-        errBox.textContent = err.message || 'Error al guardar el pago.';
-        errBox.classList.remove('hidden');
+        showAlert(err.message || 'Error al procesar el pago.');
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Guardar y Emitir Recibo';
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Guardar Pago y Emitir Recibo';
       }
+    });
+
+    function viewReceipt(paymentId) {
+      const payment = allPayments.find(p => p.id === paymentId);
+      if (!payment) return;
+
+      let dateFormatted = payment.payment_date || '-';
+      if (payment.payment_date && payment.payment_date.includes('-')) {
+        const [y, m, d] = payment.payment_date.split('-');
+        dateFormatted = `${d}/${m}/${y}`;
+      }
+
+      document.getElementById('rcptNumber').textContent = `RECIBO #${payment.receipt_number || '-'}`;
+      document.getElementById('rcptDate').textContent = `Fecha: ${dateFormatted}`;
+      document.getElementById('rcptStudent').textContent = payment.students?.full_name || 'Sin nombre';
+      document.getElementById('rcptConcept').textContent = payment.concept;
+      document.getElementById('rcptMethod').textContent = payment.payment_method;
+      document.getElementById('rcptAmount').textContent = formatCurrency(payment.amount);
+
+      const refContainer = document.getElementById('rcptRefContainer');
+      if (payment.reference_number) {
+        refContainer.classList.remove('hidden');
+        document.getElementById('rcptRef').textContent = payment.reference_number;
+      } else {
+        refContainer.classList.add('hidden');
+      }
+
+      document.getElementById('receiptModal').classList.remove('hidden');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.add('hidden');
     }
 
     document.getElementById('btnLogout').addEventListener('click', async () => {
       await supabaseClient.auth.signOut();
+      sessionStorage.clear();
       window.location.href = 'index.html';
     });
 
-    // Inicio directo garantizado
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
-      loadStudentsDropdown();
-      loadPaymentsTable();
+      document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+      loadStudentsSelect();
+      loadPayments();
     });
   </script>
 </body>
