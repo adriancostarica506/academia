@@ -4,11 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Caja y Pagos - Academi</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- SheetJS para generar archivos Excel nativos (.xlsx) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     @media print {
@@ -37,7 +34,10 @@
         <span class="text-slate-400">|</span>
         <span class="text-sm font-semibold text-slate-600">Caja y Cobros</span>
       </div>
-      <div>
+      <div class="flex items-center space-x-3">
+        <a href="cobros_pendientes.html" class="text-xs bg-amber-50 text-amber-800 border border-amber-300 font-bold px-3 py-1.5 rounded-lg hover:bg-amber-100 transition shadow-sm">
+          🔔 Alertas de Cobro
+        </a>
         <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
           Cerrar Sesión
         </button>
@@ -84,49 +84,23 @@
     <!-- Barra de Herramientas y Exportaciones a Excel -->
     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
       <div>
-        <h3 class="text-sm font-bold text-slate-800">Reportes Financieros y Control de Estudiantes</h3>
-        <p class="text-xs text-slate-500">Descarga los ingresos por período y supervisa qué alumnos deben o están próximos a pagar.</p>
+        <h3 class="text-sm font-bold text-slate-800">Reportes Financieros y Control de Pagos</h3>
+        <p class="text-xs text-slate-500">Descarga los ingresos en Excel o revisa las alertas de estudiantes.</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5">
-        <!-- Dropdown Descargar Ingresos Excel -->
-        <div class="relative inline-block text-left">
-          <button 
-            type="button" 
-            onclick="toggleIncomeDropdown()" 
-            class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-2 shadow-sm"
-          >
-            <span>📊 Descargar Ingresos (Excel)</span>
-            <span>▼</span>
-          </button>
-          
-          <div id="incomeDropdownMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl shadow-xl bg-white border border-slate-200 ring-1 ring-black ring-opacity-5 z-20 py-1.5 divide-y divide-slate-100">
-            <button onclick="exportIncomeToExcel('semanal')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 font-semibold flex items-center justify-between">
-              <span>📅 Ingreso Semanal (7 días)</span>
-              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
-            </button>
-            <button onclick="exportIncomeToExcel('quincenal')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 font-semibold flex items-center justify-between">
-              <span>📅 Ingreso Quincenal (15 días)</span>
-              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
-            </button>
-            <button onclick="exportIncomeToExcel('mensual')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 font-semibold flex items-center justify-between">
-              <span>📅 Ingreso Mensual (30 días)</span>
-              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
-            </button>
-            <button onclick="exportIncomeToExcel('filtrado')" class="w-full text-left px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold flex items-center justify-between">
-              <span>🔍 Ingresos según Filtro Actual</span>
-              <span class="text-[10px] text-slate-400 font-normal">.xlsx</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Botón Alumnos Pendientes y Próximos a Pagar -->
         <button 
-          onclick="openPendingStatusModal()" 
+          onclick="exportIncomeExcel('mensual')" 
+          class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
+        >
+          <span>📊 Descargar Ingresos (Excel)</span>
+        </button>
+        <a 
+          href="cobros_pendientes.html" 
           class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
         >
-          <span>🔔 Control de Pagos de Alumnos</span>
-        </button>
+          <span>🔔 Ir a Módulo de Alertas de Cobro</span>
+        </a>
       </div>
     </div>
 
@@ -136,7 +110,7 @@
       <!-- Formulario para Registrar Cobro -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
         <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar Cobro</h2>
-        <p class="text-xs text-slate-500 mb-4">Ingresa el pago del alumno para generar su recibo.</p>
+        <p class="text-xs text-slate-500 mb-4">Ingresa el pago del alumno para generar su recibo y fijar su próximo cobro.</p>
 
         <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
 
@@ -150,9 +124,9 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Concepto *</label>
-            <select id="paymentConcept" onchange="toggleOtherConcept(this.value)" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-              <option value="Matrícula">Matrícula</option>
+            <select id="paymentConcept" onchange="handleConceptChange(this.value)" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
               <option value="Mensualidad" selected>Mensualidad</option>
+              <option value="Matrícula">Matrícula</option>
               <option value="Uniforme">Uniforme</option>
               <option value="Materiales / Kit">Materiales / Kit</option>
               <option value="Certificación / Examen">Certificación / Examen</option>
@@ -194,15 +168,28 @@
             >
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Cobro *</label>
-            <input 
-              type="date" 
-              id="paymentDate" 
-              required 
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Pago *</label>
+              <input 
+                type="date" 
+                id="paymentDate" 
+                onchange="autoSuggestNextDate()" 
+                required 
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-amber-700 mb-1">📅 Próximo Pago *</label>
+              <input 
+                type="date" 
+                id="nextPaymentDate" 
+                required 
+                class="w-full border border-amber-300 bg-amber-50/50 rounded-lg p-2 text-xs font-semibold text-amber-900 focus:ring-2 focus:ring-amber-500 outline-none"
+              >
+            </div>
           </div>
+          <p class="text-[11px] text-slate-400">Esta fecha de próximo pago alimentará el módulo de alertas preventivas.</p>
 
           <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm">
             Guardar Pago y Emitir Recibo
@@ -210,15 +197,14 @@
         </form>
       </div>
 
-      <!-- Tabla y Búsqueda de Recibos con Filtro por Alumno -->
+      <!-- Tabla y Búsqueda de Recibos -->
       <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         
-        <!-- Barra de Filtros -->
         <div class="flex flex-col space-y-3 border-b border-slate-100 pb-4">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
               <h2 class="text-lg font-bold text-slate-800">Historial de Recibos</h2>
-              <p class="text-xs text-slate-500">Expedientes de pagos registrados. Haz clic en el nombre de un alumno para ver solo sus pagos.</p>
+              <p class="text-xs text-slate-500">Expedientes de pagos registrados con su fecha de próximo vencimiento.</p>
             </div>
             <div id="activeFilterBadge" class="hidden">
               <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
@@ -229,35 +215,28 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-            <!-- Selector de Alumno -->
             <div class="sm:col-span-5">
-              <select id="filterStudentSelect" onchange="filterPayments()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <select id="filterStudentSelect" onchange="filterPayments()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
                 <option value="">👤 Todos los alumnos</option>
               </select>
             </div>
-
-            <!-- Búsqueda texto -->
             <div class="sm:col-span-4">
               <input 
                 type="text" 
                 id="searchInput" 
                 oninput="filterPayments()" 
                 placeholder="Buscar concepto o recibo..." 
-                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none"
               >
             </div>
-
-            <!-- Fecha -->
             <div class="sm:col-span-2">
               <input 
                 type="date" 
                 id="filterDate" 
                 onchange="filterPayments()" 
-                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none"
               >
             </div>
-
-            <!-- Limpiar -->
             <div class="sm:col-span-1 flex items-center justify-center">
               <button onclick="clearFilters()" title="Limpiar filtros" class="w-full text-xs text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg p-2 hover:bg-slate-50 transition text-center font-medium">
                 Limpiar
@@ -272,10 +251,10 @@
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
                 <th class="p-3">Recibo #</th>
-                <th class="p-3">Fecha y Hora</th>
+                <th class="p-3">Fecha Pago</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Concepto</th>
-                <th class="p-3">Método</th>
+                <th class="p-3">Próximo Pago</th>
                 <th class="p-3 text-right">Monto</th>
                 <th class="p-3 text-center">Acciones</th>
               </tr>
@@ -291,73 +270,6 @@
 
     </div>
   </main>
-
-  <!-- MODAL: ESTADO DE PAGOS (PENDIENTES Y PRÓXIMOS A PAGAR) -->
-  <div id="modalPendingStatus" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
-      
-      <div class="flex justify-between items-center border-b pb-3">
-        <div>
-          <h3 class="text-lg font-bold text-slate-800">Estado de Pagos de Alumnos</h3>
-          <p class="text-xs text-slate-500">Supervisión de alumnos pendientes y con cobro próximo a vencer (Base mensual estándar de 30 días).</p>
-        </div>
-        <button onclick="closePendingStatusModal()" class="text-slate-400 hover:text-slate-600 font-black text-xl leading-none">✕</button>
-      </div>
-
-      <!-- Resumen y Filtro de Estado -->
-      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-        <div class="flex gap-2">
-          <button onclick="filterStatusTab('all')" id="btnTabStatusAll" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 shadow-sm border border-slate-200">
-            Todos (<span id="countAll">0</span>)
-          </button>
-          <button onclick="filterStatusTab('vencido')" id="btnTabStatusPending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-            🔴 Vencidos / Sin Pago (<span id="countPending">0</span>)
-          </button>
-          <button onclick="filterStatusTab('proximo')" id="btnTabStatusUpcoming" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-            🟡 Próximos a Vencer (<span id="countUpcoming">0</span>)
-          </button>
-          <button onclick="filterStatusTab('aldia')" id="btnTabStatusOk" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            🟢 Al Día (<span id="countOk">0</span>)
-          </button>
-        </div>
-
-        <button 
-          onclick="exportPendingStudentsToExcel()" 
-          class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm"
-        >
-          <span>📥 Descargar Estado en Excel (.xlsx)</span>
-        </button>
-      </div>
-
-      <!-- Tabla de Alumnos y Estados -->
-      <div class="flex-1 overflow-y-auto border border-slate-200 rounded-xl">
-        <table class="w-full text-left border-collapse text-xs">
-          <thead class="bg-slate-100 text-slate-600 font-semibold sticky top-0 border-b border-slate-200">
-            <tr>
-              <th class="p-3">Estado</th>
-              <th class="p-3">Alumno</th>
-              <th class="p-3">Teléfono</th>
-              <th class="p-3">Último Pago</th>
-              <th class="p-3">Concepto Reciente</th>
-              <th class="p-3 text-right">Días Transcurridos</th>
-            </tr>
-          </thead>
-          <tbody id="pendingStatusTableBody" class="divide-y divide-slate-100 font-medium">
-            <tr>
-              <td colspan="6" class="p-6 text-center text-slate-400">Analizando estados...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="flex justify-end pt-2 border-t border-slate-100">
-        <button onclick="closePendingStatusModal()" class="px-4 py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">
-          Cerrar
-        </button>
-      </div>
-
-    </div>
-  </div>
 
   <!-- MODAL: RECIBO IMPRIMIBLE -->
   <div id="receiptModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
@@ -390,6 +302,10 @@
           <div class="flex justify-between border-b border-slate-100 py-1">
             <span class="text-xs font-semibold text-slate-500">Método de Pago:</span>
             <span class="text-slate-700 font-medium" id="rcptMethod">-</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-100 py-1">
+            <span class="text-xs font-semibold text-amber-700 font-bold">Próximo Cobro:</span>
+            <span class="text-amber-800 font-bold font-mono" id="rcptNextDate">--/--/----</span>
           </div>
           <div class="flex justify-between border-b border-slate-100 py-1" id="rcptRefContainer">
             <span class="text-xs font-semibold text-slate-500">Referencia:</span>
@@ -427,8 +343,6 @@
     let allPayments = [];
     let allStudents = [];
     let currentFilteredPayments = [];
-    let analyzedStudentStatuses = [];
-    let activeStatusFilter = 'all';
 
     const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -436,9 +350,7 @@
       if (!rawDate) return '--/--/----';
       const clean = String(rawDate).split('T')[0];
       const parts = clean.split('-');
-      if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      }
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
       return clean;
     }
 
@@ -452,27 +364,7 @@
       }
     }
 
-    function toggleIncomeDropdown() {
-      const menu = document.getElementById('incomeDropdownMenu');
-      menu.classList.toggle('hidden');
-    }
-
-    // Cerrar dropdown si se hace clic afuera
-    window.addEventListener('click', (e) => {
-      const menu = document.getElementById('incomeDropdownMenu');
-      if (menu && !e.target.closest('.relative.inline-block')) {
-        menu.classList.add('hidden');
-      }
-    });
-
-    function showAlert(text, type = 'error') {
-      const alertMsg = document.getElementById('alertMsg');
-      alertMsg.textContent = text;
-      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
-      alertMsg.classList.remove('hidden');
-    }
-
-    function toggleOtherConcept(val) {
+    function handleConceptChange(val) {
       const otherInput = document.getElementById('otherConceptInput');
       if (val === 'Otro') {
         otherInput.classList.remove('hidden');
@@ -482,6 +374,28 @@
         otherInput.classList.add('hidden');
         otherInput.required = false;
       }
+      autoSuggestNextDate();
+    }
+
+    // Calcula automáticamente exactamente 1 mes después
+    function autoSuggestNextDate() {
+      const payDateVal = document.getElementById('paymentDate').value;
+      if (!payDateVal) return;
+
+      const [y, m, d] = payDateVal.split('-').map(Number);
+      const nextDate = new Date(y, m, d); // suma un mes (en JS los meses van de 0 a 11)
+      const nextY = nextDate.getFullYear();
+      const nextM = String(nextDate.getMonth() + 1).padStart(2, '0');
+      const nextD = String(nextDate.getDate()).padStart(2, '0');
+
+      document.getElementById('nextPaymentDate').value = `${nextY}-${nextM}-${nextD}`;
+    }
+
+    function showAlert(text, type = 'error') {
+      const alertMsg = document.getElementById('alertMsg');
+      alertMsg.textContent = text;
+      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      alertMsg.classList.remove('hidden');
     }
 
     async function loadStudentsSelect() {
@@ -508,6 +422,13 @@
         selectFilter.innerHTML = '<option value="">👤 Todos los alumnos</option>' + 
           allStudents.map(s => `<option value="${s.id}">👤 ${s.full_name}</option>`).join('');
 
+        // Si vino un alumno pre-seleccionado por URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const preStudentId = urlParams.get('student_id');
+        if (preStudentId) {
+          selectForm.value = preStudentId;
+        }
+
       } catch (err) {
         selectForm.innerHTML = '<option value="" disabled selected>Error al cargar alumnos</option>';
       }
@@ -528,6 +449,7 @@
             payment_method,
             reference_number,
             payment_date,
+            next_payment_date,
             created_at,
             students (id, full_name, phone)
           `)
@@ -539,7 +461,7 @@
         filterPayments();
 
       } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error al cargar pagos: ${error ? error.message : err.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error al cargar pagos: ${err.message}</td></tr>`;
       }
     }
 
@@ -552,6 +474,7 @@
 
       tableBody.innerHTML = list.map(p => {
         const dateFormatted = formatSafeDate(p.payment_date);
+        const nextDateFormatted = p.next_payment_date ? formatSafeDate(p.next_payment_date) : '-';
         const timeFormatted = formatSafeTime(p.created_at);
         const concept = p.concept || p.payment_concept || 'Cobro General';
         const studentName = p.students?.full_name || 'Sin nombre';
@@ -570,14 +493,8 @@
               </button>
             </td>
             <td class="p-3 text-xs text-slate-700 font-semibold">${concept}</td>
-            <td class="p-3">
-              <span class="px-2 py-0.5 rounded text-xs font-semibold ${
-                p.payment_method === 'SINPE Móvil' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
-                p.payment_method === 'Efectivo' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                'bg-slate-100 text-slate-700 border border-slate-200'
-              }">
-                ${p.payment_method}
-              </span>
+            <td class="p-3 text-xs font-mono font-bold text-amber-700 bg-amber-50/50">
+              📅 ${nextDateFormatted}
             </td>
             <td class="p-3 text-right font-mono font-bold text-slate-900">${formatCurrency(p.amount)}</td>
             <td class="p-3 text-center whitespace-nowrap">
@@ -611,14 +528,6 @@
       document.getElementById('statTotalToday').textContent = formatCurrency(totalToday);
       document.getElementById('statCountToday').textContent = countToday;
       document.getElementById('statFilteredTotal').textContent = formatCurrency(totalFiltered);
-
-      const studentFilter = document.getElementById('filterStudentSelect').value;
-      const label = document.getElementById('statFilterLabel');
-      if (studentFilter) {
-        label.textContent = `Total del Alumno (${filteredList.length} pagos)`;
-      } else {
-        label.textContent = 'Total Filtrado';
-      }
     }
 
     function filterPayments() {
@@ -671,289 +580,6 @@
       filterPayments();
     }
 
-    // ==========================================
-    // 📊 FUNCIÓN: DESCARGAR INGRESOS A EXCEL
-    // ==========================================
-    function exportIncomeToExcel(period) {
-      document.getElementById('incomeDropdownMenu').classList.add('hidden');
-
-      let targetList = [];
-      let periodTitle = '';
-      const now = new Date();
-
-      if (period === 'semanal') {
-        const past7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        targetList = allPayments.filter(p => {
-          const d = p.payment_date ? String(p.payment_date).split('T')[0] : '';
-          return d >= past7Days;
-        });
-        periodTitle = 'Ingresos_Semanales_7_Dias';
-      } else if (period === 'quincenal') {
-        const past15Days = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        targetList = allPayments.filter(p => {
-          const d = p.payment_date ? String(p.payment_date).split('T')[0] : '';
-          return d >= past15Days;
-        });
-        periodTitle = 'Ingresos_Quincenales_15_Dias';
-      } else if (period === 'mensual') {
-        const past30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        targetList = allPayments.filter(p => {
-          const d = p.payment_date ? String(p.payment_date).split('T')[0] : '';
-          return d >= past30Days;
-        });
-        periodTitle = 'Ingresos_Mensuales_30_Dias';
-      } else {
-        targetList = currentFilteredPayments;
-        periodTitle = 'Ingresos_Filtrados';
-      }
-
-      if (targetList.length === 0) {
-        alert('No hay registros de cobros para el período seleccionado.');
-        return;
-      }
-
-      let grandTotal = 0;
-
-      // Desglose con Día, Mes y Año independientes
-      const excelRows = targetList.map(p => {
-        let dia = '', mes = '', anio = '', fechaCompleta = '';
-        if (p.payment_date) {
-          const cleanDate = String(p.payment_date).split('T')[0];
-          const parts = cleanDate.split('-');
-          if (parts.length === 3) {
-            anio = parts[0];
-            mes = parts[1];
-            dia = parts[2];
-            fechaCompleta = `${dia}/${mes}/${anio}`;
-          }
-        }
-
-        const hora = formatSafeTime(p.created_at);
-        const montoNum = Number(p.amount) || 0;
-        grandTotal += montoNum;
-
-        return {
-          'N° Recibo': p.receipt_number || 'S/N',
-          'Fecha (DD/MM/AAAA)': fechaCompleta,
-          'Día': dia,
-          'Mes': mes,
-          'Año': anio,
-          'Hora': hora,
-          'Alumno': p.students?.full_name || 'Desconocido',
-          'Teléfono Alumno': p.students?.phone || '-',
-          'Concepto': p.concept || p.payment_concept || 'Mensualidad',
-          'Método de Pago': p.payment_method || 'Efectivo',
-          'N° Referencia': p.reference_number || 'N/A',
-          'Monto (₡)': montoNum
-        };
-      });
-
-      // Fila de resumen total
-      excelRows.push({
-        'N° Recibo': 'TOTAL GENERAL',
-        'Fecha (DD/MM/AAAA)': '',
-        'Día': '',
-        'Mes': '',
-        'Año': '',
-        'Hora': '',
-        'Alumno': '',
-        'Teléfono Alumno': '',
-        'Concepto': '',
-        'Método de Pago': '',
-        'N° Referencia': '',
-        'Monto (₡)': grandTotal
-      });
-
-      const worksheet = XLSX.utils.json_to_sheet(excelRows);
-      
-      // Anchos de columna automáticos para que se lea perfecto
-      worksheet['!cols'] = [
-        { wch: 12 }, { wch: 18 }, { wch: 6 }, { wch: 6 }, { wch: 8 }, { wch: 12 },
-        { wch: 28 }, { wch: 16 }, { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 16 }
-      ];
-
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Ingresos');
-
-      const fileName = `Academi_${periodTitle}_${now.toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
-    }
-
-    // ==========================================
-    // 🔔 CONTROL DE PAGOS (PENDIENTES / PRÓXIMOS)
-    // ==========================================
-    function analyzeStudentPaymentStatuses() {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-
-      analyzedStudentStatuses = allStudents.map(student => {
-        // Buscar pagos del alumno
-        const studentPayments = allPayments.filter(p => {
-          const sid = p.student_id || p.students?.id;
-          return sid === student.id;
-        });
-
-        if (studentPayments.length === 0) {
-          return {
-            studentId: student.id,
-            studentName: student.full_name,
-            phone: student.phone || '-',
-            lastPaymentDate: 'Sin registros',
-            lastPaymentDateObj: null,
-            lastConcept: 'Ninguno',
-            daysPassed: 9999,
-            status: 'vencido', // Nunca ha pagado
-            statusLabel: 'Sin Pago Registrado'
-          };
-        }
-
-        // Ordenar para obtener el pago más reciente
-        studentPayments.sort((a, b) => new Date(b.payment_date || b.created_at) - new Date(a.payment_date || a.created_at));
-        const lastPay = studentPayments[0];
-        
-        let lastDateObj = null;
-        let lastDateFormatted = '--/--/----';
-        let daysPassed = 9999;
-
-        if (lastPay.payment_date) {
-          const cleanDate = String(lastPay.payment_date).split('T')[0];
-          lastDateFormatted = formatSafeDate(cleanDate);
-          lastDateObj = new Date(cleanDate + 'T00:00:00');
-          const diffTime = now.getTime() - lastDateObj.getTime();
-          daysPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        }
-
-        // Clasificación:
-        // Más de 30 días: Vencido / Pendiente
-        // Entre 21 y 30 días: Próximo a vencer (pronto a pagar)
-        // Menos de 21 días: Al día
-        let status = 'aldia';
-        let statusLabel = 'Al Día';
-
-        if (daysPassed > 30) {
-          status = 'vencido';
-          statusLabel = 'Vencido / Pendiente';
-        } else if (daysPassed >= 20 && daysPassed <= 30) {
-          status = 'proximo';
-          statusLabel = 'Próximo a Pagar';
-        }
-
-        return {
-          studentId: student.id,
-          studentName: student.full_name,
-          phone: student.phone || '-',
-          lastPaymentDate: lastDateFormatted,
-          lastPaymentDateObj: lastDateObj,
-          lastConcept: lastPay.concept || lastPay.payment_concept || 'Mensualidad',
-          daysPassed: daysPassed === 9999 ? 'N/A' : daysPassed,
-          status: status,
-          statusLabel: statusLabel
-        };
-      });
-
-      // Actualizar contadores
-      const countPending = analyzedStudentStatuses.filter(s => s.status === 'vencido').length;
-      const countUpcoming = analyzedStudentStatuses.filter(s => s.status === 'proximo').length;
-      const countOk = analyzedStudentStatuses.filter(s => s.status === 'aldia').length;
-
-      document.getElementById('countAll').textContent = analyzedStudentStatuses.length;
-      document.getElementById('countPending').textContent = countPending;
-      document.getElementById('countUpcoming').textContent = countUpcoming;
-      document.getElementById('countOk').textContent = countOk;
-    }
-
-    function openPendingStatusModal() {
-      analyzeStudentPaymentStatuses();
-      filterStatusTab('all');
-      document.getElementById('modalPendingStatus').classList.remove('hidden');
-    }
-
-    function closePendingStatusModal() {
-      document.getElementById('modalPendingStatus').classList.add('hidden');
-    }
-
-    function filterStatusTab(tab) {
-      activeStatusFilter = tab;
-
-      // Estilo de botones
-      ['all', 'vencido', 'proximo', 'aldia'].forEach(t => {
-        const btn = document.getElementById(
-          t === 'all' ? 'btnTabStatusAll' :
-          t === 'vencido' ? 'btnTabStatusPending' :
-          t === 'proximo' ? 'btnTabStatusUpcoming' : 'btnTabStatusOk'
-        );
-        if (t === tab) {
-          btn.classList.add('ring-2', 'ring-slate-800', 'shadow-md');
-        } else {
-          btn.classList.remove('ring-2', 'ring-slate-800', 'shadow-md');
-        }
-      });
-
-      const filtered = activeStatusFilter === 'all' 
-        ? analyzedStudentStatuses 
-        : analyzedStudentStatuses.filter(s => s.status === activeStatusFilter);
-
-      renderPendingStatusTable(filtered);
-    }
-
-    function renderPendingStatusTable(list) {
-      const tbody = document.getElementById('pendingStatusTableBody');
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay estudiantes en esta categoría.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = list.map(s => {
-        const badgeColor = s.status === 'vencido' ? 'bg-rose-100 text-rose-800 border-rose-200' :
-                           s.status === 'proximo' ? 'bg-amber-100 text-amber-800 border-amber-200' :
-                           'bg-emerald-100 text-emerald-800 border-emerald-200';
-
-        return `
-          <tr class="hover:bg-slate-50 border-b border-slate-100 transition">
-            <td class="p-3">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeColor}">
-                ${s.statusLabel}
-              </span>
-            </td>
-            <td class="p-3 font-bold text-slate-900">${s.studentName}</td>
-            <td class="p-3 text-slate-600 font-mono">${s.phone}</td>
-            <td class="p-3 font-mono text-slate-700">${s.lastPaymentDate}</td>
-            <td class="p-3 text-slate-700 font-semibold">${s.lastConcept}</td>
-            <td class="p-3 text-right font-mono font-bold ${s.status === 'vencido' ? 'text-rose-600' : 'text-slate-700'}">
-              ${s.daysPassed !== 'N/A' ? `${s.daysPassed} días` : 'Sin registro'}
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function exportPendingStudentsToExcel() {
-      if (analyzedStudentStatuses.length === 0) {
-        alert('No hay alumnos para exportar.');
-        return;
-      }
-
-      const rows = analyzedStudentStatuses.map(s => ({
-        'Estado': s.statusLabel,
-        'Alumno': s.studentName,
-        'Teléfono': s.phone,
-        'Fecha Último Pago': s.lastPaymentDate,
-        'Último Concepto Cancelado': s.lastConcept,
-        'Días Desde Último Pago': s.daysPassed === 'N/A' ? 'Nunca' : s.daysPassed
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      worksheet['!cols'] = [
-        { wch: 22 }, { wch: 28 }, { wch: 16 }, { wch: 18 }, { wch: 22 }, { wch: 24 }
-      ];
-
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Estado_Pagos_Alumnos');
-
-      const fileName = `Academi_Estado_Pagos_Alumnos_${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
-    }
-
     // REGISTRAR PAGO
     document.getElementById('paymentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -962,6 +588,7 @@
       const studentId = document.getElementById('selectStudent').value;
       const amount = parseFloat(document.getElementById('paymentAmount').value);
       const date = document.getElementById('paymentDate').value;
+      const nextDate = document.getElementById('nextPaymentDate').value;
       const conceptSelect = document.getElementById('paymentConcept').value;
       const otherConcept = document.getElementById('otherConceptInput').value.trim();
       const concept = conceptSelect === 'Otro' ? otherConcept : conceptSelect;
@@ -969,8 +596,8 @@
       const reference = document.getElementById('paymentReference').value.trim();
       const btnSubmit = document.getElementById('btnSubmit');
 
-      if (!studentId || !amount || amount <= 0 || !concept) {
-        showAlert('Por favor completa todos los campos con valores válidos.');
+      if (!studentId || !amount || amount <= 0 || !concept || !nextDate) {
+        showAlert('Por favor completa todos los campos obligatorios, incluyendo la fecha de próximo pago.');
         return;
       }
 
@@ -984,12 +611,13 @@
           p_concept: concept,
           p_payment_method: method,
           p_reference_number: reference || null,
-          p_payment_date: date
+          p_payment_date: date,
+          p_next_payment_date: nextDate
         });
 
         if (error) throw error;
 
-        showAlert(`¡Pago registrado con éxito! Recibo #${data.receipt_number}`, 'success');
+        showAlert(`¡Pago registrado! Recibo #${data.receipt_number}. Próximo cobro: ${formatSafeDate(data.next_payment_date)}`, 'success');
 
         document.getElementById('paymentAmount').value = '';
         document.getElementById('paymentReference').value = '';
@@ -1016,6 +644,7 @@
       if (!payment) return;
 
       const dateFormatted = formatSafeDate(payment.payment_date);
+      const nextDateFormatted = payment.next_payment_date ? formatSafeDate(payment.next_payment_date) : '-';
       const timeFormatted = formatSafeTime(payment.created_at);
 
       document.getElementById('rcptNumber').textContent = `RECIBO #${payment.receipt_number || '-'}`;
@@ -1024,6 +653,7 @@
       document.getElementById('rcptStudent').textContent = payment.students?.full_name || 'Sin nombre';
       document.getElementById('rcptConcept').textContent = payment.concept || payment.payment_concept || 'Matrícula';
       document.getElementById('rcptMethod').textContent = payment.payment_method;
+      document.getElementById('rcptNextDate').textContent = nextDateFormatted;
       document.getElementById('rcptAmount').textContent = formatCurrency(payment.amount);
 
       const refContainer = document.getElementById('rcptRefContainer');
@@ -1041,6 +671,31 @@
       document.getElementById('receiptModal').classList.add('hidden');
     }
 
+    function exportIncomeExcel() {
+      if (allPayments.length === 0) {
+        alert('No hay pagos registrados para exportar.');
+        return;
+      }
+
+      const rows = allPayments.map(p => ({
+        'N° Recibo': p.receipt_number || 'S/N',
+        'Fecha Pago': formatSafeDate(p.payment_date),
+        'Hora': formatSafeTime(p.created_at),
+        'Alumno': p.students?.full_name || 'Desconocido',
+        'Teléfono': p.students?.phone || '-',
+        'Concepto': p.concept || p.payment_concept || 'Mensualidad',
+        'Método de Pago': p.payment_method || 'Efectivo',
+        'Referencia': p.reference_number || 'N/A',
+        'Monto (₡)': Number(p.amount) || 0,
+        'Próximo Cobro': p.next_payment_date ? formatSafeDate(p.next_payment_date) : 'N/A'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Ingresos');
+      XLSX.writeFile(workbook, `Academi_Ingresos_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
     document.getElementById('btnLogout').addEventListener('click', async () => {
       await supabaseClient.auth.signOut();
       sessionStorage.clear();
@@ -1054,6 +709,7 @@
       const dd = String(today.getDate()).padStart(2, '0');
       document.getElementById('paymentDate').value = `${yyyy}-${mm}-${dd}`;
       
+      autoSuggestNextDate();
       loadStudentsSelect();
       loadPayments();
     });
