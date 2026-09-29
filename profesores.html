@@ -37,13 +37,28 @@
 
         <form id="createTeacherForm" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo</label>
-            <input type="text" id="teacherName" placeholder="Ej: Carlos Morales" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo (solo letras)</label>
+            <input 
+              type="text" 
+              id="teacherName" 
+              placeholder="Ej: Carlos Morales" 
+              required 
+              pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
+              title="Solo se permiten letras y espacios" 
+              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            >
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Especialidad / Materia</label>
-            <input type="text" id="teacherSpecialty" placeholder="Ej: Matemáticas, Música" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <select id="teacherSpecialty" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="" disabled selected>Selecciona una especialidad...</option>
+              <option value="Barberia y Estilismo">Barbería y Estilismo</option>
+              <option value="Manicurismo">Manicurismo</option>
+              <option value="Trenzado">Trenzado</option>
+              <option value="Maquillaje">Maquillaje</option>
+              <option value="Estilismo">Estilismo</option>
+            </select>
           </div>
 
           <div>
@@ -53,13 +68,30 @@
 
           <div class="border-t border-slate-200 pt-3">
             <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre de Usuario (Login)</label>
-            <input type="text" id="teacherUsername" placeholder="Ej: carlos" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-            <span class="text-xs text-slate-400">Sin espacios ni acentos.</span>
+            <input 
+              type="text" 
+              id="teacherUsername" 
+              placeholder="Ej: carlos" 
+              required 
+              pattern="^[a-zA-Z0-9._-]+$"
+              title="Solo letras, números, puntos o guiones, sin espacios"
+              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+            <span class="text-xs text-slate-400">Obligatorio. Sin espacios.</span>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Contraseña Inicial</label>
-            <input type="password" id="teacherPassword" placeholder="••••••••" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <input 
+              type="password" 
+              id="teacherPassword" 
+              placeholder="••••••••" 
+              required 
+              minlength="6"
+              title="Mínimo 6 caracteres"
+              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+            <span class="text-xs text-slate-400">Obligatorio (mínimo 6 caracteres).</span>
           </div>
 
           <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">
@@ -68,7 +100,7 @@
         </form>
       </div>
 
-      <!-- Lista de Profesores Creados -->
+      <!-- Tabla de Profesores Creados -->
       <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <h2 class="text-lg font-bold text-slate-800 mb-4">Profesores Registrados</h2>
         <div class="overflow-x-auto">
@@ -147,7 +179,7 @@
       tableBody.innerHTML = data.map(t => `
         <tr class="border-b border-slate-100 hover:bg-slate-50">
           <td class="p-3 font-medium text-slate-800">${t.full_name}</td>
-          <td class="p-3 text-slate-600">${t.specialty || '-'}</td>
+          <td class="p-3 text-slate-600"><span class="px-2 py-1 rounded bg-slate-100 text-xs font-semibold">${t.specialty || '-'}</span></td>
           <td class="p-3 text-slate-600">${t.phone || '-'}</td>
           <td class="p-3 font-mono text-xs text-blue-600 bg-blue-50 w-fit rounded px-2 py-0.5">${t.profiles?.username || '-'}</td>
         </tr>
@@ -159,10 +191,22 @@
       alertMsg.classList.add('hidden');
 
       const full_name = document.getElementById('teacherName').value.trim();
-      const specialty = document.getElementById('teacherSpecialty').value.trim();
+      const specialty = document.getElementById('teacherSpecialty').value;
       const phone = document.getElementById('teacherPhone').value.trim();
       const username = document.getElementById('teacherUsername').value.trim().toLowerCase();
       const password = document.getElementById('teacherPassword').value;
+
+      // Validación JS extra de solo letras
+      const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+      if (!nameRegex.test(full_name)) {
+        showAlert('El nombre completo solo puede contener letras y espacios.');
+        return;
+      }
+
+      if (!username || !password || !specialty) {
+        showAlert('Por favor completa todos los campos requeridos.');
+        return;
+      }
 
       btnSubmit.disabled = true;
       btnSubmit.textContent = 'Creando...';
