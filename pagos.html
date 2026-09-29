@@ -187,7 +187,7 @@
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
                 <th class="p-3">Recibo #</th>
-                <th class="p-3">Fecha</th>
+                <th class="p-3">Fecha y Hora</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Concepto</th>
                 <th class="p-3">Método</th>
@@ -219,8 +219,11 @@
         </div>
 
         <div class="flex justify-between items-center text-xs">
-          <span class="font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200" id="rcptNumber">RECIBO #0000</span>
-          <span class="text-slate-500" id="rcptDate">Fecha: --/--/----</span>
+          <span class="font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200" id="rcptNumber">RECIBO #0000</span>
+          <div class="text-right">
+            <p class="font-semibold text-slate-700" id="rcptDate">Fecha: --/--/----</p>
+            <p class="text-[11px] text-slate-400" id="rcptTime">Hora: --:--</p>
+          </div>
         </div>
 
         <div class="space-y-2 text-sm pt-2">
@@ -272,6 +275,28 @@
     let allPayments = [];
 
     const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Función limpia que parsea correctamente la fecha sin mezclar caracteres de hora
+    function formatSafeDate(rawDate) {
+      if (!rawDate) return '--/--/----';
+      const clean = String(rawDate).split('T')[0]; // Tomar solo YYYY-MM-DD
+      const parts = clean.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+      }
+      return clean;
+    }
+
+    // Formatear hora de creación
+    function formatSafeTime(rawTimestamp) {
+      if (!rawTimestamp) return '';
+      try {
+        const d = new Date(rawTimestamp);
+        return d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', hour12: true });
+      } catch (e) {
+        return '';
+      }
+    }
 
     function showAlert(text, type = 'error') {
       const alertMsg = document.getElementById('alertMsg');
@@ -325,9 +350,11 @@
             receipt_number,
             amount,
             concept,
+            payment_concept,
             payment_method,
             reference_number,
             payment_date,
+            created_at,
             students (full_name)
           `)
           .order('created_at', { ascending: false });
@@ -351,18 +378,19 @@
       }
 
       tableBody.innerHTML = list.map(p => {
-        let dateFormatted = p.payment_date || '-';
-        if (p.payment_date && p.payment_date.includes('-')) {
-          const [y, m, d] = p.payment_date.split('-');
-          dateFormatted = `${d}/${m}/${y}`;
-        }
+        const dateFormatted = formatSafeDate(p.payment_date);
+        const timeFormatted = formatSafeTime(p.created_at);
+        const concept = p.concept || p.payment_concept || 'Cobro General';
 
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
             <td class="p-3 font-mono font-bold text-xs text-blue-600 whitespace-nowrap">#${p.receipt_number || '-'}</td>
-            <td class="p-3 text-xs text-slate-600 whitespace-nowrap">${dateFormatted}</td>
+            <td class="p-3 text-xs text-slate-600 whitespace-nowrap">
+              <span>${dateFormatted}</span>
+              ${timeFormatted ? `<span class="text-[11px] text-slate-400 ml-1.5 font-medium">${timeFormatted}</span>` : ''}
+            </td>
             <td class="p-3 font-bold text-slate-800">${p.students?.full_name || 'Sin nombre'}</td>
-            <td class="p-3 text-xs text-slate-700 font-semibold">${p.concept}</td>
+            <td class="p-3 text-xs text-slate-700 font-semibold">${concept}</td>
             <td class="p-3">
               <span class="px-2 py-0.5 rounded text-xs font-semibold ${
                 p.payment_method === 'SINPE Móvil' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
@@ -392,7 +420,8 @@
       list.forEach(p => {
         const amt = Number(p.amount) || 0;
         totalFiltered += amt;
-        if (p.payment_date === today) {
+        const cleanDate = p.payment_date ? String(p.payment_date).split('T')[0] : '';
+        if (cleanDate === today) {
           totalToday += amt;
           countToday++;
         }
@@ -408,10 +437,14 @@
       const dateVal = document.getElementById('filterDate').value;
 
       const filtered = allPayments.filter(p => {
-        const matchText = (p.students?.full_name && p.students.full_name.toLowerCase().includes(search)) ||
-                          (p.concept && p.concept.toLowerCase().includes(search)) ||
-                          String(p.receipt_number).includes(search);
-        const matchDate = dateVal ? p.payment_date === dateVal : true;
+        const concept = (p.concept || p.payment_concept || '').toLowerCase();
+        const student = (p.students?.full_name || '').toLowerCase();
+        const ref = (p.reference_number || '').toLowerCase();
+        const matchText = student.includes(search) || concept.includes(search) || String(p.receipt_number).includes(search) || ref.includes(search);
+        
+        const cleanDate = p.payment_date ? String(p.payment_date).split('T')[0] : '';
+        const matchDate = dateVal ? cleanDate === dateVal : true;
+        
         return matchText && matchDate;
       });
 
@@ -486,16 +519,14 @@
       const payment = allPayments.find(p => p.id === paymentId);
       if (!payment) return;
 
-      let dateFormatted = payment.payment_date || '-';
-      if (payment.payment_date && payment.payment_date.includes('-')) {
-        const [y, m, d] = payment.payment_date.split('-');
-        dateFormatted = `${d}/${m}/${y}`;
-      }
+      const dateFormatted = formatSafeDate(payment.payment_date);
+      const timeFormatted = formatSafeTime(payment.created_at);
 
       document.getElementById('rcptNumber').textContent = `RECIBO #${payment.receipt_number || '-'}`;
       document.getElementById('rcptDate').textContent = `Fecha: ${dateFormatted}`;
+      document.getElementById('rcptTime').textContent = timeFormatted ? `Hora: ${timeFormatted}` : '';
       document.getElementById('rcptStudent').textContent = payment.students?.full_name || 'Sin nombre';
-      document.getElementById('rcptConcept').textContent = payment.concept;
+      document.getElementById('rcptConcept').textContent = payment.concept || payment.payment_concept || 'Matrícula';
       document.getElementById('rcptMethod').textContent = payment.payment_method;
       document.getElementById('rcptAmount').textContent = formatCurrency(payment.amount);
 
@@ -521,7 +552,13 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+      // Poner la fecha de hoy por defecto en el input
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('paymentDate').value = `${yyyy}-${mm}-${dd}`;
+      
       loadStudentsSelect();
       loadPayments();
     });
