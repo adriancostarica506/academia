@@ -122,7 +122,7 @@
                 <th class="p-3">Cargo</th>
                 <th class="p-3">Especialidad</th>
                 <th class="p-3">Usuario</th>
-                <th class="p-3 text-center">Acción</th>
+                <th class="p-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody id="staffTableBody">
@@ -137,19 +137,19 @@
     </div>
   </main>
 
-  <!-- Modal para Editar -->
+  <!-- Modal para Editar Datos Personales -->
   <div id="editModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-      <h3 class="text-base font-bold text-slate-800 mb-4">Editar Datos</h3>
+      <h3 class="text-base font-bold text-slate-800 mb-4">Editar Datos Personales</h3>
       <input type="hidden" id="editUserId">
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo</label>
-          <input type="text" id="editName" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+          <input type="text" id="editName" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
         </div>
         <div id="editSpecialtyDiv">
           <label class="block text-xs font-semibold text-slate-600 mb-1">Especialidad</label>
-          <select id="editSpecialty" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+          <select id="editSpecialty" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-1 focus:ring-blue-500">
             <option value="Barberia y Estilismo">Barbería y Estilismo</option>
             <option value="Manicurismo">Manicurismo</option>
             <option value="Trenzado">Trenzado</option>
@@ -159,12 +159,35 @@
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Teléfono</label>
-          <input type="tel" id="editPhone" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+          <input type="tel" id="editPhone" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
         </div>
       </div>
       <div class="flex justify-end space-x-2 mt-5">
         <button onclick="closeModal()" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Cancelar</button>
         <button id="btnSaveEdit" onclick="saveEdit()" class="px-4 py-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Cambiar Contraseña -->
+  <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
+      <h3 class="text-base font-bold text-slate-800 mb-1">Cambiar Contraseña</h3>
+      <p id="passwordTargetUser" class="text-xs text-slate-500 mb-4">Usuario: -</p>
+      
+      <input type="hidden" id="passwordUserId">
+      <div id="passwordAlert" class="hidden mb-3 p-2 rounded text-xs"></div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Nueva Contraseña</label>
+          <input type="password" id="newPasswordInput" placeholder="Mínimo 6 caracteres" minlength="6" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 mt-5">
+        <button onclick="closePasswordModal()" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Cancelar</button>
+        <button id="btnSavePassword" onclick="saveNewPassword()" class="px-4 py-1.5 text-sm rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium">Actualizar Contraseña</button>
       </div>
     </div>
   </div>
@@ -220,7 +243,7 @@
         .order('full_name');
 
       if (error) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar datos.</td></tr>`;
         return;
       }
 
@@ -248,15 +271,17 @@
             <td class="p-3 capitalize font-semibold text-xs text-slate-600">${u.role}</td>
             <td class="p-3 text-slate-600 text-xs">${specialty}</td>
             <td class="p-3 font-mono text-xs text-blue-600 bg-blue-50 w-fit rounded px-2 py-0.5">${u.username || '-'}</td>
-            <td class="p-3 text-center">
+            <td class="p-3 text-center space-x-2">
               <button onclick="openEditModal('${u.id}')" class="text-xs text-blue-600 hover:underline font-semibold">Editar</button>
+              <span class="text-slate-300">|</span>
+              <button onclick="openPasswordModal('${u.id}')" class="text-xs text-red-600 hover:underline font-semibold">Clave</button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    // Modal de edición
+    // Modal de edición de datos personales
     function openEditModal(userId) {
       const user = staffList.find(s => s.id === userId);
       if (!user) return;
@@ -306,6 +331,60 @@
       } finally {
         btn.disabled = false;
         btn.textContent = 'Guardar Cambios';
+      }
+    }
+
+    // Modal de cambio de contraseña
+    function openPasswordModal(userId) {
+      const user = staffList.find(s => s.id === userId);
+      if (!user) return;
+
+      document.getElementById('passwordUserId').value = user.id;
+      document.getElementById('passwordTargetUser').textContent = `Usuario: ${user.full_name} (@${user.username})`;
+      document.getElementById('newPasswordInput').value = '';
+      
+      const alertBox = document.getElementById('passwordAlert');
+      alertBox.className = 'hidden';
+      alertBox.textContent = '';
+
+      document.getElementById('passwordModal').classList.remove('hidden');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('passwordModal').classList.add('hidden');
+    }
+
+    async function saveNewPassword() {
+      const userId = document.getElementById('passwordUserId').value;
+      const newPassword = document.getElementById('newPasswordInput').value;
+      const alertBox = document.getElementById('passwordAlert');
+      const btn = document.getElementById('btnSavePassword');
+
+      if (!newPassword || newPassword.length < 6) {
+        alertBox.textContent = 'La contraseña debe tener mínimo 6 caracteres.';
+        alertBox.className = 'mb-3 p-2 rounded text-xs bg-red-50 text-red-700 border border-red-200 block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Cambiando...';
+
+      try {
+        const { error } = await supabaseClient.rpc('admin_change_user_password', {
+          p_user_id: userId,
+          p_new_password: newPassword
+        });
+
+        if (error) throw error;
+
+        alert('¡Contraseña actualizada con éxito!');
+        closePasswordModal();
+      } catch (err) {
+        alertBox.textContent = err.message || 'Error al cambiar contraseña.';
+        alertBox.className = 'mb-3 p-2 rounded text-xs bg-red-50 text-red-700 border border-red-200 block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Actualizar Contraseña';
       }
     }
 
