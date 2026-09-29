@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Control - Academi</title>
+  <title>Alumnos y Matrícula - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
@@ -13,22 +14,14 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <h1 class="text-xl font-bold text-blue-600">Academi Admin</h1>
-        <span id="badgeRole" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-700 capitalize">Cargando...</span>
+        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <span class="text-slate-400">|</span>
+        <span class="text-sm font-semibold text-slate-700">Expediente de Alumnos y Matrícula</span>
       </div>
-      <div class="flex items-center space-x-4">
-        <a href="alumnos.html" class="flex items-center gap-1.5 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 font-bold px-3 py-1.5 rounded-lg transition shadow-sm">
-          👤 Gestionar Alumnos
-        </a>
-        <a href="cobros_pendientes.html" class="flex items-center gap-1.5 text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-300 font-bold px-3 py-1.5 rounded-lg transition shadow-sm">
-          🔔 Cobros Pendientes
-        </a>
-        <a href="chat.html" class="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-bold px-3 py-1.5 rounded-lg transition">
-          💬 Abrir Chat Online
-        </a>
-        <span id="userName" class="text-sm font-medium text-slate-600">Usuario</span>
-        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
-          Cerrar Sesión
+      <div class="flex items-center space-x-3">
+        <span id="userName" class="text-xs font-semibold text-slate-600">Usuario</span>
+        <button id="btnLogout" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Salir
         </button>
       </div>
     </div>
@@ -37,392 +30,267 @@
   <!-- Contenedor Principal -->
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- SECCIÓN ADMINISTRADOR -->
-    <div id="sectionAdmin" class="hidden space-y-6">
-      <h2 class="text-lg font-bold text-slate-700">Panel de Administración General</h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <!-- Cobros y Mensualidades -->
-        <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-amber-900">Cobros y Mensualidades</h3>
-              <span class="text-xs bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded-full">Alerta</span>
-            </div>
-            <p class="text-xs text-amber-800 mb-4">Ver quiénes tienen cobro vencido o próximo a pagar para enviar recordatorio.</p>
-          </div>
-          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
-            Control de Cobros Pendientes
-          </a>
-        </div>
-
-        <!-- Alumnos -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Alumnos</h3>
-            <p class="text-xs text-slate-500 mb-4">Registrar nuevos alumnos, expedientes, editar datos y contacto.</p>
-          </div>
-          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg font-medium transition">
-            Gestionar Alumnos
-          </a>
-        </div>
-
-        <!-- Horarios y Días -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Horarios y Días</h3>
-            <p class="text-xs text-slate-500 mb-4">Asignar alumnos con días de la semana (Lunes a Domingo) y turnos.</p>
-          </div>
-          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-medium transition">
-            Asignar Horarios
-          </a>
-        </div>
-
-        <!-- Caja y Pagos -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Caja y Pagos</h3>
-            <p class="text-xs text-slate-500 mb-4">Historial de cobros, recibos, próximo pago y descargas Excel.</p>
-          </div>
-          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-medium transition">
-            Ver Pagos y Recibos
-          </a>
-        </div>
-
-        <!-- Personal y Profesores -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Personal Docente</h3>
-            <p class="text-xs text-slate-500 mb-4">Gestionar cuentas de profesores y recepción.</p>
-          </div>
-          <a href="profesores.html" class="block text-center w-full bg-slate-800 hover:bg-slate-900 text-white text-xs py-2 rounded-lg font-medium transition">
-            Personal y Profesores
-          </a>
-        </div>
+    <!-- Encabezado con Botones de Acción -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h2 class="text-lg font-bold text-slate-800">Alumnos Matriculados</h2>
+        <p class="text-xs text-slate-500">Registra alumnos asignándoles profesor, curso y horario, o filtra por cualquier campo.</p>
       </div>
 
-      <!-- Monitor de Asistencias (Admin) -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 border-b border-slate-100 pb-3">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias (Todos los Días Marcados)</h3>
-            </div>
-            <p class="text-xs text-slate-500">Muestra todos los días y horas que han marcado cada uno de los profesores en tiempo real.</p>
-          </div>
-
-          <!-- Filtros de Consulta -->
-          <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase">Profesor</label>
-              <select id="adminTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
-                <option value="">👨‍🏫 Todos los profesores</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Día</label>
-              <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase">Estado</label>
-              <select id="adminStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
-                <option value="">Todos los Estados</option>
-                <option value="presente">🟢 Sí llegó</option>
-                <option value="tarde">🟡 Llegó tarde</option>
-                <option value="ausente">🔴 No se presentó</option>
-              </select>
-            </div>
-            <div class="self-end">
-              <button onclick="clearMonitorFilters('admin')" class="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-600 hover:bg-slate-50 transition">
-                Ver Todos los Días
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Estado Marcado</th>
-                <th class="p-3">Fecha y Hora</th>
-                <th class="p-3">Alumno</th>
-                <th class="p-3">Profesor Encargado</th>
-                <th class="p-3">Horario</th>
-                <th class="p-3">Curso</th>
-              </tr>
-            </thead>
-            <tbody id="adminAttendanceTableBody">
-              <tr>
-                <td colspan="6" class="p-4 text-center text-slate-400">Cargando monitor...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- SECCIÓN RECEPCIÓN -->
-    <div id="sectionRecepcion" class="hidden space-y-6">
-      <h2 class="text-lg font-bold text-slate-700">Módulo de Recepción</h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Cobros Pendientes -->
-        <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-amber-900">Cobros y Mensualidades</h3>
-              <span class="text-xs bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded-full">Alerta</span>
-            </div>
-            <p class="text-xs text-amber-800 mb-4">Supervisar alumnos vencidos y enviar recordatorios por WhatsApp.</p>
-          </div>
-          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
-            Cobros Pendientes
-          </a>
-        </div>
-
-        <!-- Alumnos -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Alumnos</h3>
-            <p class="text-xs text-slate-500 mb-4">Registrar nuevos alumnos, fichas personales y datos.</p>
-          </div>
-          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg font-medium transition">
-            Gestionar Alumnos
-          </a>
-        </div>
-
-        <!-- Caja y Cobros -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Caja y Cobros</h3>
-            <p class="text-xs text-slate-500 mb-4">Registrar pagos, próximo vencimiento y recibos.</p>
-          </div>
-          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-medium transition">
-            Registrar Pagos
-          </a>
-        </div>
-
-        <!-- Horarios y Alumnos -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Horarios y Alumnos</h3>
-            <p class="text-xs text-slate-500 mb-4">Agendar estudiantes en turnos y días de la semana.</p>
-          </div>
-          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-medium transition">
-            Asignar Horarios
-          </a>
-        </div>
-      </div>
-
-      <!-- Monitor en vivo (Recepción) -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 border-b border-slate-100 pb-3">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias (Todos los Días Marcados)</h3>
-            </div>
-            <p class="text-xs text-slate-500">Consulta los días anteriores y el día actual marcados por cada profesor.</p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase">Profesor</label>
-              <select id="recepcionTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
-                <option value="">👨‍🏫 Todos los profesores</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Día</label>
-              <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase">Estado</label>
-              <select id="recepcionStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
-                <option value="">Todos los Estados</option>
-                <option value="presente">🟢 Sí llegó</option>
-                <option value="tarde">🟡 Llegó tarde</option>
-                <option value="ausente">🔴 No se presentó</option>
-              </select>
-            </div>
-            <div class="self-end">
-              <button onclick="clearMonitorFilters('recepcion')" class="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-600 hover:bg-slate-50 transition">
-                Ver Todos los Días
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Estado Marcado</th>
-                <th class="p-3">Fecha y Hora</th>
-                <th class="p-3">Alumno</th>
-                <th class="p-3">Profesor Encargado</th>
-                <th class="p-3">Horario</th>
-                <th class="p-3">Curso</th>
-              </tr>
-            </thead>
-            <tbody id="recepcionAttendanceTableBody">
-              <tr>
-                <td colspan="6" class="p-4 text-center text-slate-400">Cargando monitor...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- SECCIÓN PROFESORES -->
-    <div id="sectionProfesor" class="hidden space-y-6">
-      
-      <!-- Pestañas del Profesor -->
-      <div class="flex items-center space-x-2 border-b border-slate-200 pb-2">
-        <button id="tabTeacherMark" onclick="switchTeacherTab('mark')" class="px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition">
-          ✏️ Toma de Asistencia Hoy
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button 
+          onclick="exportTableToExcel()" 
+          class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm"
+        >
+          <span>📊 Exportar Lista (Excel)</span>
         </button>
-        <button id="tabTeacherStats" onclick="switchTeacherTab('stats')" class="px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
-          📊 Historial y Conteo de Mis Alumnos
+        <button 
+          onclick="openEnrollModal()" 
+          class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm"
+        >
+          <span class="text-sm">➕</span>
+          <span>Nuevo Estudiante y Matrícula</span>
         </button>
       </div>
-
-      <!-- VISTA A: TOMA DE ASISTENCIA DIARIA -->
-      <div id="teacherViewMark" class="space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia</h2>
-            <p class="text-xs text-slate-500">Marca si el alumno llegó, llegó tarde o no se presentó. Todo se sincroniza con Recepción y Admin.</p>
-          </div>
-          <div class="flex items-center gap-3">
-            <a href="chat.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
-              💬 Chat con Recepción
-            </a>
-            <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold transition">
-              ✓ Guardado y Visible en Recepción y Admin
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Clase (Día / Mes / Año)</label>
-              <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
-              <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none">
-                <option value="">Todos los turnos</option>
-                <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
-                <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
-                <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="border-t border-slate-200 pt-4">
-            <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados para Asistir</h4>
-            <div id="teacherStudentsContainer" class="overflow-x-auto text-sm text-slate-500 italic">
-              Cargando alumnos asignados...
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- VISTA B: EXPEDIENTE, BUSCADOR Y CONTEO DE ASISTENCIAS DE MIS ALUMNOS -->
-      <div id="teacherViewStats" class="hidden space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h2 class="text-lg font-bold text-slate-700">Expediente de Asistencias de Mis Alumnos</h2>
-            <p class="text-xs text-slate-500">Busca alumnos por nombre y revisa cuántas veces han llegado, llegado tarde o faltado con su horario y días asignados.</p>
-          </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <div class="flex flex-col sm:flex-row items-center gap-3">
-            <div class="relative flex-1 w-full">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
-              <input 
-                type="text" 
-                id="searchTeacherStudentInput" 
-                oninput="filterTeacherStudentStats()" 
-                placeholder="Escribe el nombre del alumno para buscar..." 
-                class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-            <button onclick="document.getElementById('searchTeacherStudentInput').value=''; filterTeacherStudentStats();" class="text-xs text-slate-500 hover:text-slate-800 underline px-2 py-1">
-              Limpiar búsqueda
-            </button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
-                  <th class="p-3">Alumno</th>
-                  <th class="p-3">Horario Asignado</th>
-                  <th class="p-3">Días de Asistencia</th>
-                  <th class="p-3 text-center">🟢 Sí llegó</th>
-                  <th class="p-3 text-center">🟡 Llegó tarde</th>
-                  <th class="p-3 text-center">🔴 No se presentó</th>
-                  <th class="p-3 text-center">Total Registros</th>
-                  <th class="p-3 text-center">Detalle por Fecha</th>
-                </tr>
-              </thead>
-              <tbody id="teacherStudentStatsTableBody" class="divide-y divide-slate-100">
-                <tr>
-                  <td colspan="8" class="p-6 text-center text-slate-400">Cargando reporte de alumnos...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
     </div>
 
-  </main>
-
-  <!-- MODAL: DETALLE DE ASISTENCIAS DEL ALUMNO (FECHAS Y HORAS) -->
-  <div id="modalStudentAttendanceHistory" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
-      <div class="flex justify-between items-start border-b pb-3">
+    <!-- Barra de Filtros Múltiples (Profesor, Curso, Horario, Mes/Año y Nombre) -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
+        <!-- 1. Búsqueda por Nombre / Cédula / Teléfono -->
         <div>
-          <h3 id="modalStudentNameTitle" class="text-base font-bold text-slate-900">Historial de Asistencias del Alumno</h3>
-          <p id="modalStudentScheduleSubtitle" class="text-xs text-indigo-600 font-medium">Horario y Días</p>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Buscar Alumno</label>
+          <input 
+            type="text" 
+            id="filterSearch" 
+            oninput="applyFilters()" 
+            placeholder="Nombre, cédula o teléfono..." 
+            class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+          >
         </div>
-        <button onclick="closeStudentAttendanceModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg leading-none">✕</button>
+
+        <!-- 2. Filtro por Profesor -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Profesor Asignado</label>
+          <select id="filterTeacher" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
+            <option value="">👨‍🏫 Todos los profesores</option>
+          </select>
+        </div>
+
+        <!-- 3. Filtro por Curso -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Curso / Materia</label>
+          <select id="filterCourse" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
+            <option value="">📚 Todos los cursos</option>
+          </select>
+        </div>
+
+        <!-- 4. Filtro por Horario -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Horario Matriculado</label>
+          <select id="filterTimeSlot" onchange="applyFilters()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
+            <option value="">⏰ Todos los horarios</option>
+            <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
+            <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
+            <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
+          </select>
+        </div>
+
+        <!-- 5. Filtro por Mes y Año de Ingreso -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mes y Año de Ingreso</label>
+          <input 
+            type="month" 
+            id="filterMonthYear" 
+            onchange="applyFilters()" 
+            class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+          >
+        </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex justify-between items-center text-xs text-slate-500 pt-1">
+        <span>Mostrando: <b id="filteredCount" class="text-slate-800">0</b> alumnos</span>
+        <button onclick="clearAllFilters()" class="text-blue-600 hover:text-blue-800 font-semibold underline">
+          Limpiar todos los filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla Principal de Alumnos Matriculados -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-xs">
-          <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 sticky top-0 font-semibold">
-            <tr>
-              <th class="p-2.5">Fecha (Día/Mes/Año)</th>
-              <th class="p-2.5">Hora Marcada</th>
-              <th class="p-2.5">Estado</th>
-              <th class="p-2.5">Curso</th>
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+              <th class="p-3.5">Alumno</th>
+              <th class="p-3.5">Cédula</th>
+              <th class="p-3.5">Profesor</th>
+              <th class="p-3.5">Curso</th>
+              <th class="p-3.5">Horario</th>
+              <th class="p-3.5">Días de Clase</th>
+              <th class="p-3.5">Fecha Registro</th>
+              <th class="p-3.5 text-center">Acciones</th>
             </tr>
           </thead>
-          <tbody id="modalStudentHistoryBody" class="divide-y divide-slate-100 font-medium">
+          <tbody id="studentsTableBody" class="divide-y divide-slate-100 font-medium">
             <tr>
-              <td colspan="4" class="p-4 text-center text-slate-400">Cargando historial...</td>
+              <td colspan="8" class="p-8 text-center text-slate-400">Cargando lista de alumnos...</td>
             </tr>
           </tbody>
         </table>
       </div>
+    </div>
 
-      <div class="flex justify-end pt-2 border-t border-slate-100">
-        <button onclick="closeStudentAttendanceModal()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-          Cerrar
-        </button>
+  </main>
+
+  <!-- MODAL: REGISTRAR NUEVO ESTUDIANTE Y MATRICULARLO -->
+  <div id="enrollModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h3 id="modalTitle" class="text-base font-bold text-slate-900">Registrar y Matricular Alumno</h3>
+          <p class="text-[11px] text-slate-500">Ingresa sus datos personales y asígnalo de una vez a su clase.</p>
+        </div>
+        <button onclick="closeEnrollModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg leading-none">✕</button>
       </div>
+
+      <div id="modalAlert" class="hidden p-3 rounded-lg text-xs"></div>
+
+      <form id="enrollForm" class="space-y-4 flex-1 overflow-y-auto pr-1">
+        <input type="hidden" id="editStudentId">
+
+        <!-- Sección 1: Datos Personales -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-blue-700 uppercase tracking-wider">1. Datos Personales</h4>
+          
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Completo *</label>
+            <input 
+              type="text" 
+              id="inputFullName" 
+              placeholder="Ej: Pedro Castro Valderramos" 
+              required 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Teléfono Móvil (WhatsApp) *</label>
+              <input 
+                type="text" 
+                id="inputPhone" 
+                placeholder="Ej: 88887777" 
+                required 
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Cédula / Identificación</label>
+              <input 
+                type="text" 
+                id="inputIdentification" 
+                placeholder="Ej: 1-1234-0567" 
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Correo Electrónico</label>
+              <input 
+                type="email" 
+                id="inputEmail" 
+                placeholder="alumno@ejemplo.com" 
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Contacto de Emergencia</label>
+              <input 
+                type="text" 
+                id="inputEmergencyContact" 
+                placeholder="Nombre y teléfono" 
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 2: Asignación Académica y Horario -->
+        <div class="space-y-3 border-t border-slate-200 pt-3">
+          <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-wider">2. Matrícula y Asignación de Horario</h4>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Profesor Encargado *</label>
+              <select id="modalSelectTeacher" required class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white font-medium">
+                <option value="" disabled selected>Selecciona profesor...</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Curso / Carrera *</label>
+              <select id="modalSelectCourse" required class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white font-medium">
+                <option value="" disabled selected>Selecciona curso...</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Horario / Turno *</label>
+            <select id="modalSelectTimeSlot" required class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white font-medium">
+              <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
+              <option value="2:00 pm a 5:00 pm" selected>2:00 pm a 5:00 pm (Tarde)</option>
+              <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Días de la Semana Asignados</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
+              <label class="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded cursor-pointer">
+                <input type="checkbox" name="enrollDays" value="Lunes" checked class="w-3.5 h-3.5 text-indigo-600 rounded"> Lunes
+              </label>
+              <label class="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded cursor-pointer">
+                <input type="checkbox" name="enrollDays" value="Martes" checked class="w-3.5 h-3.5 text-indigo-600 rounded"> Martes
+              </label>
+              <label class="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded cursor-pointer">
+                <input type="checkbox" name="enrollDays" value="Miércoles" checked class="w-3.5 h-3.5 text-indigo-600 rounded"> Miércoles
+              </label>
+              <label class="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded cursor-pointer">
+                <input type="checkbox" name="enrollDays" value="Jueves" checked class="w-3.5 h-3.5 text-indigo-600 rounded"> Jueves
+              </label>
+              <label class="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded cursor-pointer">
+                <input type="checkbox" name="enrollDays" value="Viernes" checked class="w-3.5 h-3.5 text-indigo-600 rounded"> Viernes
+              </label>
+              <label class="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded cursor-pointer">
+                <input type="checkbox" name="enrollDays" value="Sábado" class="w-3.5 h-3.5 text-indigo-600 rounded"> Sábado
+              </label>
+              <label class="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded cursor-pointer">
+                <input type="checkbox" name="enrollDays" value="Domingo" class="w-3.5 h-3.5 text-indigo-600 rounded"> Domingo
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button 
+            type="button" 
+            onclick="closeEnrollModal()" 
+            class="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 transition"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            id="btnSubmitEnroll" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition shadow-sm"
+          >
+            Guardar y Matricular Alumno
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -431,566 +299,397 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUserId = null;
-    let currentTeacherId = null;
-    let currentUserRole = null;
-    let teachersCache = [];
-    let rawTeacherStudentsData = [];
+    let allStudentsData = [];
+    let teachersList = [];
+    let coursesList = [];
 
-    const daysMap = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-    function getDayNameFromDateStr(dateStr) {
-      if (!dateStr) return '';
-      const [y, m, d] = dateStr.split('-');
-      const dateObj = new Date(y, m - 1, d);
-      return daysMap[dateObj.getDay()];
+    function formatSafeDate(rawDate) {
+      if (!rawDate) return '-';
+      const clean = String(rawDate).split('T')[0];
+      const parts = clean.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return clean;
     }
 
-    function switchTeacherTab(tab) {
-      const btnMark = document.getElementById('tabTeacherMark');
-      const btnStats = document.getElementById('tabTeacherStats');
-      const viewMark = document.getElementById('teacherViewMark');
-      const viewStats = document.getElementById('teacherViewStats');
-
-      if (tab === 'mark') {
-        btnMark.className = 'px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition';
-        btnStats.className = 'px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
-        viewMark.classList.remove('hidden');
-        viewStats.classList.add('hidden');
-        loadTeacherStudents();
-      } else {
-        btnStats.className = 'px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition';
-        btnMark.className = 'px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
-        viewStats.classList.remove('hidden');
-        viewMark.classList.add('hidden');
-        loadTeacherStudentStats();
-      }
+    function showModalAlert(text, type = 'error') {
+      const el = document.getElementById('modalAlert');
+      el.textContent = text;
+      el.className = `p-3 rounded-lg text-xs ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      el.classList.remove('hidden');
     }
 
-    async function loadTeachersDropdown() {
-      const { data } = await supabaseClient.from('teachers').select('id, full_name').order('full_name');
-      teachersCache = data || [];
+    async function loadDropdowns() {
+      // Cargar Profesores
+      const { data: teachers } = await supabaseClient.from('teachers').select('id, full_name').order('full_name');
+      teachersList = teachers || [];
+      const teacherOpts = teachersList.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
 
-      const adminSelect = document.getElementById('adminTeacherFilter');
-      const recepSelect = document.getElementById('recepcionTeacherFilter');
+      document.getElementById('filterTeacher').innerHTML = '<option value="">👨‍🏫 Todos los profesores</option>' + teacherOpts;
+      document.getElementById('modalSelectTeacher').innerHTML = '<option value="" disabled selected>Selecciona profesor...</option>' + teacherOpts;
 
-      const options = '<option value="">👨‍🏫 Todos los profesores</option>' +
-        teachersCache.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
+      // Cargar Cursos
+      const { data: courses } = await supabaseClient.from('courses').select('id, name').order('name');
+      coursesList = courses || [];
+      const courseOpts = coursesList.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
-      if (adminSelect) adminSelect.innerHTML = options;
-      if (recepSelect) recepSelect.innerHTML = options;
+      document.getElementById('filterCourse').innerHTML = '<option value="">📚 Todos los cursos</option>' + courseOpts;
+      document.getElementById('modalSelectCourse').innerHTML = '<option value="" disabled selected>Selecciona curso...</option>' + courseOpts;
     }
 
-    async function loadTeacherStudents() {
-      const container = document.getElementById('teacherStudentsContainer');
-      const dateVal = document.getElementById('teacherDateFilter').value;
-      const slotVal = document.getElementById('teacherSlotFilter').value;
-
-      if (!currentTeacherId) {
-        container.innerHTML = '<p class="text-sm text-slate-400 p-2">No se encontró profesor vinculado.</p>';
-        return;
-      }
-
-      const dayOfWeekSelected = getDayNameFromDateStr(dateVal);
-
-      let query = supabaseClient
-        .from('student_schedules')
-        .select(`
-          id,
-          time_slot,
-          days_of_week,
-          students (id, full_name, phone),
-          courses (name),
-          attendances (id, status, recorded_at, attendance_date)
-        `)
-        .eq('teacher_id', currentTeacherId);
-
-      if (slotVal) {
-        query = query.eq('time_slot', slotVal);
-      }
-
-      const { data, error } = await query;
-
-      if (error || !data || data.length === 0) {
-        container.innerHTML = '<p class="text-sm text-slate-400 p-2">No tienes alumnos registrados con este profesor.</p>';
-        return;
-      }
-
-      const studentsForDay = data.filter(item => {
-        if (!item.days_of_week || item.days_of_week.length === 0) return true;
-        return item.days_of_week.includes(dayOfWeekSelected);
-      });
-
-      if (studentsForDay.length === 0) {
-        container.innerHTML = `<p class="text-sm text-slate-400 p-3 bg-slate-50 rounded-lg">No hay alumnos asignados para asistir los <b>${dayOfWeekSelected}</b> en este turno.</p>`;
-        return;
-      }
-
-      container.innerHTML = `
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-              <th class="p-3 text-center w-48">¿Asistió hoy (${dayOfWeekSelected})?</th>
-              <th class="p-3">Horario</th>
-              <th class="p-3">Alumno</th>
-              <th class="p-3">Teléfono</th>
-              <th class="p-3">Curso</th>
-              <th class="p-3">Hora Marcación</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${studentsForDay.map(item => {
-              const currentAttendance = (item.attendances || []).find(a => a.attendance_date === dateVal);
-              const status = currentAttendance?.status || 'pendiente';
-
-              let recordedTimeStr = '-';
-              if (currentAttendance?.recorded_at) {
-                const recDate = new Date(currentAttendance.recorded_at);
-                recordedTimeStr = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-              }
-
-              return `
-                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                  <td class="p-3 text-center">
-                    <select 
-                      onchange="updateAttendanceChoice('${item.id}', this.value)"
-                      class="text-xs font-bold rounded-lg p-2 border outline-none cursor-pointer ${
-                        status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                        status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                        status === 'ausente' ? 'bg-rose-100 text-rose-800 border-rose-300' :
-                        'bg-slate-100 text-slate-600 border-slate-300'
-                      }"
-                    >
-                      <option value="pendiente" ${status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
-                      <option value="presente" ${status === 'presente' ? 'selected' : ''}>🟢 Sí llegó</option>
-                      <option value="tarde" ${status === 'tarde' ? 'selected' : ''}>🟡 Llegó tarde</option>
-                      <option value="ausente" ${status === 'ausente' ? 'selected' : ''}>🔴 No se presentó</option>
-                    </select>
-                  </td>
-                  <td class="p-3 font-semibold text-xs text-blue-700 whitespace-nowrap">${item.time_slot}</td>
-                  <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
-                  <td class="p-3 text-xs text-slate-600">${item.students?.phone || '-'}</td>
-                  <td class="p-3 text-xs text-slate-600">${item.courses?.name || '-'}</td>
-                  <td class="p-3 font-mono text-xs font-semibold text-slate-700">${recordedTimeStr}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-
-    async function updateAttendanceChoice(scheduleId, statusVal) {
-      if (statusVal === 'pendiente') return;
-
-      const dateVal = document.getElementById('teacherDateFilter').value;
-
+    async function loadStudentsAndSchedules() {
+      const tbody = document.getElementById('studentsTableBody');
       try {
-        const { error } = await supabaseClient.rpc('mark_student_attendance', {
-          p_schedule_id: scheduleId,
-          p_status: statusVal,
-          p_custom_date: dateVal
-        });
-
-        if (error) throw error;
-
-        const feedback = document.getElementById('saveAttendanceFeedback');
-        feedback.classList.remove('hidden');
-        setTimeout(() => feedback.classList.add('hidden'), 2500);
-
-        await loadTeacherStudents();
-
-      } catch (err) {
-        alert('Error al guardar asistencia: ' + (err.message || 'Error'));
-        loadTeacherStudents();
-      }
-    }
-
-    async function loadTeacherStudentStats() {
-      const tbody = document.getElementById('teacherStudentStatsTableBody');
-      if (!currentTeacherId) return;
-
-      try {
+        // Obtenemos los alumnos con su asignación actual
         const { data, error } = await supabaseClient
-          .from('student_schedules')
+          .from('students')
           .select(`
             id,
-            time_slot,
-            days_of_week,
-            students (id, full_name, phone),
-            courses (name),
-            attendances (
+            full_name,
+            identification,
+            phone,
+            email,
+            emergency_contact,
+            created_at,
+            student_schedules (
               id,
-              status,
-              attendance_date,
-              recorded_at
+              teacher_id,
+              course_id,
+              time_slot,
+              days_of_week,
+              assigned_date,
+              teachers (id, full_name),
+              courses (id, name)
             )
           `)
-          .eq('teacher_id', currentTeacherId)
-          .order('id', { ascending: false });
+          .order('full_name', { ascending: true });
 
         if (error) throw error;
 
-        rawTeacherStudentsData = data || [];
-        filterTeacherStudentStats();
+        allStudentsData = data || [];
+        applyFilters();
 
       } catch (err) {
-        console.error('Error cargando conteos:', err);
-        tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-red-500">Error al cargar datos: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500">Error al cargar alumnos: ${err.message}</td></tr>`;
       }
     }
 
-    function filterTeacherStudentStats() {
-      const tbody = document.getElementById('teacherStudentStatsTableBody');
-      const search = (document.getElementById('searchTeacherStudentInput')?.value || '').toLowerCase().trim();
+    function applyFilters() {
+      const search = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+      const teacherId = document.getElementById('filterTeacher').value;
+      const courseId = document.getElementById('filterCourse').value;
+      const timeSlot = document.getElementById('filterTimeSlot').value;
+      const monthYear = document.getElementById('filterMonthYear').value; // Formato YYYY-MM
 
-      const filtered = rawTeacherStudentsData.filter(item => {
-        const name = (item.students?.full_name || '').toLowerCase();
-        const phone = (item.students?.phone || '').toLowerCase();
-        return !search || name.includes(search) || phone.includes(search);
+      const filtered = allStudentsData.filter(student => {
+        // Filtro texto (nombre, identificación, teléfono)
+        const name = (student.full_name || '').toLowerCase();
+        const iden = (student.identification || '').toLowerCase();
+        const phone = (student.phone || '').toLowerCase();
+        const matchSearch = !search || name.includes(search) || iden.includes(search) || phone.includes(search);
+
+        // Horario / Programación vinculada
+        const schedule = student.student_schedules?.[0] || null;
+
+        const matchTeacher = !teacherId || (schedule && schedule.teacher_id === teacherId);
+        const matchCourse = !courseId || (schedule && schedule.course_id === courseId);
+        const matchSlot = !timeSlot || (schedule && schedule.time_slot === timeSlot);
+
+        // Filtro mes y año de registro (YYYY-MM)
+        let matchMonthYear = true;
+        if (monthYear && student.created_at) {
+          const studentYM = String(student.created_at).substring(0, 7);
+          matchMonthYear = (studentYM === monthYear);
+        }
+
+        return matchSearch && matchTeacher && matchCourse && matchSlot && matchMonthYear;
       });
 
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">No se encontraron alumnos con ese nombre.</td></tr>`;
+      document.getElementById('filteredCount').textContent = filtered.length;
+      renderTable(filtered);
+    }
+
+    function renderTable(list) {
+      const tbody = document.getElementById('studentsTableBody');
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">No hay alumnos que coincidan con estos filtros.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map(item => {
-        const attendances = item.attendances || [];
-        const countPresente = attendances.filter(a => a.status === 'presente').length;
-        const countTarde = attendances.filter(a => a.status === 'tarde').length;
-        const countAusente = attendances.filter(a => a.status === 'ausente').length;
-        const total = countPresente + countTarde + countAusente;
+      tbody.innerHTML = list.map(student => {
+        const schedule = student.student_schedules?.[0] || null;
+        const teacherName = schedule?.teachers?.full_name || '<span class="text-amber-600 font-semibold italic">Sin asignar</span>';
+        const courseName = schedule?.courses?.name || '<span class="text-slate-400">-</span>';
+        const timeSlot = schedule?.time_slot ? `<span class="text-blue-700 font-bold">${schedule.time_slot}</span>` : '<span class="text-slate-400">-</span>';
 
-        const daysFormatted = (item.days_of_week && item.days_of_week.length > 0)
-          ? item.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-0.5">${d}</span>`).join('')
-          : '<span class="text-slate-400">Todos los días</span>';
+        const daysBadges = (schedule?.days_of_week && schedule.days_of_week.length > 0)
+          ? schedule.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-0.5">${d}</span>`).join('')
+          : '<span class="text-slate-400">-</span>';
 
-        const studentName = item.students?.full_name || 'Sin nombre';
+        const dateFormatted = formatSafeDate(student.created_at);
 
         return `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="p-3 font-bold text-slate-900">
-              <span>${studentName}</span>
-              ${item.students?.phone ? `<br><span class="text-[11px] text-slate-400 font-normal">📞 ${item.students.phone}</span>` : ''}
+            <td class="p-3.5">
+              <span class="font-bold text-slate-900 text-sm">${escapeHtml(student.full_name)}</span>
+              ${student.phone ? `<br><span class="text-[11px] text-slate-500 font-mono">📞 ${escapeHtml(student.phone)}</span>` : ''}
             </td>
-            <td class="p-3 font-semibold text-blue-700">${item.time_slot}</td>
-            <td class="p-3">${daysFormatted}</td>
-            <td class="p-3 text-center">
-              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs">
-                ${countPresente}
-              </span>
+            <td class="p-3.5 font-mono text-slate-700">
+              ${student.identification ? escapeHtml(student.identification) : '<span class="text-slate-400">-</span>'}
             </td>
-            <td class="p-3 text-center">
-              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs">
-                ${countTarde}
-              </span>
+            <td class="p-3.5 font-semibold text-slate-800">
+              ${teacherName}
             </td>
-            <td class="p-3 text-center">
-              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs">
-                ${countAusente}
-              </span>
+            <td class="p-3.5 text-slate-700 font-medium">
+              ${courseName}
             </td>
-            <td class="p-3 text-center font-mono font-bold text-slate-800 text-xs">
-              ${total}
+            <td class="p-3.5">
+              ${timeSlot}
             </td>
-            <td class="p-3 text-center">
-              <button 
-                onclick="openStudentAttendanceHistory('${item.id}', '${encodeURIComponent(studentName)}', '${encodeURIComponent(item.time_slot)}')" 
-                class="px-2.5 py-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-lg transition"
-              >
-                Ver Fechas (${attendances.length})
-              </button>
+            <td class="p-3.5">
+              ${daysBadges}
+            </td>
+            <td class="p-3.5 font-mono text-slate-500">
+              ${dateFormatted}
+            </td>
+            <td class="p-3.5 text-center whitespace-nowrap">
+              <div class="flex items-center justify-center gap-1.5">
+                <button 
+                  onclick="editStudent('${student.id}')" 
+                  class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition"
+                >
+                  ✏️ Editar
+                </button>
+                <button 
+                  onclick="deleteStudent('${student.id}', '${encodeURIComponent(student.full_name)}')" 
+                  class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition"
+                >
+                  🗑️
+                </button>
+              </div>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function openStudentAttendanceHistory(scheduleId, studentNameEscaped, scheduleInfoEscaped) {
-      const studentName = decodeURIComponent(studentNameEscaped);
-      const scheduleInfo = decodeURIComponent(scheduleInfoEscaped);
+    function clearAllFilters() {
+      document.getElementById('filterSearch').value = '';
+      document.getElementById('filterTeacher').value = '';
+      document.getElementById('filterCourse').value = '';
+      document.getElementById('filterTimeSlot').value = '';
+      document.getElementById('filterMonthYear').value = '';
+      applyFilters();
+    }
 
-      const scheduleItem = rawTeacherStudentsData.find(s => s.id === scheduleId);
-      if (!scheduleItem) return;
+    // ABRIR MODAL DE REGISTRO / MATRÍCULA
+    function openEnrollModal(isEdit = false) {
+      document.getElementById('modalAlert').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = isEdit ? 'Editar Datos y Horario del Alumno' : 'Registrar y Matricular Alumno';
+      if (!isEdit) {
+        document.getElementById('enrollForm').reset();
+        document.getElementById('editStudentId').value = '';
+      }
+      document.getElementById('enrollModal').classList.remove('hidden');
+      document.getElementById('inputFullName').focus();
+    }
 
-      document.getElementById('modalStudentNameTitle').textContent = studentName;
-      document.getElementById('modalStudentScheduleSubtitle').textContent = `Horario: ${scheduleInfo} | Curso: ${scheduleItem.courses?.name || 'General'}`;
+    function closeEnrollModal() {
+      document.getElementById('enrollModal').classList.add('hidden');
+      document.getElementById('enrollForm').reset();
+      document.getElementById('editStudentId').value = '';
+    }
 
-      const historyBody = document.getElementById('modalStudentHistoryBody');
-      const list = (scheduleItem.attendances || []).slice().sort((a, b) => new Date(b.attendance_date || b.recorded_at) - new Date(a.attendance_date || a.recorded_at));
+    function editStudent(id) {
+      const student = allStudentsData.find(s => s.id === id);
+      if (!student) return;
 
-      if (list.length === 0) {
-        historyBody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">Aún no hay asistencias marcadas para este alumno.</td></tr>`;
-      } else {
-        historyBody.innerHTML = list.map(a => {
-          let dateStr = a.attendance_date || '-';
-          if (dateStr.includes('-')) {
-            const [y, m, d] = dateStr.split('T')[0].split('-');
-            dateStr = `${d}/${m}/${y}`;
-          }
+      document.getElementById('editStudentId').value = student.id;
+      document.getElementById('inputFullName').value = student.full_name || '';
+      document.getElementById('inputPhone').value = student.phone || '';
+      document.getElementById('inputIdentification').value = student.identification || '';
+      document.getElementById('inputEmail').value = student.email || '';
+      document.getElementById('inputEmergencyContact').value = student.emergency_contact || '';
 
-          let timeStr = '-';
-          if (a.recorded_at) {
-            const d = new Date(a.recorded_at);
-            timeStr = d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          }
+      const schedule = student.student_schedules?.[0] || null;
+      if (schedule) {
+        document.getElementById('modalSelectTeacher').value = schedule.teacher_id || '';
+        document.getElementById('modalSelectCourse').value = schedule.course_id || '';
+        document.getElementById('modalSelectTimeSlot').value = schedule.time_slot || '2:00 pm a 5:00 pm';
 
-          const badgeColor = a.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                             a.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                             'bg-rose-100 text-rose-800 border-rose-300';
-
-          const label = a.status === 'presente' ? '🟢 Sí llegó' :
-                        a.status === 'tarde' ? '🟡 Llegó tarde' : '🔴 No se presentó';
-
-          return `
-            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-              <td class="p-2.5 font-mono font-bold text-slate-800">${dateStr}</td>
-              <td class="p-2.5 font-mono text-slate-600">${timeStr}</td>
-              <td class="p-2.5">
-                <span class="px-2 py-0.5 rounded text-[11px] font-bold border ${badgeColor}">
-                  ${label}
-                </span>
-              </td>
-              <td class="p-2.5 text-slate-600">${scheduleItem.courses?.name || 'General'}</td>
-            </tr>
-          `;
-        }).join('');
+        const assignedDays = schedule.days_of_week || [];
+        document.querySelectorAll('input[name="enrollDays"]').forEach(cb => {
+          cb.checked = assignedDays.includes(cb.value);
+        });
       }
 
-      document.getElementById('modalStudentAttendanceHistory').classList.remove('hidden');
+      openEnrollModal(true);
     }
 
-    function closeStudentAttendanceModal() {
-      document.getElementById('modalStudentAttendanceHistory').classList.add('hidden');
-    }
-
-    // MONITOR: ADMIN Y RECEPCIÓN
-    async function loadAttendanceMonitor() {
-      const isAdm = (currentUserRole === 'admin');
-      const dateEl = document.getElementById(isAdm ? 'adminAttendanceDate' : 'recepcionAttendanceDate');
-      const statusEl = document.getElementById(isAdm ? 'adminStatusFilter' : 'recepcionStatusFilter');
-      const teacherEl = document.getElementById(isAdm ? 'adminTeacherFilter' : 'recepcionTeacherFilter');
-
-      const selectedDate = dateEl?.value?.trim() || null;
-      const selectedStatus = statusEl?.value?.trim() || null;
-      const selectedTeacher = teacherEl?.value?.trim() || null;
-
-      const targetTbody = document.getElementById(isAdm ? 'adminAttendanceTableBody' : 'recepcionAttendanceTableBody');
-      if (!targetTbody) return;
+    async function deleteStudent(id, nameEscaped) {
+      const name = decodeURIComponent(nameEscaped);
+      if (!confirm(`¿Deseas eliminar permanentemente a "${name}" de la base de datos?`)) return;
 
       try {
-        const params = {};
-        if (selectedDate) params.p_date = selectedDate;
-        if (selectedStatus) params.p_status_filter = selectedStatus;
-        if (selectedTeacher) params.p_teacher_filter = selectedTeacher;
+        const { error } = await supabaseClient.from('students').delete().eq('id', id);
+        if (error) throw error;
+        await loadStudentsAndSchedules();
+      } catch (err) {
+        alert('Error al eliminar alumno: ' + err.message);
+      }
+    }
 
-        const { data, error } = await supabaseClient.rpc('get_attendance_monitor', params);
+    // GUARDAR ALUMNO + MATRÍCULA
+    document.getElementById('enrollForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('modalAlert').classList.add('hidden');
 
-        if (error) {
-          let directQuery = supabaseClient
-            .from('attendances')
-            .select(`
-              id,
-              status,
-              attendance_date,
-              recorded_at,
-              student_schedules (
-                time_slot,
-                teacher_id,
-                teachers (full_name),
-                courses (name)
-              ),
-              students (full_name)
-            `)
-            .order('attendance_date', { ascending: false })
-            .order('recorded_at', { ascending: false });
+      const editId = document.getElementById('editStudentId').value;
+      const fullName = document.getElementById('inputFullName').value.trim();
+      const phone = document.getElementById('inputPhone').value.trim();
+      const iden = document.getElementById('inputIdentification').value.trim() || null;
+      const email = document.getElementById('inputEmail').value.trim() || null;
+      const emContact = document.getElementById('inputEmergencyContact').value.trim() || null;
 
-          if (selectedDate) directQuery = directQuery.eq('attendance_date', selectedDate);
-          if (selectedStatus) directQuery = directQuery.eq('status', selectedStatus);
+      const teacherId = document.getElementById('modalSelectTeacher').value;
+      const courseId = document.getElementById('modalSelectCourse').value;
+      const timeSlot = document.getElementById('modalSelectTimeSlot').value;
 
-          const directRes = await directQuery;
-          if (directRes.error) throw directRes.error;
+      const checkedDays = Array.from(document.querySelectorAll('input[name="enrollDays"]:checked')).map(cb => cb.value);
 
-          renderDirectAttendanceRows(directRes.data || [], targetTbody, selectedTeacher);
-          return;
+      if (!fullName || !phone) {
+        showModalAlert('Nombre y teléfono son campos obligatorios.');
+        return;
+      }
+
+      if (!teacherId || !courseId || !timeSlot) {
+        showModalAlert('Debes seleccionar el profesor, curso y horario de clase.');
+        return;
+      }
+
+      if (checkedDays.length === 0) {
+        showModalAlert('Debes marcar al menos un día de clase en la semana.');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitEnroll');
+      btn.disabled = true;
+      btn.textContent = 'Guardando matrícula...';
+
+      try {
+        if (editId) {
+          // 1. Actualizar datos personales
+          const { error: errUpdate } = await supabaseClient
+            .from('students')
+            .update({
+              full_name: fullName,
+              phone: phone,
+              identification: iden,
+              email: email,
+              emergency_contact: emContact
+            })
+            .eq('id', editId);
+
+          if (errUpdate) throw errUpdate;
+
+          // 2. Actualizar o insertar horario
+          await supabaseClient.from('student_schedules').delete().eq('student_id', editId);
+          await supabaseClient.from('student_schedules').insert({
+            student_id: editId,
+            teacher_id: teacherId,
+            course_id: courseId,
+            time_slot: timeSlot,
+            days_of_week: checkedDays,
+            assigned_date: new Date().toISOString().split('T')[0]
+          });
+
+        } else {
+          // Inserción nueva conjunta con RPC
+          const { error: rpcErr } = await supabaseClient.rpc('register_and_enroll_student', {
+            p_full_name: fullName,
+            p_phone: phone,
+            p_identification: iden,
+            p_email: email,
+            p_emergency_contact: emContact,
+            p_emergency_phone: null,
+            p_notes: null,
+            p_teacher_id: teacherId,
+            p_course_id: courseId,
+            p_time_slot: timeSlot,
+            p_days_of_week: checkedDays
+          });
+
+          if (rpcErr) throw rpcErr;
         }
 
-        renderRpcAttendanceRows(data || [], targetTbody);
+        closeEnrollModal();
+        await loadStudentsAndSchedules();
 
       } catch (err) {
-        console.error('Error cargando monitor:', err);
-        targetTbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar datos: ${err.message}</td></tr>`;
+        showModalAlert('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar y Matricular Alumno';
       }
-    }
+    });
 
-    function renderRpcAttendanceRows(list, targetTbody) {
-      if (!list || list.length === 0) {
-        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias para los criterios seleccionados.</td></tr>`;
+    // EXPORTAR A EXCEL (.xlsx)
+    function exportTableToExcel() {
+      if (allStudentsData.length === 0) {
+        alert('No hay alumnos para exportar.');
         return;
       }
 
-      targetTbody.innerHTML = list.map(item => {
-        const badgeColor = item.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                           item.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                           'bg-rose-100 text-rose-800 border-rose-300';
+      const rows = allStudentsData.map(student => {
+        const schedule = student.student_schedules?.[0] || null;
+        return {
+          'Alumno': student.full_name,
+          'Cédula': student.identification || 'S/N',
+          'Teléfono': student.phone,
+          'Correo': student.email || 'S/N',
+          'Profesor Encargado': schedule?.teachers?.full_name || 'Sin asignar',
+          'Curso': schedule?.courses?.name || 'General',
+          'Horario': schedule?.time_slot || 'N/A',
+          'Días de Clase': schedule?.days_of_week ? schedule.days_of_week.join(', ') : 'N/A',
+          'Fecha Matrícula': formatSafeDate(student.created_at)
+        };
+      });
 
-        return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3">
-              <span class="px-2.5 py-1 rounded text-xs font-semibold border ${badgeColor}">
-                ${item.status === 'presente' ? '🟢 ' : item.status === 'tarde' ? '🟡 ' : '🔴 '} ${item.status_label || item.status}
-              </span>
-            </td>
-            <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
-              <span class="font-bold text-slate-800">${item.date_formatted || item.attendance_date}</span>
-              <span class="text-slate-500 ml-1.5 font-medium">${item.time_formatted || ''}</span>
-            </td>
-            <td class="p-3 font-bold text-slate-800">${item.student_name || 'Sin nombre'}</td>
-            <td class="p-3 text-slate-700 font-medium">${item.teacher_name || 'Sin profesor'}</td>
-            <td class="p-3 font-semibold text-xs text-indigo-700">${item.time_slot || '-'}</td>
-            <td class="p-3 text-slate-600 text-xs">${item.course_name || 'General'}</td>
-          </tr>
-        `;
-      }).join('');
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{ wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 24 }, { wch: 24 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 16 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Alumnos_Matriculados');
+      XLSX.writeFile(wb, `Academi_Alumnos_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
-    function renderDirectAttendanceRows(list, targetTbody, teacherFilterId) {
-      let filtered = list;
-      if (teacherFilterId) {
-        filtered = filtered.filter(item => item.student_schedules?.teacher_id === teacherFilterId);
-      }
-
-      if (filtered.length === 0) {
-        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias para los criterios seleccionados.</td></tr>`;
-        return;
-      }
-
-      targetTbody.innerHTML = filtered.map(item => {
-        const status = item.status;
-        const statusLabel = status === 'presente' ? 'Sí llegó' :
-                            status === 'tarde' ? 'Llegó tarde' :
-                            status === 'ausente' ? 'No se presentó' : 'Pendiente';
-
-        const badgeColor = status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                           status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                           'bg-rose-100 text-rose-800 border-rose-300';
-
-        let dateFormatted = item.attendance_date;
-        if (item.attendance_date && item.attendance_date.includes('-')) {
-          const [y, m, d] = item.attendance_date.split('T')[0].split('-');
-          dateFormatted = `${d}/${m}/${y}`;
-        }
-
-        let timeFormatted = '';
-        if (item.recorded_at) {
-          const recDate = new Date(item.recorded_at);
-          timeFormatted = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-
-        return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3">
-              <span class="px-2.5 py-1 rounded text-xs font-semibold border ${badgeColor}">
-                ${status === 'presente' ? '🟢 ' : status === 'tarde' ? '🟡 ' : '🔴 '} ${statusLabel}
-              </span>
-            </td>
-            <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
-              <span class="font-bold text-slate-800">${dateFormatted}</span>
-              <span class="text-slate-500 ml-1.5 font-medium">${timeFormatted}</span>
-            </td>
-            <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
-            <td class="p-3 text-slate-700 font-medium">${item.student_schedules?.teachers?.full_name || 'Sin profesor'}</td>
-            <td class="p-3 font-semibold text-xs text-indigo-700">${item.student_schedules?.time_slot || '-'}</td>
-            <td class="p-3 text-slate-600 text-xs">${item.student_schedules?.courses?.name || 'General'}</td>
-          </tr>
-        `;
-      }).join('');
+    function escapeHtml(text) {
+      if (!text) return '';
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
     }
 
-    function clearMonitorFilters(role) {
-      if (role === 'admin') {
-        document.getElementById('adminAttendanceDate').value = '';
-        document.getElementById('adminStatusFilter').value = '';
-        document.getElementById('adminTeacherFilter').value = '';
-      } else {
-        document.getElementById('recepcionAttendanceDate').value = '';
-        document.getElementById('recepcionStatusFilter').value = '';
-        document.getElementById('recepcionTeacherFilter').value = '';
-      }
-      loadAttendanceMonitor();
-    }
-
-    function setupRealtimeListeners() {
-      supabaseClient
-        .channel('attendance_live_stream')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'attendances' }, () => {
-          if (currentUserRole === 'admin' || currentUserRole === 'recepcion') {
-            loadAttendanceMonitor();
-          } else if (currentUserRole === 'profesor') {
-            loadTeacherStudentStats();
-          }
-        })
-        .subscribe();
-    }
-
-    async function initDashboard() {
+    async function init() {
       const { data: { session } } = await supabaseClient.auth.getSession();
-      
       if (!session) {
         window.location.href = 'index.html';
         return;
       }
 
-      currentUserId = session.user.id;
-
       const { data: profile } = await supabaseClient
         .from('profiles')
         .select('role, full_name')
-        .eq('id', currentUserId)
+        .eq('id', session.user.id)
         .single();
 
-      if (!profile) {
-        window.location.href = 'index.html';
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
+        alert('Acceso restringido a Administrador y Recepción.');
+        window.location.href = 'dashboard.html';
         return;
       }
 
-      currentUserRole = profile.role;
-      document.getElementById('userName').textContent = profile.full_name || 'Usuario';
-      const badgeRole = document.getElementById('badgeRole');
-      badgeRole.textContent = profile.role;
+      document.getElementById('userName').textContent = `${profile.full_name || 'Personal'} (${profile.role.toUpperCase()})`;
 
-      await loadTeachersDropdown();
-
-      if (profile.role === 'admin') {
-        badgeRole.classList.add('bg-purple-100', 'text-purple-800');
-        document.getElementById('sectionAdmin').classList.remove('hidden');
-        await loadAttendanceMonitor();
-
-      } else if (profile.role === 'profesor') {
-        badgeRole.classList.add('bg-blue-100', 'text-blue-800');
-        document.getElementById('sectionProfesor').classList.remove('hidden');
-        
-        const { data: teacher } = await supabaseClient
-          .from('teachers')
-          .select('id')
-          .eq('profile_id', currentUserId)
-          .single();
-
-        if (teacher) {
-          currentTeacherId = teacher.id;
-        }
-
-        document.getElementById('teacherDateFilter').value = new Date().toISOString().split('T')[0];
-        await loadTeacherStudents();
-
-      } else if (profile.role === 'recepcion') {
-        badgeRole.classList.add('bg-emerald-100', 'text-emerald-800');
-        document.getElementById('sectionRecepcion').classList.remove('hidden');
-        await loadAttendanceMonitor();
-      }
-
-      setupRealtimeListeners();
+      await loadDropdowns();
+      await loadStudentsAndSchedules();
     }
 
     document.getElementById('btnLogout').addEventListener('click', async () => {
@@ -999,7 +698,7 @@
       window.location.href = 'index.html';
     });
 
-    initDashboard();
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
