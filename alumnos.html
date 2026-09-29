@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alumnos y Matrícula - Academi</title>
+  <title>Gestión de Alumnos y Matrícula - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -19,7 +19,7 @@
         <span class="text-sm font-semibold text-slate-700">Expediente de Alumnos y Matrícula</span>
       </div>
       <div class="flex items-center space-x-3">
-        <span id="userName" class="text-xs font-semibold text-slate-600">Usuario</span>
+        <span id="userName" class="text-xs font-semibold text-slate-600">Verificando rol...</span>
         <button id="btnLogout" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
           Salir
         </button>
@@ -27,14 +27,14 @@
     </div>
   </header>
 
-  <!-- Contenedor Principal -->
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <!-- Contenedor Principal (Oculto hasta validar rol) -->
+  <main id="mainContainer" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
 
     <!-- Encabezado con Botones de Acción -->
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h2 class="text-lg font-bold text-slate-800">Alumnos Matriculados</h2>
-        <p class="text-xs text-slate-500">Registra alumnos asignándoles profesor, curso y horario, o filtra por cualquier campo.</p>
+        <h2 class="text-lg font-bold text-slate-800">Alumnos Registrados y Matriculados</h2>
+        <p class="text-xs text-slate-500">Módulo exclusivo para Administrador y Recepción. Registra nuevos alumnos o asigna sus horarios y cursos.</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5">
@@ -45,7 +45,7 @@
           <span>📊 Exportar Lista (Excel)</span>
         </button>
         <button 
-          onclick="openEnrollModal()" 
+          onclick="openEnrollModal(false)" 
           class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-sm"
         >
           <span class="text-sm">➕</span>
@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <!-- Barra de Filtros Múltiples (Profesor, Curso, Horario, Mes/Año y Nombre) -->
+    <!-- Barra de Filtros Múltiples -->
     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
         <!-- 1. Búsqueda por Nombre / Cédula / Teléfono -->
@@ -149,7 +149,7 @@
       <div class="flex justify-between items-center border-b pb-3">
         <div>
           <h3 id="modalTitle" class="text-base font-bold text-slate-900">Registrar y Matricular Alumno</h3>
-          <p class="text-[11px] text-slate-500">Ingresa sus datos personales y asígnalo de una vez a su clase.</p>
+          <p class="text-[11px] text-slate-500">Ingresa los datos personales y asígnalo de una vez a su clase.</p>
         </div>
         <button onclick="closeEnrollModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg leading-none">✕</button>
       </div>
@@ -211,7 +211,7 @@
               <input 
                 type="text" 
                 id="inputEmergencyContact" 
-                placeholder="Nombre y teléfono" 
+                placeholder="Nombre y teléfono del tutor" 
                 class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"
               >
             </div>
@@ -319,7 +319,7 @@
     }
 
     async function loadDropdowns() {
-      // Cargar Profesores
+      // Cargar lista de profesores para los selectores
       const { data: teachers } = await supabaseClient.from('teachers').select('id, full_name').order('full_name');
       teachersList = teachers || [];
       const teacherOpts = teachersList.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
@@ -327,7 +327,7 @@
       document.getElementById('filterTeacher').innerHTML = '<option value="">👨‍🏫 Todos los profesores</option>' + teacherOpts;
       document.getElementById('modalSelectTeacher').innerHTML = '<option value="" disabled selected>Selecciona profesor...</option>' + teacherOpts;
 
-      // Cargar Cursos
+      // Cargar lista de cursos para los selectores
       const { data: courses } = await supabaseClient.from('courses').select('id, name').order('name');
       coursesList = courses || [];
       const courseOpts = coursesList.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
@@ -339,7 +339,6 @@
     async function loadStudentsAndSchedules() {
       const tbody = document.getElementById('studentsTableBody');
       try {
-        // Obtenemos los alumnos con su asignación actual
         const { data, error } = await supabaseClient
           .from('students')
           .select(`
@@ -378,23 +377,20 @@
       const teacherId = document.getElementById('filterTeacher').value;
       const courseId = document.getElementById('filterCourse').value;
       const timeSlot = document.getElementById('filterTimeSlot').value;
-      const monthYear = document.getElementById('filterMonthYear').value; // Formato YYYY-MM
+      const monthYear = document.getElementById('filterMonthYear').value;
 
       const filtered = allStudentsData.filter(student => {
-        // Filtro texto (nombre, identificación, teléfono)
         const name = (student.full_name || '').toLowerCase();
         const iden = (student.identification || '').toLowerCase();
         const phone = (student.phone || '').toLowerCase();
         const matchSearch = !search || name.includes(search) || iden.includes(search) || phone.includes(search);
 
-        // Horario / Programación vinculada
         const schedule = student.student_schedules?.[0] || null;
 
         const matchTeacher = !teacherId || (schedule && schedule.teacher_id === teacherId);
         const matchCourse = !courseId || (schedule && schedule.course_id === courseId);
         const matchSlot = !timeSlot || (schedule && schedule.time_slot === timeSlot);
 
-        // Filtro mes y año de registro (YYYY-MM)
         let matchMonthYear = true;
         if (monthYear && student.created_at) {
           const studentYM = String(student.created_at).substring(0, 7);
@@ -481,7 +477,6 @@
       applyFilters();
     }
 
-    // ABRIR MODAL DE REGISTRO / MATRÍCULA
     function openEnrollModal(isEdit = false) {
       document.getElementById('modalAlert').classList.add('hidden');
       document.getElementById('modalTitle').textContent = isEdit ? 'Editar Datos y Horario del Alumno' : 'Registrar y Matricular Alumno';
@@ -538,7 +533,6 @@
       }
     }
 
-    // GUARDAR ALUMNO + MATRÍCULA
     document.getElementById('enrollForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       document.getElementById('modalAlert').classList.add('hidden');
@@ -577,7 +571,6 @@
 
       try {
         if (editId) {
-          // 1. Actualizar datos personales
           const { error: errUpdate } = await supabaseClient
             .from('students')
             .update({
@@ -591,7 +584,6 @@
 
           if (errUpdate) throw errUpdate;
 
-          // 2. Actualizar o insertar horario
           await supabaseClient.from('student_schedules').delete().eq('student_id', editId);
           await supabaseClient.from('student_schedules').insert({
             student_id: editId,
@@ -603,7 +595,6 @@
           });
 
         } else {
-          // Inserción nueva conjunta con RPC
           const { error: rpcErr } = await supabaseClient.rpc('register_and_enroll_student', {
             p_full_name: fullName,
             p_phone: phone,
@@ -632,7 +623,6 @@
       }
     });
 
-    // EXPORTAR A EXCEL (.xlsx)
     function exportTableToExcel() {
       if (allStudentsData.length === 0) {
         alert('No hay alumnos para exportar.');
@@ -667,6 +657,7 @@
       return String(text).replace(/[&<>"']/g, m => map[m]);
     }
 
+    // BLOQUEO ESTRICTO: Solo permite acceso a Admin y Recepción
     async function init() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
@@ -681,12 +672,14 @@
         .single();
 
       if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
-        alert('Acceso restringido a Administrador y Recepción.');
+        alert('Acceso restringido: Solo Administrador y Recepción pueden gestionar o matricular alumnos.');
         window.location.href = 'dashboard.html';
         return;
       }
 
+      // Si es Admin o Recepción, mostrar la interfaz y cargar datos
       document.getElementById('userName').textContent = `${profile.full_name || 'Personal'} (${profile.role.toUpperCase()})`;
+      document.getElementById('mainContainer').classList.remove('hidden');
 
       await loadDropdowns();
       await loadStudentsAndSchedules();
