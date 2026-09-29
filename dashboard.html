@@ -31,7 +31,7 @@
     <!-- Sección Exclusiva: Administrador -->
     <div id="sectionAdmin" class="hidden space-y-6">
       <h2 class="text-lg font-bold text-slate-700">Panel de Administración General</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
@@ -39,6 +39,14 @@
             <p class="text-sm text-slate-500 mb-4">Crear profesores, recepcionistas y monitorear conexión online.</p>
           </div>
           <a href="profesores.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Gestionar Personal</a>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-semibold text-slate-800 mb-2">Cursos y Horarios</h3>
+            <p class="text-sm text-slate-500 mb-4">Asignar materias y los 3 turnos de horario a profesores.</p>
+          </div>
+          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar Horarios</a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
@@ -54,7 +62,7 @@
             <h3 class="font-semibold text-slate-800 mb-2">Caja y Pagos</h3>
             <p class="text-sm text-slate-500 mb-4">Historial de pagos guardados, recibos y cobros.</p>
           </div>
-          <a href="pagos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Ver Pagos</a>
+          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 rounded-lg font-medium transition">Ver Pagos</a>
         </div>
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
@@ -100,12 +108,33 @@
 
     <!-- Sección Exclusiva: Recepción -->
     <div id="sectionRecepcion" class="hidden space-y-6">
-      <h2 class="text-lg font-bold text-slate-700">Módulo de Recepción y Pagos</h2>
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <p class="text-sm text-slate-500 mb-4">Registro de nuevos cobros y verificación rápida de alumnos.</p>
-        <a href="pagos.html" class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 px-4 rounded-lg font-medium transition">
-          + Registrar Nuevo Pago
-        </a>
+      <h2 class="text-lg font-bold text-slate-700">Módulo de Recepción</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-semibold text-slate-800 mb-2">Cursos y Horarios</h3>
+            <p class="text-sm text-slate-500 mb-4">Asignar materias y turnos a los profesores en el calendario.</p>
+          </div>
+          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar Horarios</a>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-semibold text-slate-800 mb-2">Alumnos</h3>
+            <p class="text-sm text-slate-500 mb-4">Matrículas, datos personales y fichas de estudiantes.</p>
+          </div>
+          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg font-medium transition">Gestionar Alumnos</a>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-semibold text-slate-800 mb-2">Caja y Cobros</h3>
+            <p class="text-sm text-slate-500 mb-4">Registrar nuevos pagos y emitir comprobantes.</p>
+          </div>
+          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 rounded-lg font-medium transition">Registrar Pagos</a>
+        </div>
+
       </div>
     </div>
 
