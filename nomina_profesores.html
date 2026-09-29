@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Librería para generar imagen JPG del comprobante -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
@@ -16,7 +18,7 @@
       <div class="flex items-center space-x-3">
         <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-700">Nómina y Pagos a Profesores</span>
+        <span class="text-sm font-semibold text-slate-700">Nómina y Pago a Profesores</span>
       </div>
       <div class="flex items-center space-x-3">
         <span id="userName" class="text-xs font-semibold text-slate-600">Verificando...</span>
@@ -27,10 +29,10 @@
     </div>
   </header>
 
-  <!-- Contenedor Principal (Bloqueado a profesores) -->
+  <!-- Contenedor Principal (Exclusivo Admin y Recepción) -->
   <main id="mainContainer" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- Tarjetas de Resumen Financiero de Nómina -->
+    <!-- Tarjetas de Resumen Financiero -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
@@ -66,14 +68,14 @@
       </div>
     </div>
 
-    <!-- Panel de Registro y Tabla de Consulta -->
+    <!-- Registro y Tabla de Pagos -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- Formulario de Registro de Pago (4 columnas) -->
+      <!-- Formulario de Registro -->
       <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit space-y-4">
         <div>
           <h2 class="text-lg font-bold text-slate-800">Registrar Pago a Profesor</h2>
-          <p class="text-xs text-slate-500">Selecciona el docente, el periodo laborado y el monto abonado.</p>
+          <p class="text-xs text-slate-500">Elige la fecha de emisión, el docente y el periodo laborado.</p>
         </div>
 
         <div id="alertMsg" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
@@ -81,59 +83,69 @@
         <form id="payrollForm" class="space-y-4">
           <!-- 1. Profesor -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Profesor *</label>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Profesor Destinatario *</label>
             <select id="selectTeacher" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium">
               <option value="" disabled selected>Cargando profesores...</option>
             </select>
           </div>
 
-          <!-- 2. Monto -->
+          <!-- 2. Fecha de Emisión (Día, Mes y Año seleccionables) -->
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs font-bold text-slate-700">📅 Fecha de Emisión del Pago *</label>
+              <button type="button" onclick="setTodayEmission()" class="text-[10px] font-bold text-blue-600 hover:underline">Hoy</button>
+            </div>
+            <input 
+              type="date" 
+              id="inputPaymentDate" 
+              required 
+              class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500"
+            >
+            <p class="text-[10px] text-slate-400">Puedes cambiar el día, mes o año en que se efectúa el pago.</p>
+          </div>
+
+          <!-- 3. Monto Pagado -->
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Monto Pagado en Colones (₡) *</label>
             <input 
               type="number" 
               id="inputAmount" 
-              placeholder="Ej: 75000" 
+              placeholder="Ej: 80000" 
               required 
               min="1" 
               step="any" 
-              class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
+              class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
             >
           </div>
 
-          <!-- 3. Selección Intuitiva del Periodo (De tal fecha a tal fecha) -->
+          <!-- 4. Selección Intuitiva del Periodo Laborado -->
           <div class="bg-indigo-50/60 p-3.5 rounded-xl border border-indigo-100 space-y-2.5">
             <div class="flex justify-between items-center">
               <label class="block text-[11px] font-black text-indigo-900 uppercase">Periodo Laborado *</label>
-              <!-- Botones rápidos e intuitivos -->
               <div class="flex gap-1">
-                <button type="button" onclick="setPeriodShortcut('q1')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">1ra Quincena</button>
-                <button type="button" onclick="setPeriodShortcut('q2')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">2da Quincena</button>
-                <button type="button" onclick="setPeriodShortcut('month')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">Mes Completo</button>
+                <button type="button" onclick="setPeriodShortcut('q1')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">1ra Q</button>
+                <button type="button" onclick="setPeriodShortcut('q2')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">2da Q</button>
+                <button type="button" onclick="setPeriodShortcut('month')" class="text-[10px] font-bold px-2 py-0.5 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100">Mes</button>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <span class="block text-[10px] font-semibold text-slate-500 mb-0.5">Desde Fecha:</span>
+                <span class="block text-[10px] font-semibold text-slate-500 mb-0.5">De Fecha:</span>
                 <input type="date" id="inputPeriodStart" required class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
               </div>
               <div>
-                <span class="block text-[10px] font-semibold text-slate-500 mb-0.5">Hasta Fecha:</span>
+                <span class="block text-[10px] font-semibold text-slate-500 mb-0.5">A Fecha:</span>
                 <input type="date" id="inputPeriodEnd" required class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
               </div>
             </div>
-            <p id="periodPreviewText" class="text-[11px] font-semibold text-indigo-700 italic">Selecciona el rango de fechas</p>
+            <p id="periodPreviewText" class="text-[11px] font-semibold text-indigo-700 italic">Selecciona el rango</p>
           </div>
 
-          <!-- 4. Fecha de emisión del pago -->
+          <!-- 5. Método y Referencia -->
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de Emisión *</label>
-              <input type="date" id="inputPaymentDate" required class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none bg-white">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Método de Pago *</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Método *</label>
               <select id="selectMethod" required class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none bg-white font-medium">
                 <option value="SINPE Móvil" selected>SINPE Móvil</option>
                 <option value="Transferencia Bancaria">Transferencia Bancaria</option>
@@ -141,25 +153,23 @@
                 <option value="Cheque">Cheque</option>
               </select>
             </div>
-          </div>
-
-          <!-- 5. Referencia y Notas -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">N° Comprobante / Referencia (Opcional)</label>
-            <input 
-              type="text" 
-              id="inputReference" 
-              placeholder="Ej: SINPE #493012" 
-              class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none"
-            >
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">N° Comprobante</label>
+              <input 
+                type="text" 
+                id="inputReference" 
+                placeholder="Ej: #94021" 
+                class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none"
+              >
+            </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Notas / Detalle (Opcional)</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Notas (Opcional)</label>
             <textarea 
               id="inputNotes" 
               rows="2" 
-              placeholder="Ej: Pago de 20 horas de clase turno tarde..." 
+              placeholder="Detalle de turnos, cursos o pagos extras..." 
               class="w-full border border-slate-300 rounded-xl p-2 text-xs outline-none"
             ></textarea>
           </div>
@@ -169,40 +179,40 @@
             id="btnSubmitPayroll" 
             class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm"
           >
-            Guardar Pago en Nómina
+            Guardar Pago y Emitir Comprobante
           </button>
         </form>
       </div>
 
-      <!-- Tabla de Consultas y Filtros (8 columnas) -->
+      <!-- Tabla de Pagos Registrados -->
       <div class="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         
-        <!-- Barra de Filtros -->
         <div class="space-y-3 border-b border-slate-100 pb-4">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
               <h3 class="text-base font-bold text-slate-800">Historial de Pagos a Docentes</h3>
-              <p class="text-xs text-slate-500">Consulta los pagos registrados con desglose de periodo, fecha y monto.</p>
+              <p class="text-xs text-slate-500">Descarga comprobantes en JPG o reportes en Excel.</p>
             </div>
             <button 
               onclick="exportPayrollToExcel()" 
               class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm"
             >
-              <span>📊 Descargar Excel (.xlsx)</span>
+              <span>📊 Descargar Excel</span>
             </button>
           </div>
 
+          <!-- Filtros por Profesor, Día exacto y Mes -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filtrar por Profesor</label>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Profesor</label>
               <select id="filterTeacherSelect" onchange="filterPayroll()" class="w-full border border-slate-300 rounded-lg p-2 outline-none bg-white">
                 <option value="">👨‍🏫 Todos los profesores</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mes y Año de Emisión</label>
-              <input type="month" id="filterMonth" onchange="filterPayroll()" class="w-full border border-slate-300 rounded-lg p-1.5 outline-none bg-white">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Filtrar por Día Exacto</label>
+              <input type="date" id="filterExactDate" onchange="filterPayroll()" class="w-full border border-slate-300 rounded-lg p-1.5 outline-none bg-white">
             </div>
 
             <div class="flex items-end">
@@ -219,8 +229,8 @@
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
                 <th class="p-3">Profesor</th>
-                <th class="p-3">Periodo Cubierto (De - Hasta)</th>
-                <th class="p-3">Fecha de Pago</th>
+                <th class="p-3">Periodo Cubierto</th>
+                <th class="p-3">Fecha Emisión</th>
                 <th class="p-3">Método / Ref</th>
                 <th class="p-3 text-right">Monto Pagado</th>
                 <th class="p-3 text-center">Acciones</th>
@@ -228,7 +238,7 @@
             </thead>
             <tbody id="payrollTableBody" class="divide-y divide-slate-100 font-medium">
               <tr>
-                <td colspan="6" class="p-8 text-center text-slate-400">Cargando pagos de nómina...</td>
+                <td colspan="6" class="p-8 text-center text-slate-400">Cargando nómina...</td>
               </tr>
             </tbody>
           </table>
@@ -239,6 +249,70 @@
     </div>
 
   </main>
+
+  <!-- ========================================================================= -->
+  <!-- PLANTILLA OCULTA DEL COMPROBANTE OFICIAL PARA CONVERSIÓN A JPG            -->
+  <!-- ========================================================================= -->
+  <div class="fixed left-[-9999px] top-[-9999px]">
+    <div id="voucherCard" class="w-[520px] bg-white p-8 rounded-3xl border border-slate-300 text-slate-800 space-y-5 font-sans shadow-none">
+      
+      <!-- Cabecera Oficial -->
+      <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+        <div>
+          <h2 class="text-2xl font-black text-blue-700 tracking-tight">ACADEMI</h2>
+          <p class="text-xs font-semibold text-slate-500">Sistema Escolar Elohim • Costa Rica</p>
+          <p class="text-[10px] text-slate-400">Comprobante Oficial de Pago a Docente</p>
+        </div>
+        <div class="text-right">
+          <span class="bg-indigo-50 border border-indigo-200 text-indigo-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+            NÓMINA DOCENTE
+          </span>
+          <p class="text-[11px] font-mono text-slate-400 mt-1" id="vouchId">ID: -</p>
+        </div>
+      </div>
+
+      <!-- Cuadro Principal del Monto -->
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-2xl border border-blue-200 text-center">
+        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Monto Total Liquidado</p>
+        <h3 class="text-3xl font-black text-emerald-700 mt-0.5 font-mono" id="vouchAmount">₡0,00</h3>
+        <p class="text-[11px] text-slate-500 font-semibold mt-1" id="vouchMethod">SINPE Móvil</p>
+      </div>
+
+      <!-- Detalles del Pago -->
+      <div class="space-y-2.5 text-xs">
+        <div class="flex justify-between border-b border-slate-100 py-1.5">
+          <span class="text-slate-400 font-semibold">Profesor(a):</span>
+          <span class="font-bold text-slate-900 text-sm" id="vouchTeacher">-</span>
+        </div>
+
+        <div class="flex justify-between border-b border-slate-100 py-1.5">
+          <span class="text-slate-400 font-semibold">Fecha de Emisión:</span>
+          <span class="font-bold text-slate-800 font-mono" id="vouchDate">-</span>
+        </div>
+
+        <div class="flex justify-between border-b border-slate-100 py-1.5 bg-amber-50/60 px-2.5 rounded-lg">
+          <span class="text-amber-800 font-bold">Periodo Laborado:</span>
+          <span class="font-bold text-amber-900 font-mono" id="vouchPeriod">Del --/--/---- al --/--/----</span>
+        </div>
+
+        <div class="flex justify-between border-b border-slate-100 py-1.5" id="vouchRefRow">
+          <span class="text-slate-400 font-semibold">N° Comprobante / Ref:</span>
+          <span class="font-mono font-bold text-slate-700" id="vouchRef">-</span>
+        </div>
+
+        <div class="border-b border-slate-100 py-1.5" id="vouchNotesRow">
+          <span class="text-slate-400 font-semibold block mb-0.5">Observaciones:</span>
+          <span class="text-slate-700 italic text-[11px]" id="vouchNotes">-</span>
+        </div>
+      </div>
+
+      <!-- Pie del Comprobante -->
+      <div class="pt-3 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+        <span>Emitido por Administración Academi</span>
+        <span>Documento Válido de Pago</span>
+      </div>
+    </div>
+  </div>
 
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
@@ -266,20 +340,22 @@
       el.classList.remove('hidden');
     }
 
-    // Atajos rápidos para seleccionar periodos con un clic
+    function setTodayEmission() {
+      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+    }
+
     function setPeriodShortcut(type) {
       const now = new Date();
       const y = now.getFullYear();
-      const m = now.getMonth(); // 0 a 11
+      const m = now.getMonth();
 
       let start, end;
-
       if (type === 'q1') {
         start = new Date(y, m, 1);
         end = new Date(y, m, 15);
       } else if (type === 'q2') {
         start = new Date(y, m, 16);
-        end = new Date(y, m + 1, 0); // último día del mes
+        end = new Date(y, m + 1, 0);
       } else {
         start = new Date(y, m, 1);
         end = new Date(y, m + 1, 0);
@@ -313,7 +389,7 @@
     document.getElementById('inputPeriodEnd').addEventListener('change', updatePeriodPreview);
 
     async function loadTeachers() {
-      const { data, error } = await supabaseClient.from('teachers').select('id, full_name').order('full_name');
+      const { data } = await supabaseClient.from('teachers').select('id, full_name').order('full_name');
       allTeachers = data || [];
 
       const selectForm = document.getElementById('selectTeacher');
@@ -366,7 +442,6 @@
       allPayroll.forEach(p => {
         const amt = Number(p.amount) || 0;
         totalPaid += amt;
-
         if (p.payment_date && String(p.payment_date).startsWith(currentYearMonth)) {
           monthPaid += amt;
           monthCount++;
@@ -374,19 +449,19 @@
       });
 
       document.getElementById('statTotalPaid').textContent = formatCurrency(totalPaid);
-      document.getElementById('statCountPaid').textContent = `${allPayroll.length} pagos registrados en total`;
+      document.getElementById('statCountPaid').textContent = `${allPayroll.length} pagos registrados`;
       document.getElementById('statCurrentMonthPaid').textContent = formatCurrency(monthPaid);
-      document.getElementById('statCurrentMonthCount').textContent = `${monthCount} pagos en el mes actual`;
+      document.getElementById('statCurrentMonthCount').textContent = `${monthCount} pagos este mes`;
     }
 
     function filterPayroll() {
       const teacherId = document.getElementById('filterTeacherSelect').value;
-      const monthVal = document.getElementById('filterMonth').value;
+      const exactDate = document.getElementById('filterExactDate').value;
 
       currentFiltered = allPayroll.filter(item => {
         const matchTeacher = !teacherId || item.teacher_id === teacherId;
-        const matchMonth = !monthVal || (item.payment_date && String(item.payment_date).startsWith(monthVal));
-        return matchTeacher && matchMonth;
+        const matchDate = !exactDate || (item.payment_date && String(item.payment_date).split('T')[0] === exactDate);
+        return matchTeacher && matchDate;
       });
 
       let filteredTotal = 0;
@@ -419,8 +494,8 @@
             <td class="p-3 font-mono font-semibold text-indigo-700 whitespace-nowrap">
               🗓️ ${periodStr}
             </td>
-            <td class="p-3 font-mono text-slate-700 whitespace-nowrap">
-              ${dateStr}
+            <td class="p-3 font-mono font-bold text-slate-800 whitespace-nowrap">
+              📅 ${dateStr}
             </td>
             <td class="p-3">
               <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
@@ -432,13 +507,22 @@
               ${formatCurrency(p.amount)}
             </td>
             <td class="p-3 text-center whitespace-nowrap">
-              <button 
-                onclick="deletePayroll('${p.id}', '${encodeURIComponent(teacherName)}', '${p.amount}')" 
-                class="text-red-600 hover:text-red-800 text-xs font-bold underline px-2 py-1"
-                title="Eliminar este registro"
-              >
-                Eliminar
-              </button>
+              <div class="flex items-center justify-center gap-1.5">
+                <button 
+                  onclick="downloadPayrollJPG('${p.id}')" 
+                  class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                  title="Descargar comprobante en imagen JPG"
+                >
+                  <span>📥 JPG</span>
+                </button>
+                <button 
+                  onclick="deletePayroll('${p.id}', '${encodeURIComponent(teacherName)}', '${p.amount}')" 
+                  class="text-red-500 hover:text-red-700 text-xs font-bold px-1.5 py-1"
+                  title="Eliminar registro"
+                >
+                  ✕
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -447,8 +531,61 @@
 
     function clearPayrollFilters() {
       document.getElementById('filterTeacherSelect').value = '';
-      document.getElementById('filterMonth').value = '';
+      document.getElementById('filterExactDate').value = '';
       filterPayroll();
+    }
+
+    // DESCARGAR COMPROBANTE EN FORMATO JPG
+    async function downloadPayrollJPG(payrollId) {
+      const item = allPayroll.find(p => p.id === payrollId);
+      if (!item) return;
+
+      const teacherName = item.teachers?.full_name || 'Profesor';
+      const cleanDate = formatSafeDate(item.payment_date);
+
+      document.getElementById('vouchId').textContent = `ID: ${item.id.substring(0, 8)}`;
+      document.getElementById('vouchAmount').textContent = formatCurrency(item.amount);
+      document.getElementById('vouchMethod').textContent = `Método: ${item.payment_method}`;
+      document.getElementById('vouchTeacher').textContent = teacherName;
+      document.getElementById('vouchDate').textContent = cleanDate;
+      document.getElementById('vouchPeriod').textContent = `Del ${formatSafeDate(item.period_start)} al ${formatSafeDate(item.period_end)}`;
+      
+      const refRow = document.getElementById('vouchRefRow');
+      if (item.reference_number) {
+        refRow.classList.remove('hidden');
+        document.getElementById('vouchRef').textContent = item.reference_number;
+      } else {
+        refRow.classList.add('hidden');
+      }
+
+      const notesRow = document.getElementById('vouchNotesRow');
+      if (item.notes) {
+        notesRow.classList.remove('hidden');
+        document.getElementById('vouchNotes').textContent = item.notes;
+      } else {
+        notesRow.classList.add('hidden');
+      }
+
+      const voucherElement = document.getElementById('voucherCard');
+
+      try {
+        const canvas = await html2canvas(voucherElement, {
+          scale: 2, // Calidad HD
+          backgroundColor: '#ffffff',
+          useCORS: true
+        });
+
+        // Convertir a formato JPEG
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        const cleanName = teacherName.replace(/\s+/g, '_');
+        link.download = `Comprobante_Pago_${cleanName}_${item.payment_date}.jpg`;
+        link.href = imgData;
+        link.click();
+
+      } catch (err) {
+        alert('Error al generar la imagen JPG: ' + err.message);
+      }
     }
 
     async function deletePayroll(id, teacherEscaped, amt) {
@@ -479,12 +616,12 @@
       const notes = document.getElementById('inputNotes').value.trim();
 
       if (!teacherId || !amount || amount <= 0 || !periodStart || !periodEnd || !paymentDate) {
-        showAlert('Completa los campos obligatorios.');
+        showAlert('Completa todos los campos obligatorios, incluyendo la fecha de emisión del pago.');
         return;
       }
 
       if (periodStart > periodEnd) {
-        showAlert('La fecha de inicio del periodo no puede ser mayor que la fecha final.');
+        showAlert('La fecha de inicio del periodo no puede ser posterior a la fecha final.');
         return;
       }
 
@@ -506,20 +643,24 @@
 
         if (error) throw error;
 
-        showAlert(`¡Pago de ${formatCurrency(amount)} registrado con éxito para ${data.teacher_name}!`, 'success');
+        showAlert(`¡Pago de ${formatCurrency(amount)} emitido el ${formatSafeDate(paymentDate)} registrado para ${data.teacher_name}!`, 'success');
         document.getElementById('payrollForm').reset();
         
-        // Restaurar fecha de emisión a hoy
-        document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+        setTodayEmission();
         document.getElementById('periodPreviewText').textContent = 'Selecciona el rango de fechas';
 
         await loadPayroll();
+
+        // Descargar comprobante automáticamente
+        if (data.payroll_id) {
+          downloadPayrollJPG(data.payroll_id);
+        }
 
       } catch (err) {
         showAlert('Error: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Guardar Pago en Nómina';
+        btn.textContent = 'Guardar Pago y Emitir Comprobante';
       }
     });
 
@@ -569,10 +710,10 @@
       }
 
       document.getElementById('userName').textContent = `${profile.full_name || 'Personal'} (${profile.role.toUpperCase()})`;
-      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+      setTodayEmission();
       document.getElementById('mainContainer').classList.remove('hidden');
 
-      setPeriodShortcut('q1'); // Quincena inicial por defecto
+      setPeriodShortcut('q1');
       await loadTeachers();
       await loadPayroll();
     }
