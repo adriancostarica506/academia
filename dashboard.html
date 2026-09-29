@@ -2,19 +2,20 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Panel de Control - Academi Elohim</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans antialiased">
 
-  <!-- Barra Superior -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+  <!-- BARRA SUPERIOR RESPONSIVA -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <!-- Logo pequeño en la cabecera -->
-        <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden">
+      
+      <!-- Identidad y Rol -->
+      <div class="flex items-center space-x-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-full bg-white border border-slate-200 p-0.5 flex-shrink-0 flex items-center justify-center overflow-hidden">
           <img 
             src="logo.png" 
             alt="Logo" 
@@ -22,225 +23,272 @@
             onerror="this.onerror=null; this.src='assets/logo.png';"
           >
         </div>
-        <h1 class="text-xl font-bold text-blue-600">Academi Admin</h1>
-        <span id="badgeRole" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-700 capitalize">Cargando...</span>
+        <div class="truncate">
+          <h1 class="text-base sm:text-lg font-black text-blue-600 leading-tight truncate">Academi Elohim</h1>
+          <span id="badgeRole" class="inline-block px-2 py-0.2 text-[10px] font-bold rounded-full bg-slate-200 text-slate-700 capitalize">Cargando...</span>
+        </div>
       </div>
-      <div class="flex items-center space-x-3">
-        <!-- BOTÓN EXCLUSIVO ADMIN / RECEPCIÓN: ALUMNOS -->
+
+      <!-- BOTONES EN ESCRITORIO (md en adelante) -->
+      <div class="hidden md:flex items-center space-x-2.5">
         <a 
           id="btnHeaderAddStudent"
           href="alumnos.html" 
-          class="hidden items-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-sm"
+          class="hidden items-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-xs"
         >
-          <span>➕ Alumnos y Matrícula</span>
+          <span>➕ Alumnos</span>
         </a>
 
-        <!-- BOTÓN EXCLUSIVO ADMIN / RECEPCIÓN: NÓMINA PROFESORES -->
         <a 
           id="btnHeaderPayroll"
           href="nomina_profesores.html" 
-          class="hidden items-center gap-1.5 text-xs bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-300 font-bold px-3 py-1.5 rounded-lg transition shadow-sm"
+          class="hidden items-center gap-1.5 text-xs bg-indigo-50 text-indigo-800 hover:bg-indigo-100 border border-indigo-300 font-bold px-3 py-1.5 rounded-lg transition"
         >
-          <span>💵 Pago a Profesores</span>
+          <span>💵 Nómina</span>
         </a>
 
-        <!-- BOTÓN COBROS PENDIENTES (Solo Admin y Recepción) -->
         <a 
           id="btnHeaderBilling"
           href="cobros_pendientes.html" 
-          class="hidden items-center gap-1.5 text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-300 font-bold px-3 py-1.5 rounded-lg transition shadow-sm"
+          class="hidden items-center gap-1.5 text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-300 font-bold px-3 py-1.5 rounded-lg transition"
         >
-          🔔 Cobros Pendientes
+          🔔 Cobros
         </a>
 
-        <!-- BOTÓN EXCLUSIVO ADMIN: BITÁCORA DE AUDITORÍA -->
         <a 
           id="btnHeaderAudit"
           href="auditoria.html" 
-          class="hidden items-center gap-1.5 text-xs bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-300 font-bold px-3 py-1.5 rounded-lg transition shadow-sm"
+          class="hidden items-center gap-1.5 text-xs bg-purple-50 text-purple-800 hover:bg-purple-100 border border-purple-300 font-bold px-3 py-1.5 rounded-lg transition"
         >
           📋 Bitácora
         </a>
 
-        <!-- BOTÓN EXCLUSIVO PROFESORES: MIS PAGOS -->
         <a 
           id="btnHeaderTeacherPayments"
           href="mis_pagos.html" 
-          class="hidden items-center gap-1.5 text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300 font-bold px-3 py-1.5 rounded-lg transition shadow-sm"
+          class="hidden items-center gap-1.5 text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300 font-bold px-3 py-1.5 rounded-lg transition"
         >
-          <span>💵 Mis Pagos Recibidos</span>
+          <span>💵 Mis Pagos</span>
         </a>
 
-        <!-- CHAT ONLINE (Visible para todos) -->
-        <a href="chat.html" class="flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-bold px-3 py-1.5 rounded-lg transition">
-          💬 Chat Online
+        <a href="chat.html" class="flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-bold px-2.5 py-1.5 rounded-lg transition">
+          💬 Chat
         </a>
 
-        <span id="userName" class="text-sm font-medium text-slate-600">Usuario</span>
-        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
-          Cerrar Sesión
+        <span id="userName" class="text-xs font-semibold text-slate-600 px-1 truncate max-w-[120px]">Usuario</span>
+        
+        <button id="btnLogout" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition cursor-pointer">
+          Salir
+        </button>
+      </div>
+
+      <!-- BOTÓN MENÚ HAMBURGUESA PARA CELULARES -->
+      <div class="flex items-center md:hidden space-x-2">
+        <a href="chat.html" class="p-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm border border-indigo-200" title="Chat">
+          💬
+        </a>
+        <button 
+          id="btnMobileMenuToggle" 
+          onclick="toggleMobileMenu()" 
+          class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-lg leading-none"
+        >
+          ☰
+        </button>
+      </div>
+
+    </div>
+
+    <!-- MENÚ DESPLEGABLE EN MÓVILES -->
+    <div id="mobileMenuDropdown" class="hidden md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-2 shadow-inner">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <span class="text-xs text-slate-500">Conectado como:</span>
+        <span id="mobileUserName" class="text-xs font-bold text-slate-800">Usuario</span>
+      </div>
+
+      <div class="grid grid-cols-1 gap-2 pt-1">
+        <a id="mBtnAddStudent" href="alumnos.html" class="hidden items-center gap-2 p-2 rounded-lg text-xs font-bold bg-blue-600 text-white">
+          ➕ Alumnos y Matrícula
+        </a>
+        <a id="mBtnPayroll" href="nomina_profesores.html" class="hidden items-center gap-2 p-2 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">
+          💵 Nómina y Pago a Profesores
+        </a>
+        <a id="mBtnBilling" href="cobros_pendientes.html" class="hidden items-center gap-2 p-2 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+          🔔 Alertas de Cobros Pendientes
+        </a>
+        <a id="mBtnAudit" href="auditoria.html" class="hidden items-center gap-2 p-2 rounded-lg text-xs font-bold bg-purple-50 text-purple-800 border border-purple-200">
+          📋 Bitácora General (Admin)
+        </a>
+        <a id="mBtnTeacherPayments" href="mis_pagos.html" class="hidden items-center gap-2 p-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+          💵 Mis Pagos Recibidos (.JPG)
+        </a>
+        <button id="mBtnLogout" class="w-full text-left p-2 rounded-lg text-xs font-bold text-red-600 bg-red-50 border border-red-200">
+          🚪 Cerrar Sesión
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Contenedor Principal -->
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-5">
 
     <!-- ========================================== -->
     <!-- 1. SECCIÓN ADMINISTRADOR                   -->
     <!-- ========================================== -->
-    <div id="sectionAdmin" class="hidden space-y-6">
-      <div class="flex justify-between items-center">
-        <h2 class="text-lg font-bold text-slate-700">Panel de Administración General</h2>
-        <div class="flex gap-2">
+    <div id="sectionAdmin" class="hidden space-y-5">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-800">Panel de Administración General</h2>
+          <p class="text-[11px] sm:text-xs text-slate-500">Control global de la academia, personal y finanzas.</p>
+        </div>
+        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
           <a 
             href="auditoria.html" 
-            class="bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition shadow-sm flex items-center gap-1"
+            class="flex-1 sm:flex-none text-center bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-xs"
           >
-            📋 Ver Bitácora de Acciones
+            📋 Bitácora
           </a>
           <a 
             href="alumnos.html" 
-            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition shadow-sm flex items-center gap-1"
+            class="flex-1 sm:flex-none text-center bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow-xs"
           >
-            ➕ Matricular Alumno
+            ➕ Alumnos
           </a>
         </div>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <!-- Tarjeta: Bitácora de Auditoría (Exclusiva Admin) -->
-        <div class="bg-purple-50/70 p-5 rounded-xl border border-purple-200 shadow-sm flex flex-col justify-between">
+      <!-- Tarjetas de Módulos (Grid móvil de 1 col, tablet 2, desktop 6) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+        <!-- Bitácora -->
+        <div class="bg-purple-50/70 p-4 rounded-2xl border border-purple-200 shadow-xs flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-purple-900">Bitácora General</h3>
-              <span class="text-xs bg-purple-200 text-purple-900 font-black px-2 py-0.5 rounded-full">Exclusivo</span>
+              <h3 class="font-bold text-purple-900 text-sm">Bitácora</h3>
+              <span class="text-[10px] bg-purple-200 text-purple-900 font-black px-1.5 py-0.5 rounded-full">Exclusivo</span>
             </div>
-            <p class="text-xs text-purple-800 mb-4">Registro en tiempo real con fecha, hora y detalles de lo que hace cada usuario.</p>
+            <p class="text-xs text-purple-800 mb-3">Auditoría en tiempo real con fecha, hora y detalle de acciones.</p>
           </div>
-          <a href="auditoria.html" class="block text-center w-full bg-purple-700 hover:bg-purple-800 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
+          <a href="auditoria.html" class="block text-center w-full bg-purple-700 hover:bg-purple-800 text-white text-xs py-2 rounded-xl font-bold transition shadow-xs">
             Ver Auditoría
           </a>
         </div>
 
-        <!-- Tarjeta: Pago a Profesores -->
-        <div class="bg-indigo-50/70 p-5 rounded-xl border border-indigo-200 shadow-sm flex flex-col justify-between">
+        <!-- Nómina -->
+        <div class="bg-indigo-50/70 p-4 rounded-2xl border border-indigo-200 shadow-xs flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-indigo-900">Pago a Docentes</h3>
-              <span class="text-xs bg-indigo-200 text-indigo-900 font-black px-2 py-0.5 rounded-full">Nómina</span>
+              <h3 class="font-bold text-indigo-900 text-sm">Pago Docente</h3>
+              <span class="text-[10px] bg-indigo-200 text-indigo-900 font-black px-1.5 py-0.5 rounded-full">Nómina</span>
             </div>
-            <p class="text-xs text-indigo-800 mb-4">Registrar pagos por periodo laborado y comprobantes en JPG.</p>
+            <p class="text-xs text-indigo-800 mb-3">Registrar pagos por periodo y descargar recibos JPG.</p>
           </div>
-          <a href="nomina_profesores.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
-            Nómina Docente
+          <a href="nomina_profesores.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-xl font-bold transition shadow-xs">
+            Nómina
           </a>
         </div>
 
-        <!-- Tarjeta: Alumnos y Matrícula -->
-        <div class="bg-blue-50/70 p-5 rounded-xl border border-blue-200 shadow-sm flex flex-col justify-between">
+        <!-- Alumnos -->
+        <div class="bg-blue-50/70 p-4 rounded-2xl border border-blue-200 shadow-xs flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-blue-900">Alumnos y Matrícula</h3>
-              <span class="text-xs bg-blue-200 text-blue-900 font-black px-2 py-0.5 rounded-full">Base</span>
+              <h3 class="font-bold text-blue-900 text-sm">Alumnos</h3>
+              <span class="text-[10px] bg-blue-200 text-blue-900 font-black px-1.5 py-0.5 rounded-full">Base</span>
             </div>
-            <p class="text-xs text-blue-800 mb-4">Registrar nuevos alumnos, cursos, profesores, turnos y cédula.</p>
+            <p class="text-xs text-blue-800 mb-3">Registrar alumnos, cursos, profesores, turnos y cédula.</p>
           </div>
-          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
-            Gestionar Alumnos
+          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-xl font-bold transition shadow-xs">
+            Alumnos
           </a>
         </div>
 
-        <!-- Tarjeta: Cobros y Mensualidades -->
-        <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
+        <!-- Cobros -->
+        <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200 shadow-xs flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-amber-900">Cobros y Mensualidades</h3>
-              <span class="text-xs bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded-full">Alerta</span>
+              <h3 class="font-bold text-amber-900 text-sm">Cobros</h3>
+              <span class="text-[10px] bg-amber-200 text-amber-900 font-black px-1.5 py-0.5 rounded-full">Alertas</span>
             </div>
-            <p class="text-xs text-amber-800 mb-4">Ver quiénes tienen cobro vencido o próximo a pagar para enviar recordatorio.</p>
+            <p class="text-xs text-amber-800 mb-3">Supervisar mensualidades vencidas y alertas WhatsApp.</p>
           </div>
-          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
-            Control de Cobros
+          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-xl font-bold transition shadow-xs">
+            Cobros
           </a>
         </div>
 
-        <!-- Tarjeta: Caja y Pagos -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <!-- Pagos -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Caja y Pagos</h3>
-            <p class="text-xs text-slate-500 mb-4">Historial de cobros a alumnos, próximo pago y descargas Excel.</p>
+            <h3 class="font-bold text-slate-800 text-sm mb-1">Caja y Pagos</h3>
+            <p class="text-xs text-slate-500 mb-3">Historial de recibos emitidos a estudiantes y descargas Excel.</p>
           </div>
-          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-medium transition">
-            Ver Pagos y Recibos
+          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-xl font-medium transition">
+            Ver Recibos
           </a>
         </div>
 
-        <!-- Tarjeta: Personal Docente -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <!-- Profesores -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Personal Docente</h3>
-            <p class="text-xs text-slate-500 mb-4">Gestionar cuentas de profesores y recepción.</p>
+            <h3 class="font-bold text-slate-800 text-sm mb-1">Docentes</h3>
+            <p class="text-xs text-slate-500 mb-3">Cuentas de profesores y personal de recepción.</p>
           </div>
-          <a href="profesores.html" class="block text-center w-full bg-slate-800 hover:bg-slate-900 text-white text-xs py-2 rounded-lg font-medium transition">
-            Personal y Profesores
+          <a href="profesores.html" class="block text-center w-full bg-slate-800 hover:bg-slate-900 text-white text-xs py-2 rounded-xl font-medium transition">
+            Personal
           </a>
         </div>
       </div>
 
-      <!-- Monitor de Asistencias (Admin) -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+      <!-- Monitor en Vivo de Asistencias (Admin) -->
+      <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias (Todos los Días Marcados)</h3>
+              <h3 class="font-bold text-slate-800 text-sm sm:text-base">Historial de Asistencias en Vivo</h3>
             </div>
-            <p class="text-xs text-slate-500">Muestra todos los días y horas que han marcado los profesores en tiempo real.</p>
+            <p class="text-[11px] sm:text-xs text-slate-500">Muestra las marcaciones de todos los profesores en tiempo real.</p>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Profesor</label>
-              <select id="adminTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <select id="adminTeacherFilter" onchange="loadAttendanceMonitor()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">👨‍🏫 Todos los profesores</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Día</label>
-              <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+              <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Estado</label>
-              <select id="adminStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <select id="adminStatusFilter" onchange="loadAttendanceMonitor()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">Todos los Estados</option>
                 <option value="presente">🟢 Sí llegó</option>
                 <option value="tarde">🟡 Llegó tarde</option>
                 <option value="ausente">🔴 No se presentó</option>
               </select>
             </div>
-            <div class="self-end">
-              <button onclick="clearMonitorFilters('admin')" class="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-600 hover:bg-slate-50 transition">
-                Ver Todos los Días
+            <div class="sm:col-span-3 lg:self-end">
+              <button onclick="clearMonitorFilters('admin')" class="w-full sm:w-auto px-3 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-600 hover:bg-slate-50 transition">
+                Ver Todos
               </button>
             </div>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse text-xs">
             <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Estado Marcado</th>
-                <th class="p-3">Fecha y Hora</th>
-                <th class="p-3">Alumno</th>
-                <th class="p-3">Profesor Encargado</th>
-                <th class="p-3">Horario</th>
-                <th class="p-3">Curso</th>
+              <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50 whitespace-nowrap">
+                <th class="p-2.5 sm:p-3">Estado</th>
+                <th class="p-2.5 sm:p-3">Fecha y Hora</th>
+                <th class="p-2.5 sm:p-3">Alumno</th>
+                <th class="p-2.5 sm:p-3">Profesor</th>
+                <th class="p-2.5 sm:p-3">Horario</th>
+                <th class="p-2.5 sm:p-3">Curso</th>
               </tr>
             </thead>
-            <tbody id="adminAttendanceTableBody">
+            <tbody id="adminAttendanceTableBody" class="divide-y divide-slate-100">
               <tr>
                 <td colspan="6" class="p-4 text-center text-slate-400">Cargando monitor...</td>
               </tr>
@@ -254,135 +302,146 @@
     <!-- ========================================== -->
     <!-- 2. SECCIÓN RECEPCIÓN                       -->
     <!-- ========================================== -->
-    <div id="sectionRecepcion" class="hidden space-y-6">
-      <div class="flex justify-between items-center">
-        <h2 class="text-lg font-bold text-slate-700">Módulo de Recepción</h2>
-        <a 
-          href="nomina_profesores.html" 
-          class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition shadow-sm"
-        >
-          💵 Registrar Pago a Profesor
-        </a>
+    <div id="sectionRecepcion" class="hidden space-y-5">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-800">Módulo de Recepción</h2>
+          <p class="text-[11px] sm:text-xs text-slate-500">Gestión de atención, cobros y matrícula de estudiantes.</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <a 
+            href="alumnos.html" 
+            class="flex-1 sm:flex-none text-center bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-xs"
+          >
+            ➕ Alumnos
+          </a>
+          <a 
+            href="nomina_profesores.html" 
+            class="flex-1 sm:flex-none text-center bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-xs"
+          >
+            💵 Nómina
+          </a>
+        </div>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <!-- Pago a Profesores -->
-        <div class="bg-indigo-50/70 p-5 rounded-xl border border-indigo-200 shadow-sm flex flex-col justify-between">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <!-- Nómina -->
+        <div class="bg-indigo-50/70 p-4 rounded-2xl border border-indigo-200 shadow-xs flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-indigo-900">Pago a Docentes</h3>
-              <span class="text-xs bg-indigo-200 text-indigo-900 font-black px-2 py-0.5 rounded-full">Nómina</span>
+              <h3 class="font-bold text-indigo-900 text-sm">Pago a Docentes</h3>
+              <span class="text-[10px] bg-indigo-200 text-indigo-900 font-black px-1.5 py-0.5 rounded-full">Nómina</span>
             </div>
-            <p class="text-xs text-indigo-800 mb-4">Registrar pagos a profesores por periodo laborado y comprobantes.</p>
+            <p class="text-xs text-indigo-800 mb-3">Registrar pagos a profesores por periodo laborado.</p>
           </div>
-          <a href="nomina_profesores.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
+          <a href="nomina_profesores.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-xl font-bold transition shadow-xs">
             Nómina Docente
           </a>
         </div>
 
-        <!-- Alumnos y Matrícula -->
-        <div class="bg-blue-50/70 p-5 rounded-xl border border-blue-200 shadow-sm flex flex-col justify-between">
+        <!-- Alumnos -->
+        <div class="bg-blue-50/70 p-4 rounded-2xl border border-blue-200 shadow-xs flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-blue-900">Alumnos y Matrícula</h3>
-              <span class="text-xs bg-blue-200 text-blue-900 font-black px-2 py-0.5 rounded-full">Exclusivo</span>
+              <h3 class="font-bold text-blue-900 text-sm">Alumnos</h3>
+              <span class="text-[10px] bg-blue-200 text-blue-900 font-black px-1.5 py-0.5 rounded-full">Exclusivo</span>
             </div>
-            <p class="text-xs text-blue-800 mb-4">Registrar nuevos alumnos, asignar su profesor, curso y horario.</p>
+            <p class="text-xs text-blue-800 mb-3">Registrar alumnos, asignar profesor, curso y horario.</p>
           </div>
-          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
-            Gestionar Alumnos
+          <a href="alumnos.html" class="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded-xl font-bold transition shadow-xs">
+            Alumnos
           </a>
         </div>
 
-        <!-- Cobros Pendientes -->
-        <div class="bg-amber-50/70 p-5 rounded-xl border border-amber-200 shadow-sm flex flex-col justify-between">
+        <!-- Cobros -->
+        <div class="bg-amber-50/70 p-4 rounded-2xl border border-amber-200 shadow-xs flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-1">
-              <h3 class="font-bold text-amber-900">Cobros y Mensualidades</h3>
-              <span class="text-xs bg-amber-200 text-amber-900 font-black px-2 py-0.5 rounded-full">Alerta</span>
+              <h3 class="font-bold text-amber-900 text-sm">Cobros</h3>
+              <span class="text-[10px] bg-amber-200 text-amber-900 font-black px-1.5 py-0.5 rounded-full">Alerta</span>
             </div>
-            <p class="text-xs text-amber-800 mb-4">Supervisar alumnos vencidos y enviar recordatorios por WhatsApp.</p>
+            <p class="text-xs text-amber-800 mb-3">Supervisar vencidos y mandar mensajes por WhatsApp.</p>
           </div>
-          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-lg font-bold transition shadow-sm">
+          <a href="cobros_pendientes.html" class="block text-center w-full bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 rounded-xl font-bold transition shadow-xs">
             Cobros Pendientes
           </a>
         </div>
 
-        <!-- Caja y Cobros -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <!-- Pagos -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Caja y Cobros</h3>
-            <p class="text-xs text-slate-500 mb-4">Registrar pagos, próximo vencimiento y recibos.</p>
+            <h3 class="font-bold text-slate-800 text-sm mb-1">Caja y Cobros</h3>
+            <p class="text-xs text-slate-500 mb-3">Registrar cobro, próximo vencimiento e imprimir recibos.</p>
           </div>
-          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-lg font-medium transition">
+          <a href="pagos.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded-xl font-medium transition">
             Registrar Pagos
           </a>
         </div>
 
-        <!-- Horarios y Alumnos -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <!-- Horarios -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-1">Horarios y Alumnos</h3>
-            <p class="text-xs text-slate-500 mb-4">Agendar estudiantes en turnos y días de la semana.</p>
+            <h3 class="font-bold text-slate-800 text-sm mb-1">Horarios</h3>
+            <p class="text-xs text-slate-500 mb-3">Organizar estudiantes en turnos y días de clase.</p>
           </div>
-          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-lg font-medium transition">
+          <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-xl font-medium transition">
             Asignar Horarios
           </a>
         </div>
       </div>
 
       <!-- Monitor en vivo (Recepción) -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+      <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Historial Completo de Asistencias (Todos los Días Marcados)</h3>
+              <h3 class="font-bold text-slate-800 text-sm sm:text-base">Historial de Asistencias en Vivo</h3>
             </div>
-            <p class="text-xs text-slate-500">Consulta los días anteriores y el día actual marcados por cada profesor.</p>
+            <p class="text-[11px] sm:text-xs text-slate-500">Consulta las asistencias marcadas hoy y en días anteriores.</p>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Profesor</label>
-              <select id="recepcionTeacherFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
+              <select id="recepcionTeacherFilter" onchange="loadAttendanceMonitor()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">👨‍🏫 Todos los profesores</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Día</label>
-              <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
+              <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase">Estado</label>
-              <select id="recepcionStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
+              <select id="recepcionStatusFilter" onchange="loadAttendanceMonitor()" class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
                 <option value="">Todos los Estados</option>
                 <option value="presente">🟢 Sí llegó</option>
                 <option value="tarde">🟡 Llegó tarde</option>
                 <option value="ausente">🔴 No se presentó</option>
               </select>
             </div>
-            <div class="self-end">
-              <button onclick="clearMonitorFilters('recepcion')" class="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-600 hover:bg-slate-50 transition">
-                Ver Todos los Días
+            <div class="sm:col-span-3 lg:self-end">
+              <button onclick="clearMonitorFilters('recepcion')" class="w-full sm:w-auto px-3 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-600 hover:bg-slate-50 transition">
+                Ver Todos
               </button>
             </div>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse text-xs">
             <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Estado Marcado</th>
-                <th class="p-3">Fecha y Hora</th>
-                <th class="p-3">Alumno</th>
-                <th class="p-3">Profesor Encargado</th>
-                <th class="p-3">Horario</th>
-                <th class="p-3">Curso</th>
+              <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50 whitespace-nowrap">
+                <th class="p-2.5 sm:p-3">Estado</th>
+                <th class="p-2.5 sm:p-3">Fecha y Hora</th>
+                <th class="p-2.5 sm:p-3">Alumno</th>
+                <th class="p-2.5 sm:p-3">Profesor</th>
+                <th class="p-2.5 sm:p-3">Horario</th>
+                <th class="p-2.5 sm:p-3">Curso</th>
               </tr>
             </thead>
-            <tbody id="recepcionAttendanceTableBody">
+            <tbody id="recepcionAttendanceTableBody" class="divide-y divide-slate-100">
               <tr>
                 <td colspan="6" class="p-4 text-center text-slate-400">Cargando monitor...</td>
               </tr>
@@ -396,49 +455,46 @@
     <!-- ========================================== -->
     <!-- 3. SECCIÓN PROFESORES                      -->
     <!-- ========================================== -->
-    <div id="sectionProfesor" class="hidden space-y-6">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-200 pb-2">
+    <div id="sectionProfesor" class="hidden space-y-4">
+      
+      <!-- Pestañas y Enlace a Pagos Recibidos -->
+      <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 border-b border-slate-200 pb-2">
         <div class="flex items-center space-x-2">
-          <button id="tabTeacherMark" onclick="switchTeacherTab('mark')" class="px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition">
+          <button id="tabTeacherMark" onclick="switchTeacherTab('mark')" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-xs transition">
             ✏️ Toma de Asistencia Hoy
           </button>
-          <button id="tabTeacherStats" onclick="switchTeacherTab('stats')" class="px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
-            📊 Historial y Conteo de Mis Alumnos
+          <button id="tabTeacherStats" onclick="switchTeacherTab('stats')" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
+            📊 Mis Alumnos
           </button>
         </div>
 
-        <!-- Botón para ver mis pagos de nómina -->
-        <a href="mis_pagos.html" class="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm">
-          <span>💵 Ver Mis Pagos Recibidos</span>
+        <a href="mis_pagos.html" class="w-full sm:w-auto text-center flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs">
+          <span>💵 Mis Pagos Recibidos</span>
         </a>
       </div>
 
       <!-- VISTA A: TOMA DE ASISTENCIA DIARIA -->
       <div id="teacherViewMark" class="space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia</h2>
-            <p class="text-xs text-slate-500">Marca si el alumno llegó, llegó tarde o no se presentó. Todo se sincroniza con Recepción y Admin.</p>
+            <h2 class="text-base sm:text-lg font-bold text-slate-800">Toma de Asistencia</h2>
+            <p class="text-xs text-slate-500">Marca a tus alumnos en el día de clase. Se sincroniza con Recepción.</p>
           </div>
-          <div class="flex items-center gap-3">
-            <a href="chat.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
-              💬 Chat con Recepción
-            </a>
-            <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold transition">
-              ✓ Guardado y Visible en Recepción y Admin
-            </div>
+          <div id="saveAttendanceFeedback" class="hidden w-full sm:w-auto px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold text-center transition">
+            ✓ Guardado y Visible en Recepción y Admin
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Filtros de fecha y turno -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Clase (Día / Mes / Año)</label>
-              <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Clase (Día/Mes/Año)</label>
+              <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none bg-white">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
-              <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+              <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white focus:ring-1 focus:ring-blue-500 outline-none">
                 <option value="">Todos los turnos</option>
                 <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
                 <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
@@ -447,9 +503,11 @@
             </div>
           </div>
 
-          <div class="border-t border-slate-200 pt-4">
-            <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados para Asistir</h4>
-            <div id="teacherStudentsContainer" class="overflow-x-auto text-sm text-slate-500 italic">
+          <div class="border-t border-slate-100 pt-3">
+            <h4 class="text-xs sm:text-sm font-bold text-slate-700 mb-3">Lista de Alumnos Programados para Asistir</h4>
+            
+            <!-- Contenedor responsivo dual (Tarjetas en móvil, tabla en PC) -->
+            <div id="teacherStudentsContainer" class="text-xs text-slate-500 italic">
               Cargando alumnos asignados...
             </div>
           </div>
@@ -458,50 +516,31 @@
 
       <!-- VISTA B: EXPEDIENTE Y CONTEO -->
       <div id="teacherViewStats" class="hidden space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h2 class="text-lg font-bold text-slate-700">Expediente de Asistencias de Mis Alumnos</h2>
-            <p class="text-xs text-slate-500">Busca alumnos por nombre y revisa el informe completo de asistencia.</p>
-          </div>
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-slate-800">Expediente de Mis Alumnos</h2>
+          <p class="text-xs text-slate-500">Busca alumnos y consulta su conteo de asistencia y faltas.</p>
         </div>
 
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <div class="flex flex-col sm:flex-row items-center gap-3">
-            <div class="relative flex-1 w-full">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row items-center gap-2">
+            <div class="relative w-full">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
               <input 
                 type="text" 
                 id="searchTeacherStudentInput" 
                 oninput="filterTeacherStudentStats()" 
-                placeholder="Escribe el nombre del alumno para buscar..." 
-                class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Escribe el nombre del alumno..." 
+                class="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500"
               >
             </div>
-            <button onclick="document.getElementById('searchTeacherStudentInput').value=''; filterTeacherStudentStats();" class="text-xs text-slate-500 hover:text-slate-800 underline px-2 py-1">
-              Limpiar búsqueda
+            <button onclick="document.getElementById('searchTeacherStudentInput').value=''; filterTeacherStudentStats();" class="w-full sm:w-auto text-xs text-slate-500 hover:text-slate-800 underline px-3 py-2 text-center">
+              Limpiar
             </button>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
-                  <th class="p-3">Alumno</th>
-                  <th class="p-3">Horario Asignado</th>
-                  <th class="p-3">Días de Asistencia</th>
-                  <th class="p-3 text-center">🟢 Sí llegó</th>
-                  <th class="p-3 text-center">🟡 Llegó tarde</th>
-                  <th class="p-3 text-center">🔴 No se presentó</th>
-                  <th class="p-3 text-center">Total Registros</th>
-                  <th class="p-3 text-center">Expediente Completo</th>
-                </tr>
-              </thead>
-              <tbody id="teacherStudentStatsTableBody" class="divide-y divide-slate-100">
-                <tr>
-                  <td colspan="8" class="p-6 text-center text-slate-400">Cargando reporte de alumnos...</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Contenedor responsivo de Expedientes -->
+          <div id="teacherStatsContainer" class="text-xs text-slate-500">
+            <!-- Se llena dinámicamente con tarjetas en móvil y tabla en PC -->
           </div>
         </div>
       </div>
@@ -511,127 +550,116 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODAL DE EXPEDIENTE VISUAL Y PROFESIONAL DEL ESTUDIANTE                   -->
+  <!-- MODAL DE EXPEDIENTE VISUAL (RESPONSIVO PARA MÓVIL Y ESCRITORIO)          -->
   <!-- ========================================================================= -->
-  <div id="modalVisualStudentInfo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[92vh] flex flex-col border border-slate-100">
+  <div id="modalVisualStudentInfo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50 transition-opacity">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-4 sm:p-6 space-y-4 max-h-[90vh] flex flex-col border border-slate-100">
       
-      <!-- Cabecera del Alumno con Avatar y Datos Principales -->
-      <div class="flex items-start justify-between border-b border-slate-100 pb-4">
-        <div class="flex items-center space-x-3.5">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-black text-2xl shadow-md" id="modalStudentAvatar">
+      <!-- Cabecera del Alumno -->
+      <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex-shrink-0 flex items-center justify-center font-black text-xl shadow-xs" id="modalStudentAvatar">
             A
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 id="modalStudentName" class="text-lg font-black text-slate-900 leading-tight">Nombre del Alumno</h3>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <h3 id="modalStudentName" class="text-base font-black text-slate-900 leading-tight truncate">Nombre del Alumno</h3>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                 Matriculado
               </span>
             </div>
-            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-500 font-medium">
-              <span id="modalStudentIden">🪪 Cédula: -</span>
+            <div class="flex flex-wrap items-center gap-x-2 text-[11px] text-slate-500 font-medium mt-0.5">
+              <span id="modalStudentIden">🪪 -</span>
               <span>•</span>
-              <span id="modalStudentPhone">📞 Tel: -</span>
+              <span id="modalStudentPhone">📞 -</span>
             </div>
           </div>
         </div>
 
-        <button onclick="closeVisualStudentModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 font-bold flex items-center justify-center transition">
+        <button onclick="closeVisualStudentModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center transition flex-shrink-0">
           ✕
         </button>
       </div>
 
-      <!-- Tarjetas de Resumen y Métricas de Asistencia -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl text-center">
-          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Total Clases</p>
-          <p id="modalMetricTotal" class="text-2xl font-black text-slate-800 mt-0.5">0</p>
-          <p class="text-[10px] text-slate-400 font-medium" id="modalMetricPct">100% asist.</p>
+      <!-- Tarjetas de Métricas (2x2 en móvil, 4 en desktop) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-2xl text-center">
+          <p class="text-[9px] font-bold text-slate-500 uppercase">Total Clases</p>
+          <p id="modalMetricTotal" class="text-xl font-black text-slate-800 mt-0.5">0</p>
+          <p class="text-[9px] text-slate-400 font-medium" id="modalMetricPct">100% asist.</p>
         </div>
 
-        <div class="bg-emerald-50/70 border border-emerald-200 p-3 rounded-2xl text-center">
-          <p class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">🟢 Sí Llegó</p>
-          <p id="modalMetricPresente" class="text-2xl font-black text-emerald-700 mt-0.5">0</p>
-          <p class="text-[10px] text-emerald-600 font-semibold">Puntual</p>
+        <div class="bg-emerald-50/70 border border-emerald-200 p-2.5 rounded-2xl text-center">
+          <p class="text-[9px] font-bold text-emerald-700 uppercase">🟢 Sí Llegó</p>
+          <p id="modalMetricPresente" class="text-xl font-black text-emerald-700 mt-0.5">0</p>
+          <p class="text-[9px] text-emerald-600 font-semibold">Puntual</p>
         </div>
 
-        <div class="bg-amber-50/70 border border-amber-200 p-3 rounded-2xl text-center">
-          <p class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">🟡 Llegó Tarde</p>
-          <p id="modalMetricTarde" class="text-2xl font-black text-amber-700 mt-0.5">0</p>
-          <p class="text-[10px] text-amber-600 font-semibold">Tardanza</p>
+        <div class="bg-amber-50/70 border border-amber-200 p-2.5 rounded-2xl text-center">
+          <p class="text-[9px] font-bold text-amber-700 uppercase">🟡 Tardanza</p>
+          <p id="modalMetricTarde" class="text-xl font-black text-amber-700 mt-0.5">0</p>
+          <p class="text-[9px] text-amber-600 font-semibold">Tardío</p>
         </div>
 
-        <div class="bg-rose-50/70 border border-rose-200 p-3 rounded-2xl text-center">
-          <p class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">🔴 No Se Presentó</p>
-          <p id="modalMetricAusente" class="text-2xl font-black text-rose-700 mt-0.5">0</p>
-          <p class="text-[10px] text-rose-600 font-semibold">Faltas</p>
+        <div class="bg-rose-50/70 border border-rose-200 p-2.5 rounded-2xl text-center">
+          <p class="text-[9px] font-bold text-rose-700 uppercase">🔴 Faltas</p>
+          <p id="modalMetricAusente" class="text-xl font-black text-rose-700 mt-0.5">0</p>
+          <p class="text-[9px] text-rose-600 font-semibold">Ausente</p>
         </div>
       </div>
 
-      <!-- Ficha de Horario Asignado por Administración / Recepción -->
-      <div class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 text-xs space-y-1.5">
-        <div class="flex items-center justify-between font-bold text-blue-900 border-b border-blue-100 pb-1.5 mb-1.5">
-          <span class="flex items-center gap-1.5">
-            <span>📚 Información Académica Asignada</span>
-          </span>
-          <span id="modalCourseBadge" class="bg-blue-600 text-white px-2.5 py-0.5 rounded-full text-[10px]">Curso General</span>
+      <!-- Ficha Académica Asignada -->
+      <div class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-3 text-xs space-y-1">
+        <div class="flex items-center justify-between font-bold text-blue-900 border-b border-blue-100 pb-1 mb-1">
+          <span>📚 Asignación</span>
+          <span id="modalCourseBadge" class="bg-blue-600 text-white px-2 py-0.5 rounded-full text-[10px]">Curso</span>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-700">
-          <div>
-            <span class="text-slate-500 font-semibold">Horario / Turno:</span> 
-            <span id="modalScheduleTimeSlot" class="font-bold text-blue-800 ml-1">-</span>
-          </div>
-          <div>
-            <span class="text-slate-500 font-semibold">Días Programados:</span> 
-            <span id="modalScheduleDays" class="font-bold text-slate-800 ml-1">-</span>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px] text-slate-700">
+          <div><span class="text-slate-500 font-semibold">Horario:</span> <span id="modalScheduleTimeSlot" class="font-bold text-blue-800 ml-1">-</span></div>
+          <div><span class="text-slate-500 font-semibold">Días:</span> <span id="modalScheduleDays" class="font-bold text-slate-800 ml-1">-</span></div>
         </div>
       </div>
 
-      <!-- Bitácora Detallada de Asistencias Fecha a Fecha -->
-      <div class="space-y-2 flex-1 overflow-hidden flex flex-col">
+      <!-- Historial de Clases con scroll suave -->
+      <div class="space-y-1.5 flex-1 overflow-hidden flex flex-col min-h-[140px]">
         <div class="flex justify-between items-center px-1">
-          <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider">Historial de Clases Marcadas</h4>
-          <span id="modalHistoryCountBadge" class="text-[11px] font-bold text-slate-400">0 registros</span>
+          <h4 class="text-[11px] font-black text-slate-800 uppercase tracking-wider">Historial de Clases Marcadas</h4>
+          <span id="modalHistoryCountBadge" class="text-[10px] font-bold text-slate-400">0 marcaciones</span>
         </div>
 
         <div class="flex-1 overflow-y-auto border border-slate-200 rounded-2xl">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 sticky top-0 font-semibold">
               <tr>
-                <th class="p-2.5">Fecha (Día/Mes/Año)</th>
-                <th class="p-2.5">Hora Exacta</th>
-                <th class="p-2.5">Estado Marcado</th>
-                <th class="p-2.5">Curso</th>
+                <th class="p-2">Fecha</th>
+                <th class="p-2">Hora</th>
+                <th class="p-2">Estado</th>
               </tr>
             </thead>
             <tbody id="modalHistoryTableBody" class="divide-y divide-slate-100 font-medium">
               <tr>
-                <td colspan="4" class="p-4 text-center text-slate-400">Cargando fechas...</td>
+                <td colspan="3" class="p-4 text-center text-slate-400">Cargando...</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Pie del Modal con Acción de WhatsApp Blindada -->
-      <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+      <!-- Pie del Modal -->
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-2 pt-2 border-t border-slate-100">
         <button 
           type="button"
           id="modalWhatsAppBtn" 
           onclick="triggerStudentWhatsApp()"
-          class="hidden items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm cursor-pointer"
+          class="hidden w-full sm:w-auto items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs cursor-pointer"
         >
-          <span>💬 Abrir WhatsApp del Alumno</span>
+          <span>💬 Abrir WhatsApp</span>
         </button>
-
-        <div class="flex-1"></div>
 
         <button 
           type="button"
           onclick="closeVisualStudentModal()" 
-          class="px-5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+          class="w-full sm:w-auto px-5 py-2.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
         >
           Cerrar
         </button>
@@ -655,6 +683,11 @@
     let activeModalStudentName = '';
 
     const daysMap = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenuDropdown');
+      menu.classList.toggle('hidden');
+    }
 
     function getDayNameFromDateStr(dateStr) {
       if (!dateStr) return '';
@@ -686,14 +719,14 @@
       const viewStats = document.getElementById('teacherViewStats');
 
       if (tab === 'mark') {
-        btnMark.className = 'px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition';
-        btnStats.className = 'px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
+        btnMark.className = 'flex-1 sm:flex-none px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-xs transition';
+        btnStats.className = 'flex-1 sm:flex-none px-3.5 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
         viewMark.classList.remove('hidden');
         viewStats.classList.add('hidden');
         loadTeacherStudents();
       } else {
-        btnStats.className = 'px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition';
-        btnMark.className = 'px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
+        btnStats.className = 'flex-1 sm:flex-none px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 text-white shadow-xs transition';
+        btnMark.className = 'flex-1 sm:flex-none px-3.5 py-2 text-xs font-semibold rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
         viewStats.classList.remove('hidden');
         viewMark.classList.add('hidden');
         loadTeacherStudentStats();
@@ -714,6 +747,7 @@
       if (recepSelect) recepSelect.innerHTML = options;
     }
 
+    // CARGA DE ALUMNOS DEL PROFESOR (CON DISEÑO DUAL MÓVIL / PC)
     async function loadTeacherStudents() {
       const container = document.getElementById('teacherStudentsContainer');
       const dateVal = document.getElementById('teacherDateFilter').value;
@@ -745,7 +779,7 @@
       const { data, error } = await query;
 
       if (error || !data || data.length === 0) {
-        container.innerHTML = '<p class="text-sm text-slate-400 p-2">No tienes alumnos registrados con este profesor.</p>';
+        container.innerHTML = '<p class="text-xs text-slate-400 p-2">No tienes alumnos registrados con este profesor.</p>';
         return;
       }
 
@@ -755,62 +789,111 @@
       });
 
       if (studentsForDay.length === 0) {
-        container.innerHTML = `<p class="text-sm text-slate-400 p-3 bg-slate-50 rounded-lg">No hay alumnos asignados para asistir los <b>${dayOfWeekSelected}</b> en este turno.</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-500 p-3 bg-slate-50 rounded-xl">No hay alumnos programados para asistir los <b>${dayOfWeekSelected}</b> en este turno.</p>`;
         return;
       }
 
-      container.innerHTML = `
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-              <th class="p-3 text-center w-48">¿Asistió hoy (${dayOfWeekSelected})?</th>
-              <th class="p-3">Horario</th>
-              <th class="p-3">Alumno</th>
-              <th class="p-3">Teléfono</th>
-              <th class="p-3">Curso</th>
-              <th class="p-3">Hora Marcación</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${studentsForDay.map(item => {
-              const currentAttendance = (item.attendances || []).find(a => a.attendance_date === dateVal);
-              const status = currentAttendance?.status || 'pendiente';
+      // RENDERIZADO DUAL: Tarjetas en Móvil (sm:hidden) y Tabla en Escritorio (hidden sm:block)
+      let mobileCardsHtml = '<div class="space-y-3 sm:hidden">';
+      let desktopRowsHtml = '';
 
-              let recordedTimeStr = '-';
-              if (currentAttendance?.recorded_at) {
-                const recDate = new Date(currentAttendance.recorded_at);
-                recordedTimeStr = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-              }
+      studentsForDay.forEach(item => {
+        const currentAttendance = (item.attendances || []).find(a => a.attendance_date === dateVal);
+        const status = currentAttendance?.status || 'pendiente';
 
-              return `
-                <tr class="border-b border-slate-100 hover:bg-slate-50">
-                  <td class="p-3 text-center">
-                    <select 
-                      onchange="updateAttendanceChoice('${item.id}', this.value)"
-                      class="text-xs font-bold rounded-lg p-2 border outline-none cursor-pointer ${
-                        status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                        status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                        status === 'ausente' ? 'bg-rose-100 text-rose-800 border-rose-300' :
-                        'bg-slate-100 text-slate-600 border-slate-300'
-                      }"
-                    >
-                      <option value="pendiente" ${status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
-                      <option value="presente" ${status === 'presente' ? 'selected' : ''}>🟢 Sí llegó</option>
-                      <option value="tarde" ${status === 'tarde' ? 'selected' : ''}>🟡 Llegó tarde</option>
-                      <option value="ausente" ${status === 'ausente' ? 'selected' : ''}>🔴 No se presentó</option>
-                    </select>
-                  </td>
-                  <td class="p-3 font-semibold text-xs text-blue-700 whitespace-nowrap">${item.time_slot}</td>
-                  <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
-                  <td class="p-3 text-xs text-slate-600">${item.students?.phone || '-'}</td>
-                  <td class="p-3 text-xs text-slate-600">${item.courses?.name || '-'}</td>
-                  <td class="p-3 font-mono text-xs font-semibold text-slate-700">${recordedTimeStr}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
+        let recordedTimeStr = '-';
+        if (currentAttendance?.recorded_at) {
+          const recDate = new Date(currentAttendance.recorded_at);
+          recordedTimeStr = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        const studentName = item.students?.full_name || 'Sin nombre';
+        const studentPhone = item.students?.phone || '-';
+
+        // 1. Tarjeta Móvil Cómoda y Táctil
+        mobileCardsHtml += `
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2.5">
+            <div class="flex justify-between items-start">
+              <div>
+                <h5 class="font-bold text-slate-900 text-sm">${studentName}</h5>
+                <p class="text-[11px] text-slate-500">📞 ${studentPhone} • <span class="text-indigo-700 font-semibold">${item.courses?.name || 'General'}</span></p>
+                <p class="text-[10px] text-blue-800 font-bold mt-0.5">⏰ ${item.time_slot}</p>
+              </div>
+              <span class="text-[10px] font-mono font-semibold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">
+                ${recordedTimeStr !== '-' ? 'Hora: ' + recordedTimeStr : 'Pendiente'}
+              </span>
+            </div>
+
+            <!-- Selector Táctil Grande en Celular -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Estado de Asistencia Hoy:</label>
+              <select 
+                onchange="updateAttendanceChoice('${item.id}', this.value)"
+                class="w-full text-xs font-bold rounded-xl p-2.5 border outline-none cursor-pointer ${
+                  status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                  status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                  status === 'ausente' ? 'bg-rose-100 text-rose-800 border-rose-300' :
+                  'bg-white text-slate-700 border-slate-300'
+                }"
+              >
+                <option value="pendiente" ${status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente por marcar</option>
+                <option value="presente" ${status === 'presente' ? 'selected' : ''}>🟢 Sí llegó (Presente)</option>
+                <option value="tarde" ${status === 'tarde' ? 'selected' : ''}>🟡 Llegó tarde</option>
+                <option value="ausente" ${status === 'ausente' ? 'selected' : ''}>🔴 No se presentó (Ausente)</option>
+              </select>
+            </div>
+          </div>
+        `;
+
+        // 2. Fila para Pantalla de Escritorio
+        desktopRowsHtml += `
+          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+            <td class="p-3 text-center">
+              <select 
+                onchange="updateAttendanceChoice('${item.id}', this.value)"
+                class="text-xs font-bold rounded-lg p-1.5 border outline-none cursor-pointer ${
+                  status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                  status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                  status === 'ausente' ? 'bg-rose-100 text-rose-800 border-rose-300' :
+                  'bg-slate-100 text-slate-600 border-slate-300'
+                }"
+              >
+                <option value="pendiente" ${status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
+                <option value="presente" ${status === 'presente' ? 'selected' : ''}>🟢 Sí llegó</option>
+                <option value="tarde" ${status === 'tarde' ? 'selected' : ''}>🟡 Llegó tarde</option>
+                <option value="ausente" ${status === 'ausente' ? 'selected' : ''}>🔴 No se presentó</option>
+              </select>
+            </td>
+            <td class="p-3 font-semibold text-xs text-blue-700 whitespace-nowrap">${item.time_slot}</td>
+            <td class="p-3 font-bold text-slate-800">${studentName}</td>
+            <td class="p-3 text-xs text-slate-600">${studentPhone}</td>
+            <td class="p-3 text-xs text-slate-600">${item.courses?.name || '-'}</td>
+            <td class="p-3 font-mono text-xs font-semibold text-slate-700">${recordedTimeStr}</td>
+          </tr>
+        `;
+      });
+
+      mobileCardsHtml += '</div>';
+
+      const desktopTableHtml = `
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+                <th class="p-3 text-center w-44">¿Asistió hoy?</th>
+                <th class="p-3">Horario</th>
+                <th class="p-3">Alumno</th>
+                <th class="p-3">Teléfono</th>
+                <th class="p-3">Curso</th>
+                <th class="p-3">Hora</th>
+              </tr>
+            </thead>
+            <tbody>${desktopRowsHtml}</tbody>
+          </table>
+        </div>
       `;
+
+      container.innerHTML = mobileCardsHtml + desktopTableHtml;
     }
 
     async function updateAttendanceChoice(scheduleId, statusVal) {
@@ -840,7 +923,7 @@
     }
 
     async function loadTeacherStudentStats() {
-      const tbody = document.getElementById('teacherStudentStatsTableBody');
+      const container = document.getElementById('teacherStatsContainer');
       if (!currentTeacherId) return;
 
       try {
@@ -852,12 +935,7 @@
             days_of_week,
             students (id, full_name, phone, identification),
             courses (name),
-            attendances (
-              id,
-              status,
-              attendance_date,
-              recorded_at
-            )
+            attendances (id, status, attendance_date, recorded_at)
           `)
           .eq('teacher_id', currentTeacherId)
           .order('id', { ascending: false });
@@ -868,12 +946,12 @@
         filterTeacherStudentStats();
 
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-red-500">Error: ${err.message}</td></tr>`;
+        container.innerHTML = `<p class="p-4 text-center text-red-500">Error: ${err.message}</p>`;
       }
     }
 
     function filterTeacherStudentStats() {
-      const tbody = document.getElementById('teacherStudentStatsTableBody');
+      const container = document.getElementById('teacherStatsContainer');
       const search = (document.getElementById('searchTeacherStudentInput')?.value || '').toLowerCase().trim();
 
       const filtered = rawTeacherStudentsData.filter(item => {
@@ -883,62 +961,114 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">No se encontraron alumnos con ese nombre.</td></tr>`;
+        container.innerHTML = `<p class="p-6 text-center text-slate-400">No se encontraron alumnos con ese nombre.</p>`;
         return;
       }
 
-      tbody.innerHTML = filtered.map(item => {
+      // 1. Tarjetas en Celular
+      let mobileHtml = '<div class="space-y-3 sm:hidden">';
+      // 2. Filas en Escritorio
+      let desktopRows = '';
+
+      filtered.forEach(item => {
         const attendances = item.attendances || [];
         const countPresente = attendances.filter(a => a.status === 'presente').length;
         const countTarde = attendances.filter(a => a.status === 'tarde').length;
         const countAusente = attendances.filter(a => a.status === 'ausente').length;
         const total = countPresente + countTarde + countAusente;
 
+        const studentName = item.students?.full_name || 'Sin nombre';
+        const studentPhone = item.students?.phone || '';
+
         const daysFormatted = (item.days_of_week && item.days_of_week.length > 0)
-          ? item.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-0.5">${d}</span>`).join('')
+          ? item.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-0.5">${d}</span>`).join('')
           : '<span class="text-slate-400">Todos los días</span>';
 
-        const studentName = item.students?.full_name || 'Sin nombre';
+        // Móvil
+        mobileHtml += `
+          <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <h5 class="font-bold text-slate-900 text-sm">${studentName}</h5>
+                <p class="text-[11px] text-slate-500">${studentPhone ? '📞 ' + studentPhone : ''} • <span class="text-blue-700 font-semibold">${item.time_slot}</span></p>
+              </div>
+              <button 
+                onclick="openVisualStudentModal('${item.id}')" 
+                class="px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-100/70 border border-blue-200 rounded-lg"
+              >
+                🔍 Info
+              </button>
+            </div>
 
-        return `
+            <div class="grid grid-cols-4 gap-1 text-center pt-1 border-t border-slate-200">
+              <div class="bg-white p-1 rounded-lg border border-slate-100">
+                <span class="block text-[8px] font-bold text-emerald-700">Llegó</span>
+                <span class="text-xs font-black text-emerald-700">${countPresente}</span>
+              </div>
+              <div class="bg-white p-1 rounded-lg border border-slate-100">
+                <span class="block text-[8px] font-bold text-amber-700">Tarde</span>
+                <span class="text-xs font-black text-amber-700">${countTarde}</span>
+              </div>
+              <div class="bg-white p-1 rounded-lg border border-slate-100">
+                <span class="block text-[8px] font-bold text-rose-700">Falta</span>
+                <span class="text-xs font-black text-rose-700">${countAusente}</span>
+              </div>
+              <div class="bg-white p-1 rounded-lg border border-slate-100">
+                <span class="block text-[8px] font-bold text-slate-700">Total</span>
+                <span class="text-xs font-black text-slate-800">${total}</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Escritorio
+        desktopRows += `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
             <td class="p-3 font-bold text-slate-900">
-              <span>${studentName}</span>
-              ${item.students?.phone ? `<br><span class="text-[11px] text-slate-400 font-normal">📞 ${item.students.phone}</span>` : ''}
+              ${studentName}
+              ${studentPhone ? `<br><span class="text-[11px] text-slate-400 font-normal">📞 ${studentPhone}</span>` : ''}
             </td>
             <td class="p-3 font-semibold text-blue-700">${item.time_slot}</td>
             <td class="p-3">${daysFormatted}</td>
+            <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">${countPresente}</span></td>
+            <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">${countTarde}</span></td>
+            <td class="p-3 text-center"><span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold">${countAusente}</span></td>
+            <td class="p-3 text-center font-bold font-mono">${total}</td>
             <td class="p-3 text-center">
-              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs">
-                ${countPresente}
-              </span>
-            </td>
-            <td class="p-3 text-center">
-              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs">
-                ${countTarde}
-              </span>
-            </td>
-            <td class="p-3 text-center">
-              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs">
-                ${countAusente}
-              </span>
-            </td>
-            <td class="p-3 text-center font-mono font-bold text-slate-800 text-xs">
-              ${total}
-            </td>
-            <td class="p-3 text-center">
-              <button 
-                onclick="openVisualStudentModal('${item.id}')" 
-                class="px-3 py-1.5 text-xs font-bold text-blue-700 hover:text-white hover:bg-blue-600 bg-blue-50 border border-blue-200 rounded-xl transition shadow-sm flex items-center gap-1 mx-auto"
-              >
-                <span>🔍 Ver Info</span>
+              <button onclick="openVisualStudentModal('${item.id}')" class="px-3 py-1.5 text-xs font-bold text-blue-700 hover:text-white hover:bg-blue-600 bg-blue-50 border border-blue-200 rounded-xl transition">
+                🔍 Ver Info
               </button>
             </td>
           </tr>
         `;
-      }).join('');
+      });
+
+      mobileHtml += '</div>';
+
+      const desktopTable = `
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+                <th class="p-3">Alumno</th>
+                <th class="p-3">Horario</th>
+                <th class="p-3">Días</th>
+                <th class="p-3 text-center">🟢 Sí llegó</th>
+                <th class="p-3 text-center">🟡 Tarde</th>
+                <th class="p-3 text-center">🔴 Falta</th>
+                <th class="p-3 text-center">Total</th>
+                <th class="p-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">${desktopRows}</tbody>
+          </table>
+        </div>
+      `;
+
+      container.innerHTML = mobileHtml + desktopTable;
     }
 
+    // MODAL VISUAL
     function openVisualStudentModal(scheduleId) {
       const scheduleItem = rawTeacherStudentsData.find(s => s.id === scheduleId);
       if (!scheduleItem) return;
@@ -952,8 +1082,8 @@
 
       document.getElementById('modalStudentAvatar').textContent = initial;
       document.getElementById('modalStudentName').textContent = studentName;
-      document.getElementById('modalStudentIden').textContent = student.identification ? `🪪 Cédula: ${student.identification}` : '🪪 Cédula: No registrada';
-      document.getElementById('modalStudentPhone').textContent = student.phone ? `📞 Tel: ${student.phone}` : '📞 Tel: Sin número';
+      document.getElementById('modalStudentIden').textContent = student.identification ? `🪪 ${student.identification}` : '🪪 No registrada';
+      document.getElementById('modalStudentPhone').textContent = student.phone ? `📞 ${student.phone}` : '📞 Sin número';
 
       const waBtn = document.getElementById('modalWhatsAppBtn');
       if (student.phone && student.phone.trim() !== '') {
@@ -972,7 +1102,7 @@
       const pct = total > 0 ? Math.round(((countPresente + countTarde) / total) * 100) : 100;
 
       document.getElementById('modalMetricTotal').textContent = total;
-      document.getElementById('modalMetricPct').textContent = `${pct}% de asistencia`;
+      document.getElementById('modalMetricPct').textContent = `${pct}% asist.`;
       document.getElementById('modalMetricPresente').textContent = countPresente;
       document.getElementById('modalMetricTarde').textContent = countTarde;
       document.getElementById('modalMetricAusente').textContent = countAusente;
@@ -988,7 +1118,7 @@
       const list = attendances.slice().sort((a, b) => new Date(b.attendance_date || b.recorded_at) - new Date(a.attendance_date || a.recorded_at));
 
       if (list.length === 0) {
-        historyBody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">Aún no se registran asistencias para este estudiante.</td></tr>`;
+        historyBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Sin asistencias registradas.</td></tr>`;
       } else {
         historyBody.innerHTML = list.map(a => {
           let dateStr = a.attendance_date || '-';
@@ -1000,26 +1130,25 @@
           let timeStr = '-';
           if (a.recorded_at) {
             const d = new Date(a.recorded_at);
-            timeStr = d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            timeStr = d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
           }
 
-          const badgeColor = a.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                             a.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                             'bg-rose-100 text-rose-800 border-rose-300';
+          const badgeColor = a.status === 'presente' ? 'bg-emerald-100 text-emerald-800' :
+                             a.status === 'tarde' ? 'bg-amber-100 text-amber-800' :
+                             'bg-rose-100 text-rose-800';
 
           const label = a.status === 'presente' ? '🟢 Sí llegó' :
-                        a.status === 'tarde' ? '🟡 Llegó tarde' : '🔴 No se presentó';
+                        a.status === 'tarde' ? '🟡 Tarde' : '🔴 Falta';
 
           return `
             <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-              <td class="p-2.5 font-mono font-bold text-slate-800">${dateStr}</td>
-              <td class="p-2.5 font-mono text-slate-500">${timeStr}</td>
-              <td class="p-2.5">
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeColor}">
+              <td class="p-2 font-mono font-bold text-slate-800 text-[11px]">${dateStr}</td>
+              <td class="p-2 font-mono text-slate-500 text-[10px]">${timeStr}</td>
+              <td class="p-2">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">
                   ${label}
                 </span>
               </td>
-              <td class="p-2.5 text-slate-600">${scheduleItem.courses?.name || 'General'}</td>
             </tr>
           `;
         }).join('');
@@ -1092,30 +1221,30 @@
 
     function renderRpcAttendanceRows(list, targetTbody) {
       if (!list || list.length === 0) {
-        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias para los criterios seleccionados.</td></tr>`;
+        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias.</td></tr>`;
         return;
       }
 
       targetTbody.innerHTML = list.map(item => {
-        const badgeColor = item.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                           item.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                           'bg-rose-100 text-rose-800 border-rose-300';
+        const badgeColor = item.status === 'presente' ? 'bg-emerald-100 text-emerald-800' :
+                           item.status === 'tarde' ? 'bg-amber-100 text-amber-800' :
+                           'bg-rose-100 text-rose-800';
 
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3">
-              <span class="px-2.5 py-1 rounded text-xs font-semibold border ${badgeColor}">
+            <td class="p-2.5 sm:p-3">
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${badgeColor}">
                 ${item.status === 'presente' ? '🟢 ' : item.status === 'tarde' ? '🟡 ' : '🔴 '} ${item.status_label || item.status}
               </span>
             </td>
-            <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
+            <td class="p-2.5 sm:p-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">
               <span class="font-bold text-slate-800">${item.date_formatted || item.attendance_date}</span>
-              <span class="text-slate-500 ml-1.5 font-medium">${item.time_formatted || ''}</span>
+              <span class="text-slate-400 ml-1">${item.time_formatted || ''}</span>
             </td>
-            <td class="p-3 font-bold text-slate-800">${item.student_name || 'Sin nombre'}</td>
-            <td class="p-3 text-slate-700 font-medium">${item.teacher_name || 'Sin profesor'}</td>
-            <td class="p-3 font-semibold text-xs text-indigo-700">${item.time_slot || '-'}</td>
-            <td class="p-3 text-slate-600 text-xs">${item.course_name || 'General'}</td>
+            <td class="p-2.5 sm:p-3 font-bold text-slate-800">${item.student_name || 'Sin nombre'}</td>
+            <td class="p-2.5 sm:p-3 text-slate-700">${item.teacher_name || 'Sin profesor'}</td>
+            <td class="p-2.5 sm:p-3 font-semibold text-blue-700 whitespace-nowrap">${item.time_slot || '-'}</td>
+            <td class="p-2.5 sm:p-3 text-slate-600">${item.course_name || 'General'}</td>
           </tr>
         `;
       }).join('');
@@ -1128,7 +1257,7 @@
       }
 
       if (filtered.length === 0) {
-        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias para los criterios seleccionados.</td></tr>`;
+        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencias.</td></tr>`;
         return;
       }
 
@@ -1138,9 +1267,9 @@
                             status === 'tarde' ? 'Llegó tarde' :
                             status === 'ausente' ? 'No se presentó' : 'Pendiente';
 
-        const badgeColor = status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                           status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                           'bg-rose-100 text-rose-800 border-rose-300';
+        const badgeColor = status === 'presente' ? 'bg-emerald-100 text-emerald-800' :
+                           status === 'tarde' ? 'bg-amber-100 text-amber-800' :
+                           'bg-rose-100 text-rose-800';
 
         let dateFormatted = item.attendance_date;
         if (item.attendance_date && item.attendance_date.includes('-')) {
@@ -1151,24 +1280,24 @@
         let timeFormatted = '';
         if (item.recorded_at) {
           const recDate = new Date(item.recorded_at);
-          timeFormatted = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          timeFormatted = recDate.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
         }
 
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3">
-              <span class="px-2.5 py-1 rounded text-xs font-semibold border ${badgeColor}">
+            <td class="p-2.5 sm:p-3">
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${badgeColor}">
                 ${status === 'presente' ? '🟢 ' : status === 'tarde' ? '🟡 ' : '🔴 '} ${statusLabel}
               </span>
             </td>
-            <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
+            <td class="p-2.5 sm:p-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">
               <span class="font-bold text-slate-800">${dateFormatted}</span>
-              <span class="text-slate-500 ml-1.5 font-medium">${timeFormatted}</span>
+              <span class="text-slate-400 ml-1">${timeFormatted}</span>
             </td>
-            <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
-            <td class="p-3 text-slate-700 font-medium">${item.student_schedules?.teachers?.full_name || 'Sin profesor'}</td>
-            <td class="p-3 font-semibold text-xs text-indigo-700">${item.student_schedules?.time_slot || '-'}</td>
-            <td class="p-3 text-slate-600 text-xs">${item.student_schedules?.courses?.name || 'General'}</td>
+            <td class="p-2.5 sm:p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
+            <td class="p-2.5 sm:p-3 text-slate-700">${item.student_schedules?.teachers?.full_name || 'Sin profesor'}</td>
+            <td class="p-2.5 sm:p-3 font-semibold text-blue-700 whitespace-nowrap">${item.student_schedules?.time_slot || '-'}</td>
+            <td class="p-2.5 sm:p-3 text-slate-600">${item.student_schedules?.courses?.name || 'General'}</td>
           </tr>
         `;
       }).join('');
@@ -1200,6 +1329,12 @@
         .subscribe();
     }
 
+    async function handleLogout() {
+      await supabaseClient.auth.signOut();
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    }
+
     // INICIALIZACIÓN
     async function initDashboard() {
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1223,38 +1358,58 @@
       }
 
       currentUserRole = profile.role;
-      document.getElementById('userName').textContent = profile.full_name || 'Usuario';
+      const displayName = profile.full_name || 'Usuario';
+
+      document.getElementById('userName').textContent = displayName;
+      document.getElementById('mobileUserName').textContent = `${displayName} (${profile.role.toUpperCase()})`;
+      
       const badgeRole = document.getElementById('badgeRole');
       badgeRole.textContent = profile.role;
 
+      // Elementos de escritorio y móvil
       const btnAddStudent = document.getElementById('btnHeaderAddStudent');
-      const btnPayroll = document.getElementById('btnHeaderPayroll');
-      const btnBilling = document.getElementById('btnHeaderBilling');
-      const btnAudit = document.getElementById('btnHeaderAudit');
-      const btnTeacherPayments = document.getElementById('btnHeaderTeacherPayments');
+      const mBtnAddStudent = document.getElementById('mBtnAddStudent');
 
-      // Segregación estricta de botones en la cabecera
+      const btnPayroll = document.getElementById('btnHeaderPayroll');
+      const mBtnPayroll = document.getElementById('mBtnPayroll');
+
+      const btnBilling = document.getElementById('btnHeaderBilling');
+      const mBtnBilling = document.getElementById('mBtnBilling');
+
+      const btnAudit = document.getElementById('btnHeaderAudit');
+      const mBtnAudit = document.getElementById('mBtnAudit');
+
+      const btnTeacherPayments = document.getElementById('btnHeaderTeacherPayments');
+      const mBtnTeacherPayments = document.getElementById('mBtnTeacherPayments');
+
+      // Segregación estricta
       if (currentUserRole === 'admin') {
-        if (btnAddStudent) { btnAddStudent.classList.remove('hidden'); btnAddStudent.classList.add('flex'); }
-        if (btnPayroll) { btnPayroll.classList.remove('hidden'); btnPayroll.classList.add('flex'); }
-        if (btnBilling) { btnBilling.classList.remove('hidden'); btnBilling.classList.add('flex'); }
-        if (btnAudit) { btnAudit.classList.remove('hidden'); btnAudit.classList.add('flex'); }
-        if (btnTeacherPayments) btnTeacherPayments.classList.add('hidden');
+        if (btnAddStudent) btnAddStudent.classList.remove('hidden');
+        if (mBtnAddStudent) mBtnAddStudent.classList.remove('hidden');
+
+        if (btnPayroll) btnPayroll.classList.remove('hidden');
+        if (mBtnPayroll) mBtnPayroll.classList.remove('hidden');
+
+        if (btnBilling) btnBilling.classList.remove('hidden');
+        if (mBtnBilling) mBtnBilling.classList.remove('hidden');
+
+        if (btnAudit) btnAudit.classList.remove('hidden');
+        if (mBtnAudit) mBtnAudit.classList.remove('hidden');
 
       } else if (currentUserRole === 'recepcion') {
-        if (btnAddStudent) { btnAddStudent.classList.remove('hidden'); btnAddStudent.classList.add('flex'); }
-        if (btnPayroll) { btnPayroll.classList.remove('hidden'); btnPayroll.classList.add('flex'); }
-        if (btnBilling) { btnBilling.classList.remove('hidden'); btnBilling.classList.add('flex'); }
-        if (btnAudit) btnAudit.classList.add('hidden');
-        if (btnTeacherPayments) btnTeacherPayments.classList.add('hidden');
+        if (btnAddStudent) btnAddStudent.classList.remove('hidden');
+        if (mBtnAddStudent) mBtnAddStudent.classList.remove('hidden');
+
+        if (btnPayroll) btnPayroll.classList.remove('hidden');
+        if (mBtnPayroll) mBtnPayroll.classList.remove('hidden');
+
+        if (btnBilling) btnBilling.classList.remove('hidden');
+        if (mBtnBilling) mBtnBilling.classList.remove('hidden');
 
       } else {
         // Profesor
-        if (btnAddStudent) btnAddStudent.classList.add('hidden');
-        if (btnPayroll) btnPayroll.classList.add('hidden');
-        if (btnBilling) btnBilling.classList.add('hidden');
-        if (btnAudit) btnAudit.classList.add('hidden');
-        if (btnTeacherPayments) { btnTeacherPayments.classList.remove('hidden'); btnTeacherPayments.classList.add('flex'); }
+        if (btnTeacherPayments) btnTeacherPayments.classList.remove('hidden');
+        if (mBtnTeacherPayments) mBtnTeacherPayments.classList.remove('hidden');
       }
 
       await loadTeachersDropdown();
@@ -1290,11 +1445,8 @@
       setupRealtimeListeners();
     }
 
-    document.getElementById('btnLogout').addEventListener('click', async () => {
-      await supabaseClient.auth.signOut();
-      sessionStorage.clear();
-      window.location.href = 'index.html';
-    });
+    document.getElementById('btnLogout').addEventListener('click', handleLogout);
+    document.getElementById('mBtnLogout').addEventListener('click', handleLogout);
 
     initDashboard();
   </script>
