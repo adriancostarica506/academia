@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso al Sistema - Academi</title>
+  <title>Acceso al Sistema - Academi Elohim</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -11,16 +11,15 @@
 
   <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 w-full max-w-md space-y-6">
     
-    <!-- Encabezado con LOGO DE LA ACADEMIA -->
+    <!-- Encabezado con el Logo de la Academia -->
     <div class="text-center space-y-3">
       <div class="flex justify-center">
-        <!-- Contenedor del Logo -->
-        <div class="w-24 h-24 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-2 overflow-hidden">
+        <div class="w-24 h-24 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center p-1 overflow-hidden">
           <img 
             src="logo.png" 
-            alt="Logo Academi" 
-            class="w-full h-full object-contain"
-            onerror="this.onerror=null; this.src='assets/logo.png'; this.parentElement.classList.add('bg-blue-50');"
+            alt="Logo Academia Elohim" 
+            class="w-full h-full object-contain rounded-full"
+            onerror="this.onerror=null; this.src='assets/logo.png';"
           >
         </div>
       </div>
@@ -33,15 +32,16 @@
     <!-- Alerta de Error -->
     <div id="loginAlert" class="hidden p-3 rounded-xl text-xs font-semibold bg-red-50 text-red-700 border border-red-200"></div>
 
-    <!-- Formulario de Acceso -->
+    <!-- Formulario de Acceso por Usuario y Contraseña -->
     <form id="loginForm" class="space-y-4">
       <div>
-        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Correo Electrónico</label>
+        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Usuario</label>
         <input 
-          type="email" 
-          id="loginEmail" 
+          type="text" 
+          id="loginUser" 
           required 
-          placeholder="tu_correo@ejemplo.com"
+          autocomplete="username"
+          placeholder="Escribe tu usuario..."
           class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition"
         >
       </div>
@@ -52,6 +52,7 @@
           type="password" 
           id="loginPassword" 
           required 
+          autocomplete="current-password"
           placeholder="••••••••"
           class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition"
         >
@@ -82,7 +83,7 @@
       const alertBox = document.getElementById('loginAlert');
       alertBox.classList.add('hidden');
 
-      const email = document.getElementById('loginEmail').value.trim();
+      const userInput = document.getElementById('loginUser').value.trim();
       const password = document.getElementById('loginPassword').value;
       const btn = document.getElementById('btnLogin');
 
@@ -90,18 +91,44 @@
       btn.textContent = 'Verificando credenciales...';
 
       try {
+        let authEmail = userInput;
+
+        // Si el usuario no ingresó un '@', resolver el correo interno vinculado
+        if (!authEmail.includes('@')) {
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('email')
+            .or(`username.ilike.${userInput},full_name.ilike.${userInput}`)
+            .limit(1)
+            .maybeSingle();
+
+          if (profile && profile.email) {
+            authEmail = profile.email;
+          } else {
+            // Mapeo automático de dominio para usuarios simples (ej. "mario" -> "mario@academi.com")
+            authEmail = `${userInput.toLowerCase()}@academi.com`;
+          }
+        }
+
         const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: email,
+          email: authEmail,
           password: password
         });
 
-        if (error) throw error;
+        if (error) {
+          // Reintento de respaldo por si el dominio del usuario es directo
+          const fallbackEmail = `${userInput.toLowerCase().replace(/\s+/g, '')}@academia.com`;
+          const retry = await supabaseClient.auth.signInWithPassword({
+            email: fallbackEmail,
+            password: password
+          });
+          if (retry.error) throw error;
+        }
 
-        // Redirigir al Dashboard Principal
         window.location.href = 'dashboard.html';
 
       } catch (err) {
-        alertBox.textContent = 'Error: Credenciales incorrectas o usuario no registrado.';
+        alertBox.textContent = 'Usuario o contraseña incorrectos.';
         alertBox.classList.remove('hidden');
       } finally {
         btn.disabled = false;
