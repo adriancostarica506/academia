@@ -44,7 +44,7 @@
   <!-- Contenedor Principal -->
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 no-print">
 
-    <!-- Tarjetas de Resumen Diario -->
+    <!-- Tarjetas de Resumen Diario y Filtrado -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
@@ -68,7 +68,7 @@
 
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Filtrado</p>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" id="statFilterLabel">Total Filtrado</p>
           <h3 id="statFilteredTotal" class="text-2xl font-black text-slate-800 mt-1">₡0.00</h3>
         </div>
         <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg border border-amber-100">
@@ -157,31 +157,63 @@
         </form>
       </div>
 
-      <!-- Tabla y Búsqueda de Recibos -->
+      <!-- Tabla y Búsqueda de Recibos con Filtro por Alumno -->
       <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-800">Historial de Recibos</h2>
-            <p class="text-xs text-slate-500">Expedientes de pagos registrados en el sistema.</p>
+        
+        <!-- Barra de Filtros -->
+        <div class="flex flex-col space-y-3 border-b border-slate-100 pb-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h2 class="text-lg font-bold text-slate-800">Historial de Recibos</h2>
+              <p class="text-xs text-slate-500">Expedientes de pagos registrados. Haz clic en el nombre de un alumno para ver solo sus pagos.</p>
+            </div>
+            <div id="activeFilterBadge" class="hidden">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                <span id="activeFilterStudentName">Alumno</span>
+                <button onclick="clearFilters()" class="text-blue-600 hover:text-blue-900 font-black">✕</button>
+              </span>
+            </div>
           </div>
-          <div class="flex items-center gap-2 w-full md:w-auto">
-            <input 
-              type="text" 
-              id="searchInput" 
-              oninput="filterPayments()" 
-              placeholder="Buscar alumno, concepto o recibo..." 
-              class="border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500 w-full md:w-56"
-            >
-            <input 
-              type="date" 
-              id="filterDate" 
-              onchange="filterPayments()" 
-              class="border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
-            >
-            <button onclick="clearFilters()" class="text-xs text-slate-500 hover:text-slate-800 underline px-1">Todos</button>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+            <!-- Selector de Alumno -->
+            <div class="sm:col-span-5">
+              <select id="filterStudentSelect" onchange="filterPayments()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                <option value="">👤 Todos los alumnos</option>
+              </select>
+            </div>
+
+            <!-- Búsqueda texto -->
+            <div class="sm:col-span-4">
+              <input 
+                type="text" 
+                id="searchInput" 
+                oninput="filterPayments()" 
+                placeholder="Buscar concepto o recibo..." 
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+              >
+            </div>
+
+            <!-- Fecha -->
+            <div class="sm:col-span-2">
+              <input 
+                type="date" 
+                id="filterDate" 
+                onchange="filterPayments()" 
+                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+              >
+            </div>
+
+            <!-- Limpiar -->
+            <div class="sm:col-span-1 flex items-center justify-center">
+              <button onclick="clearFilters()" title="Limpiar filtros" class="w-full text-xs text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg p-2 hover:bg-slate-50 transition text-center font-medium">
+                Limpiar
+              </button>
+            </div>
           </div>
         </div>
 
+        <!-- Tabla -->
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
@@ -273,21 +305,20 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let allPayments = [];
+    let allStudents = [];
 
     const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // Función limpia que parsea correctamente la fecha sin mezclar caracteres de hora
     function formatSafeDate(rawDate) {
       if (!rawDate) return '--/--/----';
-      const clean = String(rawDate).split('T')[0]; // Tomar solo YYYY-MM-DD
+      const clean = String(rawDate).split('T')[0];
       const parts = clean.split('-');
       if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
       }
       return clean;
     }
 
-    // Formatear hora de creación
     function formatSafeTime(rawTimestamp) {
       if (!rawTimestamp) return '';
       try {
@@ -318,7 +349,8 @@
     }
 
     async function loadStudentsSelect() {
-      const select = document.getElementById('selectStudent');
+      const selectForm = document.getElementById('selectStudent');
+      const selectFilter = document.getElementById('filterStudentSelect');
       try {
         const { data, error } = await supabaseClient
           .from('students')
@@ -326,17 +358,22 @@
           .order('full_name', { ascending: true });
 
         if (error) throw error;
+        allStudents = data || [];
 
-        if (!data || data.length === 0) {
-          select.innerHTML = '<option value="" disabled selected>No hay alumnos registrados</option>';
+        if (allStudents.length === 0) {
+          selectForm.innerHTML = '<option value="" disabled selected>No hay alumnos registrados</option>';
+          selectFilter.innerHTML = '<option value="">👤 No hay alumnos</option>';
           return;
         }
 
-        select.innerHTML = '<option value="" disabled selected>Selecciona un alumno...</option>' +
-          data.map(s => `<option value="${s.id}">${s.full_name} ${s.phone ? '(' + s.phone + ')' : ''}</option>`).join('');
+        const optionsHtml = allStudents.map(s => `<option value="${s.id}">${s.full_name} ${s.phone ? '(' + s.phone + ')' : ''}</option>`).join('');
+
+        selectForm.innerHTML = '<option value="" disabled selected>Selecciona un alumno...</option>' + optionsHtml;
+        selectFilter.innerHTML = '<option value="">👤 Todos los alumnos</option>' + 
+          allStudents.map(s => `<option value="${s.id}">👤 ${s.full_name}</option>`).join('');
 
       } catch (err) {
-        select.innerHTML = '<option value="" disabled selected>Error al cargar alumnos</option>';
+        selectForm.innerHTML = '<option value="" disabled selected>Error al cargar alumnos</option>';
       }
     }
 
@@ -348,6 +385,7 @@
           .select(`
             id,
             receipt_number,
+            student_id,
             amount,
             concept,
             payment_concept,
@@ -355,15 +393,14 @@
             reference_number,
             payment_date,
             created_at,
-            students (full_name)
+            students (id, full_name)
           `)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
         allPayments = data || [];
-        renderPayments(allPayments);
-        calculateStats(allPayments);
+        filterPayments();
 
       } catch (err) {
         tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error al cargar pagos: ${err.message}</td></tr>`;
@@ -373,7 +410,7 @@
     function renderPayments(list) {
       const tableBody = document.getElementById('paymentsTableBody');
       if (!list || list.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No hay pagos registrados.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No se encontraron pagos con los filtros seleccionados.</td></tr>`;
         return;
       }
 
@@ -381,6 +418,8 @@
         const dateFormatted = formatSafeDate(p.payment_date);
         const timeFormatted = formatSafeTime(p.created_at);
         const concept = p.concept || p.payment_concept || 'Cobro General';
+        const studentName = p.students?.full_name || 'Sin nombre';
+        const studentId = p.student_id || p.students?.id;
 
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
@@ -389,7 +428,11 @@
               <span>${dateFormatted}</span>
               ${timeFormatted ? `<span class="text-[11px] text-slate-400 ml-1.5 font-medium">${timeFormatted}</span>` : ''}
             </td>
-            <td class="p-3 font-bold text-slate-800">${p.students?.full_name || 'Sin nombre'}</td>
+            <td class="p-3 font-bold text-slate-800">
+              <button onclick="filterByStudentId('${studentId}')" title="Filtrar solo pagos de este alumno" class="text-left hover:text-blue-600 hover:underline transition">
+                ${studentName}
+              </button>
+            </td>
             <td class="p-3 text-xs text-slate-700 font-semibold">${concept}</td>
             <td class="p-3">
               <span class="px-2 py-0.5 rounded text-xs font-semibold ${
@@ -411,52 +454,89 @@
       }).join('');
     }
 
-    function calculateStats(list) {
+    function calculateStats(filteredList) {
       const today = new Date().toISOString().split('T')[0];
       let totalToday = 0;
       let countToday = 0;
       let totalFiltered = 0;
 
-      list.forEach(p => {
-        const amt = Number(p.amount) || 0;
-        totalFiltered += amt;
+      // Calcular hoy global
+      allPayments.forEach(p => {
         const cleanDate = p.payment_date ? String(p.payment_date).split('T')[0] : '';
         if (cleanDate === today) {
-          totalToday += amt;
+          totalToday += Number(p.amount) || 0;
           countToday++;
         }
+      });
+
+      // Calcular total filtrado
+      filteredList.forEach(p => {
+        totalFiltered += Number(p.amount) || 0;
       });
 
       document.getElementById('statTotalToday').textContent = formatCurrency(totalToday);
       document.getElementById('statCountToday').textContent = countToday;
       document.getElementById('statFilteredTotal').textContent = formatCurrency(totalFiltered);
+
+      // Etiqueta dinámica
+      const studentFilter = document.getElementById('filterStudentSelect').value;
+      const label = document.getElementById('statFilterLabel');
+      if (studentFilter) {
+        label.textContent = `Total del Alumno (${filteredList.length} pagos)`;
+      } else {
+        label.textContent = 'Total Filtrado';
+      }
     }
 
     function filterPayments() {
       const search = document.getElementById('searchInput').value.toLowerCase().trim();
       const dateVal = document.getElementById('filterDate').value;
+      const studentFilterId = document.getElementById('filterStudentSelect').value;
+
+      const badge = document.getElementById('activeFilterBadge');
+      const badgeText = document.getElementById('activeFilterStudentName');
+
+      if (studentFilterId) {
+        const found = allStudents.find(s => s.id === studentFilterId);
+        badgeText.textContent = `Alumno: ${found ? found.full_name : 'Seleccionado'}`;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
 
       const filtered = allPayments.filter(p => {
         const concept = (p.concept || p.payment_concept || '').toLowerCase();
         const student = (p.students?.full_name || '').toLowerCase();
         const ref = (p.reference_number || '').toLowerCase();
-        const matchText = student.includes(search) || concept.includes(search) || String(p.receipt_number).includes(search) || ref.includes(search);
+        const receiptStr = String(p.receipt_number || '');
+
+        const matchSearch = !search || student.includes(search) || concept.includes(search) || receiptStr.includes(search) || ref.includes(search);
         
         const cleanDate = p.payment_date ? String(p.payment_date).split('T')[0] : '';
         const matchDate = dateVal ? cleanDate === dateVal : true;
-        
-        return matchText && matchDate;
+
+        const currentStudentId = p.student_id || p.students?.id;
+        const matchStudent = !studentFilterId || currentStudentId === studentFilterId;
+
+        return matchSearch && matchDate && matchStudent;
       });
 
       renderPayments(filtered);
       calculateStats(filtered);
     }
 
+    // Filtrar directamente haciendo click en el nombre
+    function filterByStudentId(studentId) {
+      if (!studentId) return;
+      document.getElementById('filterStudentSelect').value = studentId;
+      filterPayments();
+    }
+
     function clearFilters() {
       document.getElementById('searchInput').value = '';
       document.getElementById('filterDate').value = '';
-      renderPayments(allPayments);
-      calculateStats(allPayments);
+      document.getElementById('filterStudentSelect').value = '';
+      filterPayments();
     }
 
     document.getElementById('paymentForm').addEventListener('submit', async (e) => {
@@ -552,7 +632,6 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Poner la fecha de hoy por defecto en el input
       const today = new Date();
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, '0');
