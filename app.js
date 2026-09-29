@@ -4,15 +4,9 @@
 const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
 
-// Inicializar el cliente de Supabase
+// Inicializar cliente
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Dominio virtual interno para permitir login solo con usuario
-const USERNAME_DOMAIN = '@sistema.local';
-
-// ==========================================
-// ELEMENTOS DEL DOM
-// ==========================================
 const loginForm = document.getElementById('loginForm');
 const usernameInput = document.getElementById('username');
 const passwordInput = document.getElementById('password');
@@ -31,18 +25,15 @@ function clearError() {
   errorMessage.classList.add('hidden');
 }
 
-// ==========================================
-// MANEJO DE INICIO DE SESIÓN
-// ==========================================
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearError();
 
-    const username = usernameInput.value.trim().toLowerCase();
+    const userInput = usernameInput.value.trim().toLowerCase();
     const password = passwordInput.value;
 
-    if (!username || !password) {
+    if (!userInput || !password) {
       showError('Por favor completa todos los campos.');
       return;
     }
@@ -50,13 +41,18 @@ if (loginForm) {
     btnLogin.disabled = true;
     btnLogin.textContent = 'Verificando...';
 
-    // Construir el email virtual con el dominio interno
-    const internalEmail = `${username}${USERNAME_DOMAIN}`;
+    // Si escribió 'admin', usamos el correo registrado; si puso un correo, lo dejamos tal cual
+    let loginEmail = userInput;
+    if (userInput === 'admin') {
+      loginEmail = 'adrian2799024@yahoo.com';
+    } else if (!userInput.includes('@')) {
+      loginEmail = `${userInput}@sistema.local`;
+    }
 
     try {
-      // 1. Iniciar sesión en Supabase Auth
+      // 1. Iniciar sesión en Supabase
       const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-        email: internalEmail,
+        email: loginEmail,
         password: password
       });
 
@@ -64,28 +60,25 @@ if (loginForm) {
         throw new Error('Usuario o contraseña incorrectos.');
       }
 
-      const userId = authData.user.id;
-
-      // 2. Consultar el perfil y rol del usuario
+      // 2. Consultar perfil y rol
       const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
         .select('role, full_name')
-        .eq('id', userId)
+        .eq('id', authData.user.id)
         .single();
 
       if (profileError || !profile) {
         throw new Error('No se encontró el perfil del usuario.');
       }
 
-      // Guardar información en sesión
       sessionStorage.setItem('user_role', profile.role);
       sessionStorage.setItem('user_name', profile.full_name);
 
-      // Redirigir al panel principal
+      // Redirigir al panel
       window.location.href = 'dashboard.html';
 
     } catch (err) {
-      showError(err.message || 'Error al conectar con el servidor.');
+      showError(err.message || 'Error al conectar.');
       btnLogin.disabled = false;
       btnLogin.textContent = 'Ingresar al Sistema';
     }
