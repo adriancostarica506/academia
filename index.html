@@ -41,7 +41,7 @@
           id="loginUser" 
           required 
           autocomplete="username"
-          placeholder="Escribe tu usuario..."
+          placeholder="Escribe tu usuario (ej: mario)..."
           class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition"
         >
       </div>
@@ -93,37 +93,47 @@
       try {
         let authEmail = userInput;
 
-        // Si el usuario no ingresó un '@', resolver el correo interno vinculado
+        // Si el usuario no contiene '@', consultar a Supabase el correo real vinculado
         if (!authEmail.includes('@')) {
-          const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('email')
-            .or(`username.ilike.${userInput},full_name.ilike.${userInput}`)
-            .limit(1)
-            .maybeSingle();
+          const { data: resolvedEmail, error: rpcErr } = await supabaseClient
+            .rpc('get_email_by_identifier', { p_identifier: userInput });
 
-          if (profile && profile.email) {
-            authEmail = profile.email;
+          if (!rpcErr && resolvedEmail) {
+            authEmail = resolvedEmail;
           } else {
-            // Mapeo automático de dominio para usuarios simples (ej. "mario" -> "mario@academi.com")
+            // Respaldos habituales por si no resolvió por RPC
             authEmail = `${userInput.toLowerCase()}@academi.com`;
           }
         }
 
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
+        // Intento de inicio de sesión con el email resuelto
+        let { data, error } = await supabaseClient.auth.signInWithPassword({
           email: authEmail,
           password: password
         });
 
-        if (error) {
-          // Reintento de respaldo por si el dominio del usuario es directo
-          const fallbackEmail = `${userInput.toLowerCase().replace(/\s+/g, '')}@academia.com`;
-          const retry = await supabaseClient.auth.signInWithPassword({
-            email: fallbackEmail,
-            password: password
-          });
-          if (retry.error) throw error;
+        // Si falla por formato de dominio alternativo, probar combinaciones comunes
+        if (error && !userInput.includes('@')) {
+          const fallbacks = [
+            `${userInput.toLowerCase()}@academia.com`,
+            `${userInput.toLowerCase()}@elohim.com`,
+            `${userInput.toLowerCase()}@gmail.com`
+          ];
+
+          for (const fb of fallbacks) {
+            if (fb === authEmail) continue;
+            const retry = await supabaseClient.auth.signInWithPassword({
+              email: fb,
+              password: password
+            });
+            if (!retry.error) {
+              error = null;
+              break;
+            }
+          }
         }
+
+        if (error) throw error;
 
         window.location.href = 'dashboard.html';
 
