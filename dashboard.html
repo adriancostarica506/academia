@@ -74,19 +74,19 @@
         </div>
       </div>
 
-      <!-- Monitor de Asistencias en Tiempo Real -->
+      <!-- Monitor de Asistencias en Tiempo Real (Admin) -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div class="flex items-center gap-2">
-              <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
-              <h3 class="font-bold text-slate-800 text-base">Monitor de Asistencias en Tiempo Real</h3>
+              <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+              <h3 class="font-bold text-slate-800 text-base">Monitor de Asistencias en Vivo (Tiempo Real)</h3>
             </div>
-            <p class="text-xs text-slate-500">Muestra las llegadas y asistencias confirmadas por los profesores en vivo.</p>
+            <p class="text-xs text-slate-500">Se actualiza instantáneamente cuando los profesores marcan si un alumno llegó o no.</p>
           </div>
           <div class="flex items-center gap-2">
             <label class="text-xs font-semibold text-slate-600">Fecha:</label>
-            <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
+            <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -109,44 +109,6 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- SECCIÓN PROFESORES -->
-    <div id="sectionProfesor" class="hidden space-y-6">
-      <div class="flex justify-between items-center">
-        <div>
-          <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia y Mis Alumnos</h2>
-          <p class="text-xs text-slate-500">Marca con la casilla a los alumnos que llegaron a clase.</p>
-        </div>
-        <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold">
-          ✓ Asistencia Actualizada
-        </div>
-      </div>
-
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
-            <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
-            <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
-              <option value="">Todos los turnos de hoy</option>
-              <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
-              <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
-              <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="border-t border-slate-200 pt-4">
-          <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados</h4>
-          <div id="teacherStudentsContainer" class="overflow-x-auto text-sm text-slate-500 italic">
-            Cargando alumnos asignados...
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- SECCIÓN RECEPCIÓN -->
@@ -184,14 +146,14 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div class="flex items-center gap-2">
-              <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span>
-              <h3 class="font-bold text-slate-800 text-base">Control de Llegadas en Vivo</h3>
+              <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+              <h3 class="font-bold text-slate-800 text-base">Control de Llegadas en Vivo (Tiempo Real)</h3>
             </div>
             <p class="text-xs text-slate-500">Actualización en tiempo real conforme los profesores confirman llegadas.</p>
           </div>
           <div class="flex items-center gap-2">
             <label class="text-xs font-semibold text-slate-600">Fecha:</label>
-            <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none">
+            <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -216,6 +178,44 @@
 
     </div>
 
+    <!-- SECCIÓN PROFESORES -->
+    <div id="sectionProfesor" class="hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia y Mis Alumnos</h2>
+          <p class="text-xs text-slate-500">Indica si el alumno llegó o no a la clase para registrarlo en el sistema.</p>
+        </div>
+        <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-semibold">
+          ✓ Asistencia Actualizada en Vivo
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha</label>
+            <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
+            <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-1 focus:ring-blue-500">
+              <option value="">Todos los turnos de hoy</option>
+              <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
+              <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
+              <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-200 pt-4">
+          <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados</h4>
+          <div id="teacherStudentsContainer" class="overflow-x-auto text-sm text-slate-500 italic">
+            Cargando alumnos asignados...
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <script>
@@ -236,7 +236,7 @@
       }
     }
 
-    // CARGA PARA EL PROFESOR
+    // CARGA DE ALUMNOS PARA EL PROFESOR
     async function loadTeacherStudents() {
       const container = document.getElementById('teacherStudentsContainer');
       const dateVal = document.getElementById('teacherDateFilter').value;
@@ -275,18 +275,18 @@
         <table class="w-full text-left border-collapse text-sm">
           <thead>
             <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-              <th class="p-3 text-center w-28">¿Llegó?</th>
+              <th class="p-3 text-center w-36">¿Llegó a clase?</th>
               <th class="p-3">Horario</th>
               <th class="p-3">Alumno</th>
               <th class="p-3">Teléfono</th>
               <th class="p-3">Curso</th>
-              <th class="p-3">Hora de Marcación</th>
+              <th class="p-3">Hora de Registro</th>
             </tr>
           </thead>
           <tbody>
             ${data.map(item => {
               const currentAttendance = item.attendances?.[0];
-              const isPresent = currentAttendance?.status === 'presente';
+              const status = currentAttendance?.status || 'pendiente';
               let recordedTimeStr = '-';
               if (currentAttendance?.recorded_at) {
                 const recDate = new Date(currentAttendance.recorded_at);
@@ -296,12 +296,18 @@
               return `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
                   <td class="p-3 text-center">
-                    <input 
-                      type="checkbox" 
-                      ${isPresent ? 'checked' : ''} 
-                      onchange="toggleAttendance('${item.id}', this.checked)"
-                      class="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+                    <select 
+                      onchange="setAttendanceStatus('${item.id}', this.value)"
+                      class="text-xs font-semibold rounded-lg p-1.5 border outline-none cursor-pointer ${
+                        status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                        status === 'ausente' ? 'bg-red-100 text-red-800 border-red-300' :
+                        'bg-slate-100 text-slate-700 border-slate-300'
+                      }"
                     >
+                      <option value="pendiente" ${status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
+                      <option value="presente" ${status === 'presente' ? 'selected' : ''}>✓ Sí llegó</option>
+                      <option value="ausente" ${status === 'ausente' ? 'selected' : ''}>✕ No llegó</option>
+                    </select>
                   </td>
                   <td class="p-3 font-semibold text-xs text-blue-700 whitespace-nowrap">${item.time_slot}</td>
                   <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
@@ -318,13 +324,14 @@
       `;
     }
 
-    async function toggleAttendance(scheduleId, isChecked) {
-      const status = isChecked ? 'presente' : 'ausente';
+    // ACTUALIZAR ASISTENCIA
+    async function setAttendanceStatus(scheduleId, statusVal) {
+      if (statusVal === 'pendiente') return;
 
       try {
         const { data, error } = await supabaseClient.rpc('mark_student_attendance', {
           p_schedule_id: scheduleId,
-          p_status: status
+          p_status: statusVal
         });
 
         if (error) throw error;
@@ -334,16 +341,15 @@
         setTimeout(() => feedback.classList.add('hidden'), 2000);
 
         const timeCell = document.getElementById(`time-${scheduleId}`);
-        if (timeCell && isChecked && data?.recorded_at) {
+        if (timeCell && data?.recorded_at) {
           const dt = new Date(data.recorded_at);
           timeCell.textContent = dt.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        } else if (timeCell && !isChecked) {
-          timeCell.textContent = '-';
         }
+
+        await loadTeacherStudents();
 
       } catch (err) {
         alert('Error al registrar asistencia: ' + (err.message || 'Error'));
-        loadTeacherStudents();
       }
     }
 
@@ -380,13 +386,13 @@
         const timeFormatted = dateObj.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
         return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
             <td class="p-3">
               <span class="px-2.5 py-1 rounded text-xs font-semibold capitalize ${
                 item.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
                 'bg-red-100 text-red-800 border border-red-300'
               }">
-                ${item.status === 'presente' ? '✓ Llegó' : '✕ Ausente'}
+                ${item.status === 'presente' ? '✓ Sí llegó' : '✕ No llegó'}
               </span>
             </td>
             <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
@@ -400,9 +406,10 @@
       }).join('');
     }
 
+    // SUSCRIPCIÓN EN TIEMPO REAL (WEBSOCKETS + POLLING DE RESPALDO)
     function setupRealtimeAttendance() {
       supabaseClient
-        .channel('attendance_live_stream')
+        .channel('attendances_live_channel')
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'attendances' },
@@ -411,6 +418,13 @@
           }
         )
         .subscribe();
+
+      // Sondeo ligero cada 3 segundos para garantizar actualización continua
+      setInterval(() => {
+        if (currentUserRole === 'admin' || currentUserRole === 'recepcion') {
+          loadAttendanceMonitor();
+        }
+      }, 3000);
     }
 
     async function initDashboard() {
