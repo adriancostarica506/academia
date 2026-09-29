@@ -85,7 +85,7 @@
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Profesor Destinatario *</label>
             <select id="selectTeacher" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium">
-              <option value="" disabled selected>Cargando profesores...</option>
+              <option value="" disabled selected>Selecciona profesor...</option>
             </select>
           </div>
 
@@ -179,7 +179,7 @@
             id="btnSubmitPayroll" 
             class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm"
           >
-            Guardar Pago y Emitir Comprobante
+            Guardar Pago
           </button>
         </form>
       </div>
@@ -191,7 +191,7 @@
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
               <h3 class="text-base font-bold text-slate-800">Historial de Pagos a Docentes</h3>
-              <p class="text-xs text-slate-500">Descarga comprobantes en JPG o reportes en Excel.</p>
+              <p class="text-xs text-slate-500">Consulta los pagos registrados y descarga comprobantes individuales en JPG cuando lo necesites.</p>
             </div>
             <button 
               onclick="exportPayrollToExcel()" 
@@ -508,16 +508,17 @@
             </td>
             <td class="p-3 text-center whitespace-nowrap">
               <div class="flex items-center justify-center gap-1.5">
+                <!-- Botón Manual de Descarga -->
                 <button 
                   onclick="downloadPayrollJPG('${p.id}')" 
-                  class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                  class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1"
                   title="Descargar comprobante en imagen JPG"
                 >
-                  <span>📥 JPG</span>
+                  <span>📥 Descargar JPG</span>
                 </button>
                 <button 
                   onclick="deletePayroll('${p.id}', '${encodeURIComponent(teacherName)}', '${p.amount}')" 
-                  class="text-red-500 hover:text-red-700 text-xs font-bold px-1.5 py-1"
+                  class="text-red-500 hover:text-red-700 text-xs font-bold px-1.5 py-1 ml-1"
                   title="Eliminar registro"
                 >
                   ✕
@@ -535,7 +536,7 @@
       filterPayroll();
     }
 
-    // DESCARGAR COMPROBANTE EN FORMATO JPG
+    // DESCARGAR COMPROBANTE EN FORMATO JPG (MANUAL)
     async function downloadPayrollJPG(payrollId) {
       const item = allPayroll.find(p => p.id === payrollId);
       if (!item) return;
@@ -601,7 +602,7 @@
       }
     }
 
-    // REGISTRAR PAGO
+    // REGISTRAR PAGO (SIN DESCARGA AUTOMÁTICA)
     document.getElementById('payrollForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       document.getElementById('alertMsg').classList.add('hidden');
@@ -643,7 +644,8 @@
 
         if (error) throw error;
 
-        showAlert(`¡Pago de ${formatCurrency(amount)} emitido el ${formatSafeDate(paymentDate)} registrado para ${data.teacher_name}!`, 'success');
+        // Alerta de guardado sin disparar descarga automática
+        showAlert(`¡Pago de ${formatCurrency(amount)} guardado con éxito para ${data.teacher_name}! Puedes descargar el comprobante en la tabla cuando gustes.`, 'success');
         document.getElementById('payrollForm').reset();
         
         setTodayEmission();
@@ -651,16 +653,11 @@
 
         await loadPayroll();
 
-        // Descargar comprobante automáticamente
-        if (data.payroll_id) {
-          downloadPayrollJPG(data.payroll_id);
-        }
-
       } catch (err) {
         showAlert('Error: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Guardar Pago y Emitir Comprobante';
+        btn.textContent = 'Guardar Pago';
       }
     });
 
