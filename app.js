@@ -30,7 +30,7 @@ if (loginForm) {
     clearError();
 
     const userInput = usernameInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
+    const password = passwordInput.value.trim();
 
     if (!userInput || !password) {
       showError('Por favor completa todos los campos.');
@@ -40,6 +40,7 @@ if (loginForm) {
     btnLogin.disabled = true;
     btnLogin.textContent = 'Verificando...';
 
+    // Determinar el email correspondiente
     let loginEmail = userInput;
     if (userInput === 'admin') {
       loginEmail = 'adrian2799024@yahoo.com';
@@ -48,7 +49,7 @@ if (loginForm) {
     }
 
     try {
-      // 1. Iniciar sesión en Supabase
+      // 1. Iniciar sesión en Supabase Auth
       const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
         email: loginEmail,
         password: password
