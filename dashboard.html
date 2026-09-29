@@ -46,8 +46,8 @@
 
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Horarios de Alumnos</h3>
-            <p class="text-sm text-slate-500 mb-4">Asignar alumnos en turnos y profesores.</p>
+            <h3 class="font-semibold text-slate-800 mb-2">Horarios y Días</h3>
+            <p class="text-sm text-slate-500 mb-4">Asignar alumnos con días de la semana marcados.</p>
           </div>
           <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar</a>
         </div>
@@ -85,30 +85,44 @@
         </div>
       </div>
 
-      <!-- Monitor de Asistencias en Vivo (Admin) -->
+      <!-- Monitor de Asistencias (Admin) con Filtros -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Monitor de Asistencias en Vivo</h3>
+              <h3 class="font-bold text-slate-800 text-base">Monitor de Asistencias (Sí llegó / Tarde / No se presentó)</h3>
             </div>
-            <p class="text-xs text-slate-500">Muestra las llegadas en tiempo real conforme los profesores marcan asistencia con día, mes, año y hora.</p>
+            <p class="text-xs text-slate-500">Consulta y filtra los registros guardados por los profesores en tiempo real.</p>
           </div>
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-semibold text-slate-600">Fecha:</label>
-            <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+
+          <!-- Filtros de Consulta -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">Fecha</label>
+              <input type="date" id="adminAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Estado</label>
+              <select id="adminStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                <option value="">Todos los Estados</option>
+                <option value="presente">🟢 Sí llegó</option>
+                <option value="tarde">🟡 Llegó tarde</option>
+                <option value="ausente">🔴 No se presentó</option>
+              </select>
+            </div>
           </div>
         </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Estado</th>
+                <th class="p-3">Estado Marcado</th>
                 <th class="p-3">Fecha y Hora</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Profesor</th>
-                <th class="p-3">Horario / Turno</th>
+                <th class="p-3">Horario</th>
                 <th class="p-3">Curso</th>
               </tr>
             </thead>
@@ -130,8 +144,8 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 class="font-semibold text-slate-800 mb-2">Horarios y Alumnos</h3>
-            <p class="text-sm text-slate-500 mb-4">Agendar alumnos en turnos y vincular profesores.</p>
+            <h3 class="font-semibold text-slate-800 mb-2">Horarios y Días</h3>
+            <p class="text-sm text-slate-500 mb-4">Agendar alumnos con días de clase semanales.</p>
           </div>
           <a href="cursos.html" class="block text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2 rounded-lg font-medium transition">Asignar</a>
         </div>
@@ -161,30 +175,43 @@
         </div>
       </div>
 
-      <!-- Monitor en vivo (Recepción) -->
+      <!-- Monitor en vivo (Recepción) con Filtros -->
       <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-3">
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-              <h3 class="font-bold text-slate-800 text-base">Control de Llegadas en Vivo</h3>
+              <h3 class="font-bold text-slate-800 text-base">Control de Llegadas y Asistencias</h3>
             </div>
-            <p class="text-xs text-slate-500">Actualización en tiempo real de asistencias con día, mes, año y hora.</p>
+            <p class="text-xs text-slate-500">Consulta si los alumnos llegaron, llegaron tarde o faltaron.</p>
           </div>
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-semibold text-slate-600">Fecha:</label>
-            <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">Fecha</label>
+              <input type="date" id="recepcionAttendanceDate" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase">Filtrar Estado</label>
+              <select id="recepcionStatusFilter" onchange="loadAttendanceMonitor()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                <option value="">Todos los Estados</option>
+                <option value="presente">🟢 Sí llegó</option>
+                <option value="tarde">🟡 Llegó tarde</option>
+                <option value="ausente">🔴 No se presentó</option>
+              </select>
+            </div>
           </div>
         </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Estado</th>
+                <th class="p-3">Estado Marcado</th>
                 <th class="p-3">Fecha y Hora</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Profesor</th>
-                <th class="p-3">Horario / Turno</th>
+                <th class="p-3">Horario</th>
                 <th class="p-3">Curso</th>
               </tr>
             </thead>
@@ -204,14 +231,14 @@
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia y Mis Alumnos</h2>
-          <p class="text-xs text-slate-500">Selecciona si el alumno llegó o no. El día, mes, año y hora se guardan al instante.</p>
+          <p class="text-xs text-slate-500">Marca si el alumno llegó, llegó tarde o no se presentó. Queda registrado para Admin y Recepción.</p>
         </div>
         <div class="flex items-center gap-3">
           <a href="chat.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
             💬 Chat con Recepción
           </a>
           <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold transition">
-            ✓ Guardado y Visible en Recepción y Admin
+            ✓ Asistencia Guardada y Visible en Recepción y Admin
           </div>
         </div>
       </div>
@@ -225,7 +252,7 @@
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
             <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none">
-              <option value="">Todos los turnos de hoy</option>
+              <option value="">Todos los turnos</option>
               <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
               <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
               <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
@@ -234,7 +261,7 @@
         </div>
 
         <div class="border-t border-slate-200 pt-4">
-          <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados</h4>
+          <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados para Asistir</h4>
           <div id="teacherStudentsContainer" class="overflow-x-auto text-sm text-slate-500 italic">
             Cargando alumnos asignados...
           </div>
@@ -253,13 +280,13 @@
     let currentTeacherId = null;
     let currentUserRole = null;
 
-    async function updateOnlineHeartbeat() {
-      if (currentUserId) {
-        await supabaseClient
-          .from('profiles')
-          .update({ last_seen: new Date().toISOString() })
-          .eq('id', currentUserId);
-      }
+    const daysMap = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    function getDayNameFromDateStr(dateStr) {
+      if (!dateStr) return '';
+      const [y, m, d] = dateStr.split('-');
+      const dateObj = new Date(y, m - 1, d);
+      return daysMap[dateObj.getDay()];
     }
 
     async function loadTeacherStudents() {
@@ -268,31 +295,43 @@
       const slotVal = document.getElementById('teacherSlotFilter').value;
 
       if (!currentTeacherId) {
-        container.innerHTML = '<p class="text-sm text-slate-400 p-2">No se encontró registro de profesor vinculado a este usuario.</p>';
+        container.innerHTML = '<p class="text-sm text-slate-400 p-2">No se encontró profesor vinculado.</p>';
         return;
       }
+
+      const dayOfWeekSelected = getDayNameFromDateStr(dateVal);
 
       let query = supabaseClient
         .from('student_schedules')
         .select(`
           id,
-          assigned_date,
           time_slot,
+          days_of_week,
           students (id, full_name, phone),
           courses (name),
           attendances (id, status, recorded_at, attendance_date)
         `)
-        .eq('teacher_id', currentTeacherId)
-        .eq('assigned_date', dateVal);
+        .eq('teacher_id', currentTeacherId);
 
       if (slotVal) {
         query = query.eq('time_slot', slotVal);
       }
 
-      const { data, error } = await query.order('time_slot');
+      const { data, error } = await query;
 
       if (error || !data || data.length === 0) {
-        container.innerHTML = '<p class="text-sm text-slate-400 p-2">No tienes alumnos programados para esta fecha y turno.</p>';
+        container.innerHTML = '<p class="text-sm text-slate-400 p-2">No tienes alumnos registrados con este profesor.</p>';
+        return;
+      }
+
+      // Filtrar aquellos alumnos que tienen marcado el día de la semana correspondiente
+      const studentsForDay = data.filter(item => {
+        if (!item.days_of_week || item.days_of_week.length === 0) return true;
+        return item.days_of_week.includes(dayOfWeekSelected);
+      });
+
+      if (studentsForDay.length === 0) {
+        container.innerHTML = `<p class="text-sm text-slate-400 p-3 bg-slate-50 rounded-lg">No hay alumnos asignados para asistir los <b>${dayOfWeekSelected}</b> en este turno.</p>`;
         return;
       }
 
@@ -300,18 +339,19 @@
         <table class="w-full text-left border-collapse text-sm">
           <thead>
             <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-              <th class="p-3 text-center w-40">¿Llegó a clase?</th>
+              <th class="p-3 text-center w-48">¿Asistió hoy (${dayOfWeekSelected})?</th>
               <th class="p-3">Horario</th>
               <th class="p-3">Alumno</th>
               <th class="p-3">Teléfono</th>
               <th class="p-3">Curso</th>
-              <th class="p-3">Hora de Marcación</th>
+              <th class="p-3">Hora Marcación</th>
             </tr>
           </thead>
           <tbody>
-            ${data.map(item => {
-              const currentAttendance = item.attendances?.[0];
+            ${studentsForDay.map(item => {
+              const currentAttendance = (item.attendances || []).find(a => a.attendance_date === dateVal);
               const status = currentAttendance?.status || 'pendiente';
+
               let recordedTimeStr = '-';
               if (currentAttendance?.recorded_at) {
                 const recDate = new Date(currentAttendance.recorded_at);
@@ -323,24 +363,24 @@
                   <td class="p-3 text-center">
                     <select 
                       onchange="updateAttendanceChoice('${item.id}', this.value)"
-                      class="text-xs font-bold rounded-lg p-1.5 border outline-none cursor-pointer ${
+                      class="text-xs font-bold rounded-lg p-2 border outline-none cursor-pointer ${
                         status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                        status === 'ausente' ? 'bg-red-100 text-red-800 border-red-300' :
+                        status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                        status === 'ausente' ? 'bg-rose-100 text-rose-800 border-rose-300' :
                         'bg-slate-100 text-slate-600 border-slate-300'
                       }"
                     >
                       <option value="pendiente" ${status === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
-                      <option value="presente" ${status === 'presente' ? 'selected' : ''}>✓ Sí llegó</option>
-                      <option value="ausente" ${status === 'ausente' ? 'selected' : ''}>✕ No llegó</option>
+                      <option value="presente" ${status === 'presente' ? 'selected' : ''}>🟢 Sí llegó</option>
+                      <option value="tarde" ${status === 'tarde' ? 'selected' : ''}>🟡 Llegó tarde</option>
+                      <option value="ausente" ${status === 'ausente' ? 'selected' : ''}>🔴 No se presentó</option>
                     </select>
                   </td>
                   <td class="p-3 font-semibold text-xs text-blue-700 whitespace-nowrap">${item.time_slot}</td>
                   <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Sin nombre'}</td>
                   <td class="p-3 text-xs text-slate-600">${item.students?.phone || '-'}</td>
                   <td class="p-3 text-xs text-slate-600">${item.courses?.name || '-'}</td>
-                  <td class="p-3 font-mono text-xs font-semibold text-slate-700">
-                    ${recordedTimeStr}
-                  </td>
+                  <td class="p-3 font-mono text-xs font-semibold text-slate-700">${recordedTimeStr}</td>
                 </tr>
               `;
             }).join('')}
@@ -375,10 +415,15 @@
       }
     }
 
+    // MONITOR PARA ADMIN Y RECEPCIÓN
     async function loadAttendanceMonitor() {
       const adminDate = document.getElementById('adminAttendanceDate');
       const recepDate = document.getElementById('recepcionAttendanceDate');
       const selectedDate = (currentUserRole === 'admin' ? adminDate?.value : recepDate?.value) || new Date().toISOString().split('T')[0];
+
+      const adminStatus = document.getElementById('adminStatusFilter')?.value;
+      const recepStatus = document.getElementById('recepcionStatusFilter')?.value;
+      const selectedStatus = (currentUserRole === 'admin' ? adminStatus : recepStatus) || null;
 
       const targetTbody = currentUserRole === 'admin' ? 
         document.getElementById('adminAttendanceTableBody') : 
@@ -387,7 +432,8 @@
       if (!targetTbody) return;
 
       const { data, error } = await supabaseClient.rpc('get_attendance_monitor', {
-        p_date: selectedDate
+        p_date: selectedDate,
+        p_status_filter: selectedStatus
       });
 
       if (error) {
@@ -396,19 +442,20 @@
       }
 
       if (!data || data.length === 0) {
-        targetTbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay asistencias registradas para esta fecha.</td></tr>`;
+        targetTbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay registros de asistencia con los filtros seleccionados.</td></tr>`;
         return;
       }
 
       targetTbody.innerHTML = data.map(item => {
+        const badgeColor = item.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                           item.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                           'bg-rose-100 text-rose-800 border-rose-300';
+
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
             <td class="p-3">
-              <span class="px-2.5 py-1 rounded text-xs font-semibold capitalize ${
-                item.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
-                'bg-red-100 text-red-800 border border-red-300'
-              }">
-                ${item.status === 'presente' ? '✓ Sí llegó' : '✕ No llegó'}
+              <span class="px-2.5 py-1 rounded text-xs font-semibold border ${badgeColor}">
+                ${item.status === 'presente' ? '🟢 ' : item.status === 'tarde' ? '🟡 ' : '🔴 '} ${item.status_label}
               </span>
             </td>
             <td class="p-3 font-mono text-xs text-slate-600 whitespace-nowrap">
@@ -425,22 +472,11 @@
     }
 
     function setupRealtimeListeners() {
-      // Monitor de asistencias en tiempo real
       supabaseClient
         .channel('attendance_live_stream')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'attendances' }, () => {
           if (currentUserRole === 'admin' || currentUserRole === 'recepcion') {
             loadAttendanceMonitor();
-          }
-        })
-        .subscribe();
-
-      // Horarios asignados al profesor
-      supabaseClient
-        .channel('schedules_live_stream')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'student_schedules' }, () => {
-          if (currentUserRole === 'profesor') {
-            loadTeacherStudents();
           }
         })
         .subscribe();
@@ -505,17 +541,9 @@
       }
 
       setupRealtimeListeners();
-      await updateOnlineHeartbeat();
-      setInterval(updateOnlineHeartbeat, 60000);
     }
 
     document.getElementById('btnLogout').addEventListener('click', async () => {
-      if (currentUserId) {
-        await supabaseClient
-          .from('profiles')
-          .update({ last_seen: null })
-          .eq('id', currentUserId);
-      }
       await supabaseClient.auth.signOut();
       sessionStorage.clear();
       window.location.href = 'index.html';
