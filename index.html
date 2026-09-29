@@ -3,46 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Acceso al Sistema - Academi Elohim</title>
+  <title>Acceso al Sistema - Academia Elohim</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- API OFICIAL DE CLOUDFLARE TURNSTILE (CON CARGA EXPLÍCITA) -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
 
-  <div class="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 w-full max-w-md space-y-6">
-    
-    <!-- Encabezado con el Logo de la Academia -->
-    <div class="text-center space-y-3">
-      <div class="flex justify-center">
-        <div class="w-24 h-24 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center p-1 overflow-hidden">
-          <img 
-            src="logo.png" 
-            alt="Logo Academia Elohim" 
-            class="w-full h-full object-contain rounded-full"
-            onerror="this.onerror=null; this.src='assets/logo.png';"
-          >
-        </div>
+  <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-slate-200">
+    <div class="text-center mb-6">
+      <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-white border border-slate-200 p-1 flex items-center justify-center overflow-hidden shadow-sm">
+        <img 
+          src="logo.png" 
+          alt="Academia Elohim" 
+          class="w-full h-full object-contain rounded-full"
+          onerror="this.onerror=null; this.src='assets/logo.png';"
+        >
       </div>
-      <div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Academi Elohim</h1>
-        <p class="text-xs text-slate-500 font-medium">Sistema de Gestión Escolar y Administrativa</p>
-      </div>
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Academia Elohim</h1>
+      <p class="text-xs text-slate-500 mt-1">Ingreso exclusivo para Personal Docente, Recepción y Administrador</p>
     </div>
 
-    <!-- Alerta de Error -->
-    <div id="loginAlert" class="hidden p-3 rounded-xl text-xs font-semibold bg-red-50 text-red-700 border border-red-200"></div>
+    <!-- Mensaje de Alerta -->
+    <div id="loginAlert" class="hidden mb-4 p-3 rounded-xl text-xs font-semibold"></div>
 
-    <!-- Formulario de Acceso por Usuario y Contraseña -->
     <form id="loginForm" class="space-y-4">
       <div>
-        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Usuario</label>
+        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Usuario o Nombre Completo</label>
         <input 
           type="text" 
-          id="loginUser" 
+          id="userInput" 
           required 
           autocomplete="username"
-          placeholder="Escribe tu usuario (ej: mario)..."
-          class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition"
+          placeholder="Ej: Pedro Castro o juan"
+          class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 font-medium"
         >
       </div>
 
@@ -50,27 +45,27 @@
         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contraseña</label>
         <input 
           type="password" 
-          id="loginPassword" 
+          id="passwordInput" 
           required 
           autocomplete="current-password"
           placeholder="••••••••"
-          class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition"
+          class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
         >
+      </div>
+
+      <!-- WIDGET CLOUDFLARE TURNSTILE (ESPACIO RESERVADO) -->
+      <div class="flex justify-center pt-1 min-h-[65px]">
+        <div id="turnstile-container"></div>
       </div>
 
       <button 
         type="submit" 
-        id="btnLogin" 
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-md hover:shadow-lg"
+        id="btnLogin"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-md text-sm cursor-pointer disabled:opacity-50"
       >
-        Ingresar al Panel
+        Iniciar Sesión
       </button>
     </form>
-
-    <div class="text-center pt-2 border-t border-slate-100">
-      <p class="text-[11px] text-slate-400">Acceso restringido únicamente para personal autorizado.</p>
-    </div>
-
   </div>
 
   <script>
@@ -78,70 +73,124 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    let turnstileToken = null;
+    let turnstileWidgetId = null;
+
+    // Inicialización del widget de Cloudflare Turnstile
+    function initTurnstile() {
+      const container = document.getElementById('turnstile-container');
+      if (window.turnstile && container) {
+        if (turnstileWidgetId === null) {
+          turnstileWidgetId = window.turnstile.render('#turnstile-container', {
+            sitekey: '0x4AAAAAAFI0QkkSIlviXZVC',
+            theme: 'light',
+            callback: function(token) {
+              turnstileToken = token;
+            },
+            'expired-callback': function() {
+              turnstileToken = null;
+            },
+            'error-callback': function() {
+              turnstileToken = null;
+            }
+          });
+        }
+      } else {
+        setTimeout(initTurnstile, 150);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initTurnstile);
+
+    function showAlert(message, type = 'error') {
+      const alertBox = document.getElementById('loginAlert');
+      alertBox.textContent = message;
+      alertBox.className = `mb-4 p-3 rounded-xl text-xs font-semibold ${
+        type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+      }`;
+      alertBox.classList.remove('hidden');
+    }
+
+    function resetTurnstile() {
+      if (window.turnstile && turnstileWidgetId !== null) {
+        try {
+          window.turnstile.reset(turnstileWidgetId);
+          turnstileToken = null;
+        } catch (e) {}
+      }
+    }
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const alertBox = document.getElementById('loginAlert');
-      alertBox.classList.add('hidden');
+      document.getElementById('loginAlert').classList.add('hidden');
 
-      const userInput = document.getElementById('loginUser').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      const btn = document.getElementById('btnLogin');
+      const userInput = document.getElementById('userInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      const btnLogin = document.getElementById('btnLogin');
 
-      btn.disabled = true;
-      btn.textContent = 'Verificando credenciales...';
+      // Si por alguna razón la variable está vacía, intentar extraer el token del input generado
+      if (!turnstileToken) {
+        const hiddenInput = document.querySelector('[name="cf-turnstile-response"]');
+        if (hiddenInput && hiddenInput.value) {
+          turnstileToken = hiddenInput.value;
+        }
+      }
+
+      if (!turnstileToken) {
+        showAlert('Por favor espera a que se complete la verificación de seguridad de Cloudflare.');
+        return;
+      }
+
+      btnLogin.disabled = true;
+      btnLogin.textContent = 'Verificando credenciales...';
 
       try {
         let authEmail = userInput;
 
-        // Si no tiene '@', buscar el correo en la base de datos
-        if (!authEmail.includes('@')) {
-          const { data: resolvedEmail, error: rpcErr } = await supabaseClient
-            .rpc('get_email_by_identifier', { p_identifier: userInput });
+        // Si escribió un nombre o usuario sin @, buscar su correo asignado en Supabase
+        if (!userInput.includes('@')) {
+          const { data: resolvedEmail, error: rpcError } = await supabaseClient.rpc('get_email_by_identifier', {
+            p_identifier: userInput
+          });
 
-          if (!rpcErr && resolvedEmail) {
-            authEmail = resolvedEmail;
+          if (rpcError || !resolvedEmail) {
+            throw new Error('Usuario o nombre no registrado en el sistema.');
           }
+
+          authEmail = resolvedEmail;
         }
 
-        // Inicio de sesión
-        let { data, error } = await supabaseClient.auth.signInWithPassword({
+        // Intento de login enviando el token de Turnstile a Supabase
+        const { data, error: authError } = await supabaseClient.auth.signInWithPassword({
           email: authEmail,
-          password: password
+          password: password,
+          options: {
+            captchaToken: turnstileToken
+          }
         });
 
-        // Fallbacks comunes en caso de discrepancia en dominio
-        if (error && !userInput.includes('@')) {
-          const fallbacks = [
-            `${userInput.toLowerCase()}@academi.com`,
-            `${userInput.toLowerCase()}@academia.com`,
-            `${userInput.toLowerCase()}@elohim.com`
-          ];
+        if (authError) throw authError;
 
-          for (const fb of fallbacks) {
-            if (fb === authEmail) continue;
-            const retry = await supabaseClient.auth.signInWithPassword({
-              email: fb,
-              password: password
-            });
-            if (!retry.error) {
-              error = null;
-              break;
-            }
-          }
-        }
-
-        if (error) throw error;
-
+        btnLogin.textContent = 'Acceso concedido. Redirigiendo...';
         window.location.href = 'dashboard.html';
 
       } catch (err) {
-        alertBox.textContent = 'Usuario o contraseña incorrectos.';
-        alertBox.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Ingresar al Panel';
+        resetTurnstile();
+        showAlert(err.message === 'Invalid login credentials' ? 'Contraseña incorrecta o usuario no válido.' : err.message);
+        btnLogin.disabled = false;
+        btnLogin.textContent = 'Iniciar Sesión';
       }
     });
+
+    // Verificar si ya hay una sesión activa para redirigir
+    async function checkSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        window.location.href = 'dashboard.html';
+      }
+    }
+
+    checkSession();
   </script>
 </body>
 </html>
