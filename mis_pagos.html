@@ -6,6 +6,8 @@
   <title>Mis Pagos Recibidos - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Librería para convertir comprobante a JPG -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
@@ -33,8 +35,8 @@
     <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 uppercase tracking-wider text-blue-100">Área Docente</span>
-        <h2 id="teacherHeaderName" class="text-2xl font-black mt-1">Mis Pagos de Nómina</h2>
-        <p class="text-xs text-blue-200">Revisa el historial de pagos recibidos, periodos cubiertos y fechas de emisión.</p>
+        <h2 id="teacherHeaderName" class="text-2xl font-black mt-1">Mis Pagos Recibidos</h2>
+        <p class="text-xs text-blue-200">Descarga tus comprobantes en formato imagen JPG directamente a tu teléfono o computadora.</p>
       </div>
 
       <div class="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-right sm:min-w-[200px]">
@@ -46,18 +48,28 @@
 
     <!-- Filtro y Tabla de Pagos -->
     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      
+      <!-- Filtros por Día exacto o Mes -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-3">
         <div>
-          <h3 class="text-base font-bold text-slate-800">Detalle de Pagos Realizados</h3>
-          <p class="text-xs text-slate-500">Muestra de qué fecha a qué fecha cubre cada pago emitido por Administración o Recepción.</p>
+          <h3 class="text-base font-bold text-slate-800">Detalle de Pagos Emitidos</h3>
+          <p class="text-xs text-slate-500">Muestra de qué fecha a qué fecha cubre cada pago y permite descargar el comprobante en JPG.</p>
         </div>
 
-        <div class="flex items-center gap-2">
-          <label class="text-xs font-semibold text-slate-600">Filtrar Mes:</label>
-          <input type="month" id="filterMyMonth" onchange="renderMyPayments()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
-          <button onclick="document.getElementById('filterMyMonth').value=''; renderMyPayments();" class="text-xs text-slate-500 hover:text-slate-800 underline px-1">
-            Ver Todos
-          </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase">Por Día Exacto:</label>
+            <input type="date" id="filterMyExactDate" onchange="renderMyPayments()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase">Por Mes / Año:</label>
+            <input type="month" id="filterMyMonth" onchange="renderMyPayments()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none bg-white">
+          </div>
+          <div class="self-end">
+            <button onclick="clearMyFilters()" class="text-xs text-slate-500 hover:text-slate-800 underline px-1 py-1.5">
+              Ver Todos
+            </button>
+          </div>
         </div>
       </div>
 
@@ -67,15 +79,16 @@
           <thead>
             <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
               <th class="p-3.5">Periodo Laborado (De tal fecha a tal fecha)</th>
-              <th class="p-3.5">Fecha en que se Realizó el Pago</th>
+              <th class="p-3.5">Fecha de Emisión</th>
               <th class="p-3.5">Método de Pago</th>
-              <th class="p-3.5">Referencia / Comprobante</th>
+              <th class="p-3.5">Comprobante / Ref</th>
               <th class="p-3.5 text-right">Monto Recibido</th>
+              <th class="p-3.5 text-center">Descargar</th>
             </tr>
           </thead>
           <tbody id="myPaymentsTableBody" class="divide-y divide-slate-100 font-medium">
             <tr>
-              <td colspan="5" class="p-8 text-center text-slate-400">Cargando tus pagos...</td>
+              <td colspan="6" class="p-8 text-center text-slate-400">Cargando tus pagos...</td>
             </tr>
           </tbody>
         </table>
@@ -84,12 +97,77 @@
 
   </main>
 
+  <!-- ========================================================================= -->
+  <!-- PLANTILLA OCULTA DE COMPROBANTE OFICIAL (PARA CONVERTIR A JPG)            -->
+  <!-- ========================================================================= -->
+  <div class="fixed left-[-9999px] top-[-9999px]">
+    <div id="teacherVoucherCard" class="w-[520px] bg-white p-8 rounded-3xl border border-slate-300 text-slate-800 space-y-5 font-sans shadow-none">
+      
+      <!-- Cabecera Oficial -->
+      <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+        <div>
+          <h2 class="text-2xl font-black text-blue-700 tracking-tight">ACADEMI</h2>
+          <p class="text-xs font-semibold text-slate-500">Sistema Escolar Elohim • Costa Rica</p>
+          <p class="text-[10px] text-slate-400">Comprobante Oficial de Pago Recibido</p>
+        </div>
+        <div class="text-right">
+          <span class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+            PAGADO ✓
+          </span>
+          <p class="text-[11px] font-mono text-slate-400 mt-1" id="tVouchId">ID: -</p>
+        </div>
+      </div>
+
+      <!-- Cuadro Principal del Monto -->
+      <div class="bg-gradient-to-r from-emerald-50 to-teal-50 p-5 rounded-2xl border border-emerald-200 text-center">
+        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Recibido</p>
+        <h3 class="text-3xl font-black text-emerald-700 mt-0.5 font-mono" id="tVouchAmount">₡0,00</h3>
+        <p class="text-[11px] text-slate-500 font-semibold mt-1" id="tVouchMethod">SINPE Móvil</p>
+      </div>
+
+      <!-- Detalles del Pago -->
+      <div class="space-y-2.5 text-xs">
+        <div class="flex justify-between border-b border-slate-100 py-1.5">
+          <span class="text-slate-400 font-semibold">Profesor(a):</span>
+          <span class="font-bold text-slate-900 text-sm" id="tVouchTeacher">-</span>
+        </div>
+
+        <div class="flex justify-between border-b border-slate-100 py-1.5">
+          <span class="text-slate-400 font-semibold">Fecha de Emisión del Pago:</span>
+          <span class="font-bold text-slate-800 font-mono" id="tVouchDate">-</span>
+        </div>
+
+        <div class="flex justify-between border-b border-slate-100 py-1.5 bg-indigo-50/60 px-2.5 rounded-lg">
+          <span class="text-indigo-800 font-bold">Periodo Laborado:</span>
+          <span class="font-bold text-indigo-900 font-mono" id="tVouchPeriod">Del --/--/---- al --/--/----</span>
+        </div>
+
+        <div class="flex justify-between border-b border-slate-100 py-1.5" id="tVouchRefRow">
+          <span class="text-slate-400 font-semibold">N° Comprobante / Ref:</span>
+          <span class="font-mono font-bold text-slate-700" id="tVouchRef">-</span>
+        </div>
+
+        <div class="border-b border-slate-100 py-1.5" id="tVouchNotesRow">
+          <span class="text-slate-400 font-semibold block mb-0.5">Detalle / Observaciones:</span>
+          <span class="text-slate-700 italic text-[11px]" id="tVouchNotes">-</span>
+        </div>
+      </div>
+
+      <!-- Pie del Comprobante -->
+      <div class="pt-3 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+        <span>Comprobante generado por Academi</span>
+        <span>Válido como constancia de pago</span>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let myPaymentsData = [];
+    let currentTeacherProfileName = '';
 
     const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -122,20 +200,24 @@
         renderMyPayments();
 
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
       }
     }
 
     function renderMyPayments() {
       const tbody = document.getElementById('myPaymentsTableBody');
+      const exactDateFilter = document.getElementById('filterMyExactDate').value;
       const monthFilter = document.getElementById('filterMyMonth').value;
 
       const filtered = myPaymentsData.filter(item => {
-        return !monthFilter || (item.payment_date && String(item.payment_date).startsWith(monthFilter));
+        const cleanDate = item.payment_date ? String(item.payment_date).split('T')[0] : '';
+        const matchExact = !exactDateFilter || cleanDate === exactDateFilter;
+        const matchMonth = !monthFilter || cleanDate.startsWith(monthFilter);
+        return matchExact && matchMonth;
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No hay pagos registrados para este periodo.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">No hay pagos registrados para este periodo o fecha.</td></tr>`;
         return;
       }
 
@@ -151,7 +233,7 @@
               </span>
               ${p.notes ? `<p class="text-[11px] text-slate-500 mt-1">${p.notes}</p>` : ''}
             </td>
-            <td class="p-3.5 font-mono text-slate-800">
+            <td class="p-3.5 font-mono font-bold text-slate-800 whitespace-nowrap">
               📅 ${dateStr}
             </td>
             <td class="p-3.5">
@@ -162,12 +244,78 @@
             <td class="p-3.5 font-mono text-slate-600">
               ${p.reference_number ? p.reference_number : '<span class="text-slate-400">Sin referencia</span>'}
             </td>
-            <td class="p-3.5 text-right font-mono font-black text-emerald-700 text-sm">
+            <td class="p-3.5 text-right font-mono font-black text-emerald-700 text-sm whitespace-nowrap">
               ${formatCurrency(p.amount)}
+            </td>
+            <td class="p-3.5 text-center whitespace-nowrap">
+              <button 
+                onclick="downloadMyVoucherJPG('${p.id}')" 
+                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm mx-auto"
+                title="Descargar este comprobante a tu celular o computadora"
+              >
+                <span>📥 Descargar JPG</span>
+              </button>
             </td>
           </tr>
         `;
       }).join('');
+    }
+
+    function clearMyFilters() {
+      document.getElementById('filterMyExactDate').value = '';
+      document.getElementById('filterMyMonth').value = '';
+      renderMyPayments();
+    }
+
+    // DESCARGAR COMPROBANTE EN FORMATO JPG DIRECTAMENTE AL DISPOSITIVO
+    async function downloadMyVoucherJPG(payrollId) {
+      const item = myPaymentsData.find(p => p.id === payrollId);
+      if (!item) return;
+
+      const cleanDate = formatSafeDate(item.payment_date);
+
+      document.getElementById('tVouchId').textContent = `ID: ${item.id.substring(0, 8)}`;
+      document.getElementById('tVouchAmount').textContent = formatCurrency(item.amount);
+      document.getElementById('tVouchMethod').textContent = `Método de Pago: ${item.payment_method}`;
+      document.getElementById('tVouchTeacher').textContent = currentTeacherProfileName;
+      document.getElementById('tVouchDate').textContent = cleanDate;
+      document.getElementById('tVouchPeriod').textContent = `Del ${formatSafeDate(item.period_start)} al ${formatSafeDate(item.period_end)}`;
+
+      const refRow = document.getElementById('tVouchRefRow');
+      if (item.reference_number) {
+        refRow.classList.remove('hidden');
+        document.getElementById('tVouchRef').textContent = item.reference_number;
+      } else {
+        refRow.classList.add('hidden');
+      }
+
+      const notesRow = document.getElementById('tVouchNotesRow');
+      if (item.notes) {
+        notesRow.classList.remove('hidden');
+        document.getElementById('tVouchNotes').textContent = item.notes;
+      } else {
+        notesRow.classList.add('hidden');
+      }
+
+      const voucherElement = document.getElementById('teacherVoucherCard');
+
+      try {
+        const canvas = await html2canvas(voucherElement, {
+          scale: 2, // Imagen HD nítida para celular y PC
+          backgroundColor: '#ffffff',
+          useCORS: true
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        const cleanName = currentTeacherProfileName.replace(/\s+/g, '_');
+        link.download = `Comprobante_Pago_${cleanName}_${item.payment_date}.jpg`;
+        link.href = imgData;
+        link.click();
+
+      } catch (err) {
+        alert('Error al descargar el comprobante en JPG: ' + err.message);
+      }
     }
 
     async function init() {
@@ -188,10 +336,10 @@
         return;
       }
 
-      document.getElementById('userName').textContent = profile.full_name || 'Profesor';
-      document.getElementById('teacherHeaderName').textContent = `Pagos de ${profile.full_name || 'Profesor'}`;
+      currentTeacherProfileName = profile.full_name || 'Profesor';
+      document.getElementById('userName').textContent = currentTeacherProfileName;
+      document.getElementById('teacherHeaderName').textContent = `Pagos de ${currentTeacherProfileName}`;
 
-      // Buscar el ID de profesor correspondiente a este usuario
       const { data: teacher, error } = await supabaseClient
         .from('teachers')
         .select('id')
@@ -200,7 +348,7 @@
 
       if (error || !teacher) {
         document.getElementById('myPaymentsTableBody').innerHTML = `
-          <tr><td colspan="5" class="p-8 text-center text-slate-400">No se encontró una ficha docente vinculada a tu cuenta.</td></tr>
+          <tr><td colspan="6" class="p-8 text-center text-slate-400">No se encontró una ficha docente vinculada a tu cuenta.</td></tr>
         `;
         return;
       }
