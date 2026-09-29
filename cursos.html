@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asignación de Cursos y Horarios - Academi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+  <!-- Barra Superior -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <span class="text-slate-400">|</span>
+        <span class="text-sm font-semibold text-slate-600">Asignación de Cursos y Horarios</span>
+      </div>
+      <div>
+        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Formulario para Asignar Curso y Horario -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
+        <h2 class="text-lg font-bold text-slate-800 mb-1">Nueva Asignación</h2>
+        <p class="text-xs text-slate-500 mb-4">Programa clases por profesor, fecha y turno.</p>
+
+        <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+        <form id="assignCourseForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Profesor</label>
+            <select id="selectTeacher" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="" disabled selected>Cargando profesores...</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Curso / Materia</label>
+            <select id="selectCourse" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+              <option value="" disabled selected>Cargando cursos...</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha (Día / Mes / Año)</label>
+            <input type="date" id="assignDate" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Horario / Turno</label>
+            <select id="selectSlot" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-slate-700">
+              <option value="" disabled selected>Selecciona un turno...</option>
+              <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
+              <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
+              <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Notas u Observaciones (opcional)</label>
+            <textarea id="assignNotes" rows="2" placeholder="Aula, grupo o detalles..." class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+          </div>
+
+          <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">
+            Asignar Curso al Calendario
+          </button>
+        </form>
+      </div>
+
+      <!-- Calendario y Lista de Horarios Asignados -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800">Calendario de Clases Asignadas</h2>
+            <p class="text-xs text-slate-500">Visualiza por fecha los cursos programados.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-600">Filtrar Fecha:</label>
+            <input type="date" id="filterCalendarDate" onchange="filterSchedules()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+            <button onclick="clearDateFilter()" class="text-xs text-slate-500 hover:text-slate-800 underline">Todos</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
+                <th class="p-3">Fecha</th>
+                <th class="p-3">Horario</th>
+                <th class="p-3">Profesor</th>
+                <th class="p-3">Curso / Materia</th>
+                <th class="p-3">Notas</th>
+                <th class="p-3 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="schedulesTableBody">
+              <tr>
+                <td colspan="6" class="p-4 text-center text-slate-400">Cargando asignaciones...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allSchedules = [];
+
+    const alertMsg = document.getElementById('alertMsg');
+    const form = document.getElementById('assignCourseForm');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    function showAlert(text, type = 'error') {
+      alertMsg.textContent = text;
+      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      alertMsg.classList.remove('hidden');
+    }
+
+    async function checkRole() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
+        alert('Acceso permitido solo para Administrador o Recepción.');
+        window.location.href = 'dashboard.html';
+      }
+    }
+
+    async function loadSelectOptions() {
+      // Cargar Profesores
+      const { data: teachers } = await supabaseClient
+        .from('teachers')
+        .select('id, full_name, specialty')
+        .order('full_name');
+
+      const selectTeacher = document.getElementById('selectTeacher');
+      if (teachers && teachers.length > 0) {
+        selectTeacher.innerHTML = '<option value="" disabled selected>Selecciona un profesor...</option>' +
+          teachers.map(t => `<option value="${t.id}">${t.full_name} (${t.specialty || 'General'})</option>`).join('');
+      } else {
+        selectTeacher.innerHTML = '<option value="" disabled>No hay profesores registrados</option>';
+      }
+
+      // Cargar Cursos
+      const { data: courses } = await supabaseClient
+        .from('courses')
+        .select('id, name')
+        .order('name');
+
+      const selectCourse = document.getElementById('selectCourse');
+      if (courses && courses.length > 0) {
+        selectCourse.innerHTML = '<option value="" disabled selected>Selecciona un curso...</option>' +
+          courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      } else {
+        selectCourse.innerHTML = '<option value="" disabled>No hay cursos disponibles</option>';
+      }
+
+      document.getElementById('assignDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    async function loadSchedules() {
+      const tableBody = document.getElementById('schedulesTableBody');
+      const { data, error } = await supabaseClient
+        .from('course_schedules')
+        .select(`
+          id,
+          assigned_date,
+          time_slot,
+          notes,
+          teachers (id, full_name),
+          courses (id, name)
+        `)
+        .order('assigned_date', { ascending: false });
+
+      if (error) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar asignaciones.</td></tr>`;
+        return;
+      }
+
+      allSchedules = data || [];
+      renderSchedulesTable(allSchedules);
+    }
+
+    function renderSchedulesTable(schedules) {
+      const tableBody = document.getElementById('schedulesTableBody');
+      if (schedules.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay horarios asignados para esta fecha.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = schedules.map(s => {
+        const [year, month, day] = s.assigned_date.split('-');
+        const dateFormatted = `${day}/${month}/${year}`;
+
+        return `
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="p-3 font-semibold text-slate-700 whitespace-nowrap">${dateFormatted}</td>
+            <td class="p-3">
+              <span class="px-2.5 py-1 rounded text-xs font-semibold ${
+                s.time_slot.includes('10:00') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                s.time_slot.includes('2:00') ? 'bg-blue-50 text-blue-800 border border-blue-200' :
+                'bg-indigo-50 text-indigo-800 border border-indigo-200'
+              }">
+                ${s.time_slot}
+              </span>
+            </td>
+            <td class="p-3 font-medium text-slate-800">${s.teachers?.full_name || 'Desconocido'}</td>
+            <td class="p-3 font-semibold text-slate-700">${s.courses?.name || 'Desconocido'}</td>
+            <td class="p-3 text-xs text-slate-500">${s.notes || '-'}</td>
+            <td class="p-3 text-center">
+              <button onclick="removeSchedule('${s.id}')" class="text-xs text-red-600 hover:text-red-800 font-semibold hover:underline">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterSchedules() {
+      const dateVal = document.getElementById('filterCalendarDate').value;
+      if (!dateVal) {
+        renderSchedulesTable(allSchedules);
+        return;
+      }
+      const filtered = allSchedules.filter(s => s.assigned_date === dateVal);
+      renderSchedulesTable(filtered);
+    }
+
+    function clearDateFilter() {
+      document.getElementById('filterCalendarDate').value = '';
+      renderSchedulesTable(allSchedules);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertMsg.classList.add('hidden');
+
+      const teacher_id = document.getElementById('selectTeacher').value;
+      const course_id = document.getElementById('selectCourse').value;
+      const assigned_date = document.getElementById('assignDate').value;
+      const time_slot = document.getElementById('selectSlot').value;
+      const notes = document.getElementById('assignNotes').value.trim();
+
+      if (!teacher_id || !course_id || !assigned_date || !time_slot) {
+        showAlert('Por favor completa todos los campos requeridos.');
+        return;
+      }
+
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Guardando...';
+
+      try {
+        const { error } = await supabaseClient.rpc('assign_course_schedule', {
+          p_teacher_id: teacher_id,
+          p_course_id: course_id,
+          p_assigned_date: assigned_date,
+          p_time_slot: time_slot,
+          p_notes: notes || null
+        });
+
+        if (error) throw error;
+
+        showAlert('¡Horario y curso asignados exitosamente!', 'success');
+        document.getElementById('assignNotes').value = '';
+        loadSchedules();
+      } catch (err) {
+        showAlert(err.message || 'Error al asignar el horario.');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Asignar Curso al Calendario';
+      }
+    });
+
+    async function removeSchedule(scheduleId) {
+      if (!confirm('¿Deseas eliminar esta asignación de horario?')) return;
+      try {
+        const { error } = await supabaseClient.rpc('delete_course_schedule', {
+          p_schedule_id: scheduleId
+        });
+        if (error) throw error;
+        loadSchedules();
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      }
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    });
+
+    checkRole().then(() => {
+      loadSelectOptions();
+      loadSchedules();
+    });
+  </script>
+</body>
+</html>
