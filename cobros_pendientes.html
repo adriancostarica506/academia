@@ -14,6 +14,15 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
+        <!-- Logo -->
+        <div class="w-8 h-8 rounded-full bg-white border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden">
+          <img 
+            src="logo.png" 
+            alt="Logo" 
+            class="w-full h-full object-contain rounded-full"
+            onerror="this.onerror=null; this.src='assets/logo.png';"
+          >
+        </div>
         <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
         <span class="text-sm font-semibold text-slate-700">Alertas de Vencimiento y Próximos Cobros</span>
@@ -35,42 +44,42 @@
 
     <!-- Tarjetas de Resumen -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div onclick="setFilter('vencido')" class="bg-white p-5 rounded-xl border border-rose-200 shadow-sm cursor-pointer hover:border-rose-400 transition flex items-center justify-between">
+      <div onclick="setFilter('vencido')" class="bg-white p-5 rounded-2xl border border-rose-200 shadow-sm cursor-pointer hover:border-rose-400 transition flex items-center justify-between">
         <div>
           <p class="text-xs font-bold text-rose-600 uppercase tracking-wider">🔴 Vencidos / No Han Pagado</p>
           <h3 id="countVencidos" class="text-3xl font-black text-rose-700 mt-1">0</h3>
           <p class="text-[11px] text-slate-400 mt-1">Fecha pactada ya expiró</p>
         </div>
-        <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xl border border-rose-100">
+        <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xl border border-rose-100">
           ⚠️
         </div>
       </div>
 
-      <div onclick="setFilter('proximo')" class="bg-white p-5 rounded-xl border border-amber-200 shadow-sm cursor-pointer hover:border-amber-400 transition flex items-center justify-between">
+      <div onclick="setFilter('proximo')" class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm cursor-pointer hover:border-amber-400 transition flex items-center justify-between">
         <div>
           <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">🟡 Próximos a Cobrar (Alerta)</p>
           <h3 id="countProximos" class="text-3xl font-black text-amber-700 mt-1">0</h3>
           <p class="text-[11px] text-slate-400 mt-1">Vencen en los próximos 5 días o hoy</p>
         </div>
-        <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl border border-amber-100">
+        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl border border-amber-100">
           🔔
         </div>
       </div>
 
-      <div onclick="setFilter('aldia')" class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm cursor-pointer hover:border-emerald-400 transition flex items-center justify-between">
+      <div onclick="setFilter('aldia')" class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm cursor-pointer hover:border-emerald-400 transition flex items-center justify-between">
         <div>
           <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">🟢 Al Día</p>
           <h3 id="countAlDia" class="text-3xl font-black text-emerald-700 mt-1">0</h3>
           <p class="text-[11px] text-slate-400 mt-1">Faltan más de 5 días para su pago</p>
         </div>
-        <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl border border-emerald-100">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl border border-emerald-100">
           ✓
         </div>
       </div>
     </div>
 
     <!-- Barra de Búsqueda y Filtros -->
-    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div class="flex-1 w-full md:w-auto flex flex-col sm:flex-row gap-3 items-center">
         <!-- Buscador por nombre -->
         <div class="relative w-full sm:w-80">
@@ -80,14 +89,14 @@
             id="searchInput" 
             oninput="renderTable()" 
             placeholder="Buscar alumno por nombre o teléfono..." 
-            class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500"
           >
         </div>
 
         <!-- Selector de Estado -->
         <div class="w-full sm:w-auto">
-          <select id="statusFilter" onchange="renderTable()" class="w-full sm:w-auto border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white font-semibold">
-            <option value="todos">Todos los Alumnos</option>
+          <select id="statusFilter" onchange="renderTable()" class="w-full sm:w-auto border border-slate-300 rounded-xl p-2 text-xs outline-none bg-white font-semibold">
+            <option value="todos">Todos los Alumnos Activos</option>
             <option value="vencido" selected>🔴 Solo Vencidos / No Han Pagado</option>
             <option value="proximo">🟡 Solo Próximos a Cobrar (Alerta)</option>
             <option value="aldia">🟢 Solo Al Día</option>
@@ -95,17 +104,26 @@
         </div>
       </div>
 
-      <!-- Botón Exportar a Excel -->
-      <button 
-        onclick="exportToExcel()" 
-        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm whitespace-nowrap"
-      >
-        <span>📊 Descargar en Excel (.xlsx)</span>
-      </button>
+      <!-- Botones de Acción -->
+      <div class="flex items-center gap-2">
+        <button 
+          onclick="loadData()" 
+          class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1"
+          title="Recargar datos de la base de datos"
+        >
+          🔄 Actualizar
+        </button>
+        <button 
+          onclick="exportToExcel()" 
+          class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+        >
+          <span>📊 Descargar en Excel (.xlsx)</span>
+        </button>
+      </div>
     </div>
 
     <!-- Tabla Principal de Alumnos -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
@@ -121,7 +139,7 @@
           </thead>
           <tbody id="studentsBillingTableBody" class="divide-y divide-slate-100 font-medium">
             <tr>
-              <td colspan="7" class="p-6 text-center text-slate-400">Analizando vencimientos...</td>
+              <td colspan="7" class="p-8 text-center text-slate-400">Verificando alumnos activos en la base de datos...</td>
             </tr>
           </tbody>
         </table>
@@ -154,6 +172,7 @@
 
     async function loadData() {
       try {
+        // 1. OBTENER EXCLUSIVAMENTE LOS ESTUDIANTES VIGENTES (Si fueron eliminados, no existen aquí)
         const { data: students, error: errSt } = await supabaseClient
           .from('students')
           .select('id, full_name, phone, created_at')
@@ -162,13 +181,29 @@
         if (errSt) throw errSt;
         allStudents = students || [];
 
+        // 2. Si no hay estudiantes registrados, limpiar la lista inmediatamente
+        if (allStudents.length === 0) {
+          billingList = [];
+          document.getElementById('countVencidos').textContent = '0';
+          document.getElementById('countProximos').textContent = '0';
+          document.getElementById('countAlDia').textContent = '0';
+          document.getElementById('studentsBillingTableBody').innerHTML = `
+            <tr><td colspan="7" class="p-8 text-center text-slate-400">No hay alumnos registrados en el sistema actualmente.</td></tr>
+          `;
+          return;
+        }
+
+        // Crear conjunto de IDs válidos
+        const validStudentIds = new Set(allStudents.map(s => s.id));
+
+        // 3. Obtener pagos y descartar en memoria cualquier pago huérfano
         const { data: payments, error: errPy } = await supabaseClient
           .from('payments')
           .select('id, student_id, amount, concept, payment_concept, payment_date, next_payment_date, created_at')
           .order('payment_date', { ascending: false });
 
         if (errPy) throw errPy;
-        allPayments = payments || [];
+        allPayments = (payments || []).filter(p => validStudentIds.has(p.student_id));
 
         analyzeBillingStatuses();
 
@@ -184,6 +219,7 @@
       const now = new Date();
       now.setHours(0, 0, 0, 0);
 
+      // SOLO GENERAR FILAS PARA ALUMNOS QUE EXISTEN EN LA BASE DE DATOS
       billingList = allStudents.map(student => {
         const pays = allPayments.filter(p => p.student_id === student.id);
 
@@ -191,7 +227,6 @@
         let lastDateFormatted = 'Nunca ha pagado';
         let nextDateFormatted = 'No programada';
         let targetDueDate = null;
-        let daysDiff = -999; // Diferencia respecto a la fecha de vencimiento pactada
 
         if (pays.length > 0) {
           lastPayment = pays[0];
@@ -204,7 +239,6 @@
             nextDateFormatted = formatSafeDate(cleanNext);
             targetDueDate = new Date(cleanNext + 'T00:00:00');
           } else if (lastPayment.payment_date) {
-            // Si el pago antiguo no tenía next_payment_date, calculamos 30 días después
             const cleanPay = String(lastPayment.payment_date).split('T')[0];
             const pDate = new Date(cleanPay + 'T00:00:00');
             targetDueDate = new Date(pDate.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -212,7 +246,7 @@
           }
         }
 
-        // Clasificación basada en la fecha pactada de cobro:
+        // Clasificación
         let status = 'vencido';
         let statusLabel = 'Vencido / No ha Pagado';
         let badgeColor = 'bg-rose-100 text-rose-800 border-rose-300 font-black';
@@ -220,7 +254,7 @@
 
         if (targetDueDate) {
           const diffMs = targetDueDate.getTime() - now.getTime();
-          const daysToDue = Math.round(diffMs / (1000 * 60 * 60 * 24)); // > 0 faltan días, < 0 ya venció
+          const daysToDue = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
           if (daysToDue < 0) {
             status = 'vencido';
@@ -253,7 +287,7 @@
         };
       });
 
-      // Contadores
+      // Actualizar contadores
       document.getElementById('countVencidos').textContent = billingList.filter(x => x.status === 'vencido').length;
       document.getElementById('countProximos').textContent = billingList.filter(x => x.status === 'proximo').length;
       document.getElementById('countAlDia').textContent = billingList.filter(x => x.status === 'aldia').length;
@@ -280,7 +314,7 @@
       tbody.innerHTML = filtered.map(item => {
         let waText = '';
         if (item.status === 'vencido') {
-          waText = encodeURIComponent(`Hola ${item.name}, te saludamos cordialmente de Academi Elohim. Te recordamos que tu cuota presenta un saldo vencido pactado para el ${item.nextDateFormatted} (${item.urgency}). Quedamos a tu disposición para registrar tu comprobante.`);
+          waText = encodeURIComponent(`Hola ${item.name}, te saludamos cordialmente de Academi Elohim. Te recordamos que tu cuota presenta un saldo pendiente pactado para el ${item.nextDateFormatted} (${item.urgency}). Quedamos a tu disposición para coordinar tu pago. ¡Muchas gracias!`);
         } else {
           waText = encodeURIComponent(`Hola ${item.name}, te saludamos cordialmente de Academi Elohim. Te recordamos con aprecio que tu fecha de cobro programada es el ${item.nextDateFormatted} (${item.urgency}). ¡Que tengas un excelente día!`);
         }
@@ -313,10 +347,11 @@
               <div class="flex items-center justify-center gap-2">
                 ${cleanPhone ? `
                   <a 
-                    href="https://wa.me/506${cleanPhone}?text=${waText}" 
+                    href="https://api.whatsapp.com/send?phone=506${cleanPhone}&text=${waText}" 
                     target="_blank" 
+                    rel="noopener noreferrer"
                     title="Enviar recordatorio por WhatsApp"
-                    class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                    class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm"
                   >
                     <span>💬 WhatsApp</span>
                   </a>
@@ -361,6 +396,19 @@
       XLSX.writeFile(workbook, `Academi_Alertas_Cobro_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
+    // SINCRONIZACIÓN EN TIEMPO REAL: Si un alumno o pago se elimina, actualizar al segundo
+    function setupRealtime() {
+      supabaseClient
+        .channel('billing_sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => {
+          loadData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
+          loadData();
+        })
+        .subscribe();
+    }
+
     async function init() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
@@ -382,6 +430,7 @@
 
       document.getElementById('userName').textContent = `${profile.full_name || 'Personal'} (${profile.role.toUpperCase()})`;
       await loadData();
+      setupRealtime();
     }
 
     document.getElementById('btnLogout').addEventListener('click', async () => {
