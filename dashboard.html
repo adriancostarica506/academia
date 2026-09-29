@@ -17,7 +17,7 @@
         <span id="badgeRole" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-700 capitalize">Cargando...</span>
       </div>
       <div class="flex items-center space-x-3">
-        <!-- BOTÓN EXCLUSIVO PARA ADMIN Y RECEPCIÓN (Oculto por defecto para profesores) -->
+        <!-- BOTÓN EXCLUSIVO PARA ADMIN Y RECEPCIÓN -->
         <a 
           id="btnHeaderAddStudent"
           href="alumnos.html" 
@@ -429,10 +429,10 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODAL DE EXPEDIENTE VISUAL Y PROFESIONAL DEL ESTUDIANTE (REEMPLAZA EL ALERT)-->
+  <!-- MODAL DE EXPEDIENTE VISUAL Y PROFESIONAL DEL ESTUDIANTE                   -->
   <!-- ========================================================================= -->
   <div id="modalVisualStudentInfo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[92vh] flex flex-col border border-slate-100 animate-fadeIn">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[92vh] flex flex-col border border-slate-100">
       
       <!-- Cabecera del Alumno con Avatar y Datos Principales -->
       <div class="flex items-start justify-between border-b border-slate-100 pb-4">
@@ -533,18 +533,22 @@
         </div>
       </div>
 
-      <!-- Pie del Modal -->
+      <!-- Pie del Modal con Acción de WhatsApp Blindada -->
       <div class="flex justify-between items-center pt-2 border-t border-slate-100">
-        <a 
+        <!-- BOTÓN WHATSAPP CORREGIDO CON OPENER UNIVERSAL -->
+        <button 
+          type="button"
           id="modalWhatsAppBtn" 
-          href="#" 
-          target="_blank" 
-          class="hidden items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm"
+          onclick="triggerStudentWhatsApp()"
+          class="hidden items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm cursor-pointer"
         >
           <span>💬 Abrir WhatsApp del Alumno</span>
-        </a>
+        </button>
+
         <div class="flex-1"></div>
+
         <button 
+          type="button"
           onclick="closeVisualStudentModal()" 
           class="px-5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
         >
@@ -566,6 +570,10 @@
     let teachersCache = [];
     let rawTeacherStudentsData = [];
 
+    // Variables activas para el alumno visualizado en el modal
+    let activeModalStudentPhone = '';
+    let activeModalStudentName = '';
+
     const daysMap = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
     function getDayNameFromDateStr(dateStr) {
@@ -573,6 +581,28 @@
       const [y, m, d] = dateStr.split('-');
       const dateObj = new Date(y, m - 1, d);
       return daysMap[dateObj.getDay()];
+    }
+
+    // DISPARADOR SEGURO DE WHATSAPP (Abre en PC o Móvil sin bloqueos)
+    function triggerStudentWhatsApp() {
+      if (!activeModalStudentPhone) {
+        alert('Este estudiante no tiene número de teléfono registrado.');
+        return;
+      }
+
+      let cleanNumber = String(activeModalStudentPhone).replace(/\D/g, '');
+      
+      // Si el número tiene 8 dígitos (Costa Rica), anteponer el 506
+      if (cleanNumber.length === 8) {
+        cleanNumber = '506' + cleanNumber;
+      }
+
+      const mensaje = encodeURIComponent(`Hola ${activeModalStudentName}, te saluda tu profesor de Academi Elohim.`);
+      
+      // Enlace universal de la API oficial de WhatsApp
+      const waUrl = `https://api.whatsapp.com/send?phone=${cleanNumber}&text=${mensaje}`;
+      
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
     }
 
     function switchTeacherTab(tab) {
@@ -836,7 +866,7 @@
     }
 
     // =========================================================================
-    // MODAL VISUAL: MUESTRA EL EXPEDIENTE COMPLETO CON DISEÑO ELEGANTE
+    // MODAL VISUAL: EXPEDIENTE COMPLETO DEL ALUMNO
     // =========================================================================
     function openVisualStudentModal(scheduleId) {
       const scheduleItem = rawTeacherStudentsData.find(s => s.id === scheduleId);
@@ -846,24 +876,27 @@
       const studentName = student.full_name || 'Sin nombre';
       const initial = studentName.charAt(0).toUpperCase();
 
+      // Guardar datos globales para el disparador de WhatsApp
+      activeModalStudentName = studentName;
+      activeModalStudentPhone = student.phone || '';
+
       // Cabecera
       document.getElementById('modalStudentAvatar').textContent = initial;
       document.getElementById('modalStudentName').textContent = studentName;
       document.getElementById('modalStudentIden').textContent = student.identification ? `🪪 Cédula: ${student.identification}` : '🪪 Cédula: No registrada';
       document.getElementById('modalStudentPhone').textContent = student.phone ? `📞 Tel: ${student.phone}` : '📞 Tel: Sin número';
 
-      // Botón WhatsApp
+      // Botón WhatsApp: Mostrar si tiene número telefónico
       const waBtn = document.getElementById('modalWhatsAppBtn');
-      if (student.phone) {
-        const cleanPhone = student.phone.replace(/[^0-9]/g, '');
-        waBtn.href = `https://wa.me/506${cleanPhone}`;
+      if (student.phone && student.phone.trim() !== '') {
         waBtn.classList.remove('hidden');
         waBtn.classList.add('flex');
       } else {
         waBtn.classList.add('hidden');
+        waBtn.classList.remove('flex');
       }
 
-      // Conteos
+      // Conteos y métricas
       const attendances = scheduleItem.attendances || [];
       const countPresente = attendances.filter(a => a.status === 'presente').length;
       const countTarde = attendances.filter(a => a.status === 'tarde').length;
@@ -877,7 +910,7 @@
       document.getElementById('modalMetricTarde').textContent = countTarde;
       document.getElementById('modalMetricAusente').textContent = countAusente;
 
-      // Ficha académica
+      // Ficha académica asignada
       document.getElementById('modalCourseBadge').textContent = scheduleItem.courses?.name || 'General';
       document.getElementById('modalScheduleTimeSlot').textContent = scheduleItem.time_slot || 'No asignado';
       document.getElementById('modalScheduleDays').textContent = (scheduleItem.days_of_week && scheduleItem.days_of_week.length > 0)
