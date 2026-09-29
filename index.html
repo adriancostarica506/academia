@@ -93,31 +93,28 @@
       try {
         let authEmail = userInput;
 
-        // Si el usuario no contiene '@', consultar a Supabase el correo real vinculado
+        // Si no tiene '@', buscar el correo en la base de datos
         if (!authEmail.includes('@')) {
           const { data: resolvedEmail, error: rpcErr } = await supabaseClient
             .rpc('get_email_by_identifier', { p_identifier: userInput });
 
           if (!rpcErr && resolvedEmail) {
             authEmail = resolvedEmail;
-          } else {
-            // Respaldos habituales por si no resolvió por RPC
-            authEmail = `${userInput.toLowerCase()}@academi.com`;
           }
         }
 
-        // Intento de inicio de sesión con el email resuelto
+        // Inicio de sesión
         let { data, error } = await supabaseClient.auth.signInWithPassword({
           email: authEmail,
           password: password
         });
 
-        // Si falla por formato de dominio alternativo, probar combinaciones comunes
+        // Fallbacks comunes en caso de discrepancia en dominio
         if (error && !userInput.includes('@')) {
           const fallbacks = [
+            `${userInput.toLowerCase()}@academi.com`,
             `${userInput.toLowerCase()}@academia.com`,
-            `${userInput.toLowerCase()}@elohim.com`,
-            `${userInput.toLowerCase()}@gmail.com`
+            `${userInput.toLowerCase()}@elohim.com`
           ];
 
           for (const fb of fallbacks) {
