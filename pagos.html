@@ -48,7 +48,7 @@
   <!-- Contenedor Principal -->
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 no-print">
 
-    <!-- Tarjetas de Resumen Diario y Filtrado -->
+    <!-- Tarjetas de Resumen -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
@@ -81,7 +81,7 @@
       </div>
     </div>
 
-    <!-- Barra de Herramientas y Exportaciones a Excel -->
+    <!-- Barra de Herramientas -->
     <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
       <div>
         <h3 class="text-sm font-bold text-slate-800">Reportes Financieros y Control de Pagos</h3>
@@ -90,7 +90,7 @@
 
       <div class="flex flex-wrap items-center gap-2.5">
         <button 
-          onclick="exportIncomeExcel('mensual')" 
+          onclick="exportIncomeExcel()" 
           class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
         >
           <span>📊 Descargar Ingresos (Excel)</span>
@@ -104,7 +104,7 @@
       </div>
     </div>
 
-    <!-- Panel de Registro y Tabla -->
+    <!-- Registro y Tabla -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       <!-- Formulario para Registrar Cobro -->
@@ -189,7 +189,6 @@
               >
             </div>
           </div>
-          <p class="text-[11px] text-slate-400">Esta fecha de próximo pago alimentará el módulo de alertas preventivas.</p>
 
           <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm">
             Guardar Pago y Emitir Recibo
@@ -245,7 +244,6 @@
           </div>
         </div>
 
-        <!-- Tabla -->
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead>
@@ -271,23 +269,36 @@
     </div>
   </main>
 
-  <!-- MODAL: RECIBO IMPRIMIBLE -->
+  <!-- MODAL: RECIBO IMPRIMIBLE CON LOGO INCORPORADO -->
   <div id="receiptModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
       
-      <div id="printArea" class="border border-slate-200 rounded-xl p-6 bg-white space-y-4">
-        <div class="text-center border-b border-slate-200 pb-3">
-          <h2 class="text-xl font-black text-slate-900">ACADEMI</h2>
-          <p class="text-xs text-slate-500">Sistema Escolar Elohim</p>
-          <p class="text-xs text-slate-400">Comprobante de Ingreso Oficial</p>
+      <div id="printArea" class="border border-slate-200 rounded-2xl p-6 bg-white space-y-4">
+        
+        <!-- ENCABEZADO DEL RECIBO CON EL LOGO -->
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center overflow-hidden">
+              <img 
+                src="logo.png" 
+                alt="Logo" 
+                class="w-full h-full object-contain"
+                onerror="this.onerror=null; this.src='assets/logo.png';"
+              >
+            </div>
+            <div>
+              <h2 class="text-lg font-black text-slate-900 leading-tight">ACADEMI</h2>
+              <p class="text-[11px] text-slate-500 font-medium">Sistema Escolar Elohim</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-xs" id="rcptNumber">RECIBO #0000</span>
+          </div>
         </div>
 
-        <div class="flex justify-between items-center text-xs">
-          <span class="font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded border border-blue-200" id="rcptNumber">RECIBO #0000</span>
-          <div class="text-right">
-            <p class="font-semibold text-slate-700" id="rcptDate">Fecha: --/--/----</p>
-            <p class="text-[11px] text-slate-400" id="rcptTime">Hora: --:--</p>
-          </div>
+        <div class="flex justify-between items-center text-xs text-slate-600 font-medium pt-1">
+          <p id="rcptDate">Fecha: --/--/----</p>
+          <p id="rcptTime">Hora: --:--</p>
         </div>
 
         <div class="space-y-2 text-sm pt-2">
@@ -313,12 +324,12 @@
           </div>
         </div>
 
-        <div class="bg-slate-50 p-3 rounded-lg flex justify-between items-center border border-slate-200 mt-3">
+        <div class="bg-slate-50 p-3.5 rounded-xl flex justify-between items-center border border-slate-200 mt-3">
           <span class="text-xs font-bold uppercase text-slate-600">Total Pagado:</span>
-          <span class="text-2xl font-black text-emerald-600" id="rcptAmount">₡0,00</span>
+          <span class="text-2xl font-black text-emerald-600 font-mono" id="rcptAmount">₡0,00</span>
         </div>
 
-        <div class="pt-3 text-center text-xs text-slate-400">
+        <div class="pt-2 text-center text-[11px] text-slate-400 font-medium">
           ¡Gracias por su puntualidad y confianza!
         </div>
       </div>
@@ -377,13 +388,12 @@
       autoSuggestNextDate();
     }
 
-    // Calcula automáticamente exactamente 1 mes después
     function autoSuggestNextDate() {
       const payDateVal = document.getElementById('paymentDate').value;
       if (!payDateVal) return;
 
       const [y, m, d] = payDateVal.split('-').map(Number);
-      const nextDate = new Date(y, m, d); // suma un mes (en JS los meses van de 0 a 11)
+      const nextDate = new Date(y, m, d);
       const nextY = nextDate.getFullYear();
       const nextM = String(nextDate.getMonth() + 1).padStart(2, '0');
       const nextD = String(nextDate.getDate()).padStart(2, '0');
@@ -422,7 +432,6 @@
         selectFilter.innerHTML = '<option value="">👤 Todos los alumnos</option>' + 
           allStudents.map(s => `<option value="${s.id}">👤 ${s.full_name}</option>`).join('');
 
-        // Si vino un alumno pre-seleccionado por URL
         const urlParams = new URLSearchParams(window.location.search);
         const preStudentId = urlParams.get('student_id');
         if (preStudentId) {
