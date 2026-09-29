@@ -250,48 +250,152 @@
 
     <!-- SECCIÓN PROFESORES -->
     <div id="sectionProfesor" class="hidden space-y-6">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div>
-          <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia y Mis Alumnos</h2>
-          <p class="text-xs text-slate-500">Marca si el alumno llegó, llegó tarde o no se presentó. Todo queda registrado con día, mes, año y hora.</p>
+      
+      <!-- Pestañas del Profesor -->
+      <div class="flex items-center space-x-2 border-b border-slate-200 pb-2">
+        <button id="tabTeacherMark" onclick="switchTeacherTab('mark')" class="px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition">
+          ✏️ Toma de Asistencia Hoy
+        </button>
+        <button id="tabTeacherStats" onclick="switchTeacherTab('stats')" class="px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition">
+          📊 Historial y Conteo de Mis Alumnos
+        </button>
+      </div>
+
+      <!-- VISTA A: TOMA DE ASISTENCIA DIARIA -->
+      <div id="teacherViewMark" class="space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-slate-700">Toma de Asistencia</h2>
+            <p class="text-xs text-slate-500">Marca si el alumno llegó, llegó tarde o no se presentó. Todo se sincroniza con Recepción y Admin.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <a href="chat.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
+              💬 Chat con Recepción
+            </a>
+            <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold transition">
+              ✓ Guardado y Visible en Recepción y Admin
+            </div>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <a href="chat.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-sm">
-            💬 Chat con Recepción
-          </a>
-          <div id="saveAttendanceFeedback" class="hidden px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-semibold transition">
-            ✓ Guardado y Visible en Recepción y Admin
+
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Clase (Día / Mes / Año)</label>
+              <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
+              <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none">
+                <option value="">Todos los turnos</option>
+                <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
+                <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
+                <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 pt-4">
+            <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados para Asistir</h4>
+            <div id="teacherStudentsContainer" class="overflow-x-auto text-sm text-slate-500 italic">
+              Cargando alumnos asignados...
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- VISTA B: EXPEDIENTE, BUSCADOR Y CONTEO DE ASISTENCIAS DE MIS ALUMNOS -->
+      <div id="teacherViewStats" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Clase (Día / Mes / Año)</label>
-            <input type="date" id="teacherDateFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Turno</label>
-            <select id="teacherSlotFilter" onchange="loadTeacherStudents()" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none">
-              <option value="">Todos los turnos</option>
-              <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
-              <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
-              <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
-            </select>
+            <h2 class="text-lg font-bold text-slate-700">Expediente de Asistencias de Mis Alumnos</h2>
+            <p class="text-xs text-slate-500">Busca alumnos por nombre y revisa cuántas veces han llegado, llegado tarde o faltado con su horario y días asignados.</p>
           </div>
         </div>
 
-        <div class="border-t border-slate-200 pt-4">
-          <h4 class="text-sm font-semibold text-slate-700 mb-3">Lista de Alumnos Programados para Asistir</h4>
-          <div id="teacherStudentsContainer" class="overflow-x-auto text-sm text-slate-500 italic">
-            Cargando alumnos asignados...
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+          <!-- Buscador por nombre escrito -->
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <div class="relative flex-1 w-full">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
+              <input 
+                type="text" 
+                id="searchTeacherStudentInput" 
+                oninput="filterTeacherStudentStats()" 
+                placeholder="Escribe el nombre del alumno para buscar..." 
+                class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+            <button onclick="document.getElementById('searchTeacherStudentInput').value=''; filterTeacherStudentStats();" class="text-xs text-slate-500 hover:text-slate-800 underline px-2 py-1">
+              Limpiar búsqueda
+            </button>
+          </div>
+
+          <!-- Tabla de Alumnos con Resumen de Conteos -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 uppercase bg-slate-50">
+                  <th class="p-3">Alumno</th>
+                  <th class="p-3">Horario Asignado</th>
+                  <th class="p-3">Días de Asistencia</th>
+                  <th class="p-3 text-center">🟢 Sí llegó</th>
+                  <th class="p-3 text-center">🟡 Llegó tarde</th>
+                  <th class="p-3 text-center">🔴 No se presentó</th>
+                  <th class="p-3 text-center">Total Registros</th>
+                  <th class="p-3 text-center">Detalle por Fecha</th>
+                </tr>
+              </thead>
+              <tbody id="teacherStudentStatsTableBody" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="8" class="p-6 text-center text-slate-400">Cargando reporte de alumnos...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+
     </div>
 
   </main>
+
+  <!-- MODAL: DETALLE DE TODAS LAS FECHAS DEL ALUMNO (DÍA, MES, AÑO Y HORA) -->
+  <div id="modalStudentAttendanceHistory" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-start border-b pb-3">
+        <div>
+          <h3 id="modalStudentNameTitle" class="text-base font-bold text-slate-900">Historial de Asistencias del Alumno</h3>
+          <p id="modalStudentScheduleSubtitle" class="text-xs text-indigo-600 font-medium">Horario y Días</p>
+        </div>
+        <button onclick="closeStudentAttendanceModal()" class="text-slate-400 hover:text-slate-600 font-bold text-lg leading-none">✕</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 sticky top-0 font-semibold">
+            <tr>
+              <th class="p-2.5">Fecha (Día/Mes/Año)</th>
+              <th class="p-2.5">Hora Marcada</th>
+              <th class="p-2.5">Estado</th>
+              <th class="p-2.5">Curso</th>
+            </tr>
+          </thead>
+          <tbody id="modalStudentHistoryBody" class="divide-y divide-slate-100 font-medium">
+            <tr>
+              <td colspan="4" class="p-4 text-center text-slate-400">Cargando historial...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-100">
+        <button onclick="closeStudentAttendanceModal()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
@@ -303,6 +407,8 @@
     let currentUserRole = null;
     let teachersCache = [];
 
+    let rawTeacherStudentsData = []; // Datos completos del profesor para estadísticas
+
     const daysMap = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
     function getDayNameFromDateStr(dateStr) {
@@ -310,6 +416,28 @@
       const [y, m, d] = dateStr.split('-');
       const dateObj = new Date(y, m - 1, d);
       return daysMap[dateObj.getDay()];
+    }
+
+    // Pestañas de profesor
+    function switchTeacherTab(tab) {
+      const btnMark = document.getElementById('tabTeacherMark');
+      const btnStats = document.getElementById('tabTeacherStats');
+      const viewMark = document.getElementById('teacherViewMark');
+      const viewStats = document.getElementById('teacherViewStats');
+
+      if (tab === 'mark') {
+        btnMark.className = 'px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition';
+        btnStats.className = 'px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
+        viewMark.classList.remove('hidden');
+        viewStats.classList.add('hidden');
+        loadTeacherStudents();
+      } else {
+        btnStats.className = 'px-4 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white shadow-sm transition';
+        btnMark.className = 'px-4 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition';
+        viewStats.classList.remove('hidden');
+        viewMark.classList.add('hidden');
+        loadTeacherStudentStats();
+      }
     }
 
     async function loadTeachersDropdown() {
@@ -326,6 +454,7 @@
       if (recepSelect) recepSelect.innerHTML = options;
     }
 
+    // TOMA DE ASISTENCIA DIARIA DEL PROFESOR
     async function loadTeacherStudents() {
       const container = document.getElementById('teacherStudentsContainer');
       const dateVal = document.getElementById('teacherDateFilter').value;
@@ -451,7 +580,172 @@
       }
     }
 
-    // MONITOR: CARGA TODOS LOS DÍAS Y PROFESORES SIN ERRORES DE RED
+    // =========================================================================
+    // 📊 EXPEDIENTE, BUSCADOR Y CONTEO DE ASISTENCIAS DEL PROFESOR
+    // =========================================================================
+    async function loadTeacherStudentStats() {
+      const tbody = document.getElementById('teacherStudentStatsTableBody');
+      if (!currentTeacherId) return;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('student_schedules')
+          .select(`
+            id,
+            time_slot,
+            days_of_week,
+            students (id, full_name, phone),
+            courses (name),
+            attendances (
+              id,
+              status,
+              attendance_date,
+              recorded_at
+            )
+          `)
+          .eq('teacher_id', currentTeacherId)
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        rawTeacherStudentsData = data || [];
+        filterTeacherStudentStats();
+
+      } catch (err) {
+        console.error('Error cargando conteos:', err);
+        tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-red-500">Error al cargar datos: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterTeacherStudentStats() {
+      const tbody = document.getElementById('teacherStudentStatsTableBody');
+      const search = (document.getElementById('searchTeacherStudentInput')?.value || '').toLowerCase().trim();
+
+      const filtered = rawTeacherStudentsData.filter(item => {
+        const name = (item.students?.full_name || '').toLowerCase();
+        const phone = (item.students?.phone || '').toLowerCase();
+        return !search || name.includes(search) || phone.includes(search);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">No se encontraron alumnos con ese nombre.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const attendances = item.attendances || [];
+        const countPresente = attendances.filter(a => a.status === 'presente').length;
+        const countTarde = attendances.filter(a => a.status === 'tarde').length;
+        const countAusente = attendances.filter(a => a.status === 'ausente').length;
+        const total = countPresente + countTarde + countAusente;
+
+        const daysFormatted = (item.days_of_week && item.days_of_week.length > 0)
+          ? item.days_of_week.map(d => `<span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-200 mr-1 mb-0.5">${d}</span>`).join('')
+          : '<span class="text-slate-400">Todos los días</span>';
+
+        const studentName = item.students?.full_name || 'Sin nombre';
+
+        return `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 font-bold text-slate-900">
+              <span>${studentName}</span>
+              ${item.students?.phone ? `<br><span class="text-[11px] text-slate-400 font-normal">📞 ${item.students.phone}</span>` : ''}
+            </td>
+            <td class="p-3 font-semibold text-blue-700">${item.time_slot}</td>
+            <td class="p-3">${daysFormatted}</td>
+            <td class="p-3 text-center">
+              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs">
+                ${countPresente}
+              </span>
+            </td>
+            <td class="p-3 text-center">
+              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs">
+                ${countTarde}
+              </span>
+            </td>
+            <td class="p-3 text-center">
+              <span class="inline-flex items-center justify-center font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs">
+                ${countAusente}
+              </span>
+            </td>
+            <td class="p-3 text-center font-mono font-bold text-slate-800 text-xs">
+              ${total}
+            </td>
+            <td class="p-3 text-center">
+              <button 
+                onclick="openStudentAttendanceHistory('${item.id}', '${encodeURIComponent(studentName)}', '${encodeURIComponent(item.time_slot)}')" 
+                class="px-2.5 py-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 rounded-lg transition"
+              >
+                Ver Fechas (${attendances.length})
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal con desglose de días, meses, años y horas
+    function openStudentAttendanceHistory(scheduleId, studentNameEscaped, scheduleInfoEscaped) {
+      const studentName = decodeURIComponent(studentNameEscaped);
+      const scheduleInfo = decodeURIComponent(scheduleInfoEscaped);
+
+      const scheduleItem = rawTeacherStudentsData.find(s => s.id === scheduleId);
+      if (!scheduleItem) return;
+
+      document.getElementById('modalStudentNameTitle').textContent = studentName;
+      document.getElementById('modalStudentScheduleSubtitle').textContent = `Horario: ${scheduleInfo} | Curso: ${scheduleItem.courses?.name || 'General'}`;
+
+      const historyBody = document.getElementById('modalStudentHistoryBody');
+      const list = (scheduleItem.attendances || []).slice().sort((a, b) => new Date(b.attendance_date || b.recorded_at) - new Date(a.attendance_date || a.recorded_at));
+
+      if (list.length === 0) {
+        historyBody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">Aún no hay asistencias marcadas para este alumno.</td></tr>`;
+      } else {
+        historyBody.innerHTML = list.map(a => {
+          let dateStr = a.attendance_date || '-';
+          if (dateStr.includes('-')) {
+            const [y, m, d] = dateStr.split('T')[0].split('-');
+            dateStr = `${d}/${m}/${y}`;
+          }
+
+          let timeStr = '-';
+          if (a.recorded_at) {
+            const d = new Date(a.recorded_at);
+            timeStr = d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          }
+
+          const badgeColor = a.status === 'presente' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                             a.status === 'tarde' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                             'bg-rose-100 text-rose-800 border-rose-300';
+
+          const label = a.status === 'presente' ? '🟢 Sí llegó' :
+                        a.status === 'tarde' ? '🟡 Llegó tarde' : '🔴 No se presentó';
+
+          return `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="p-2.5 font-mono font-bold text-slate-800">${dateStr}</td>
+              <td class="p-2.5 font-mono text-slate-600">${timeStr}</td>
+              <td class="p-2.5">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold border ${badgeColor}">
+                  ${label}
+                </span>
+              </td>
+              <td class="p-2.5 text-slate-600">${scheduleItem.courses?.name || 'General'}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('modalStudentAttendanceHistory').classList.remove('hidden');
+    }
+
+    function closeStudentAttendanceModal() {
+      document.getElementById('modalStudentAttendanceHistory').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // MONITOR: ADMIN Y RECEPCIÓN
+    // =========================================================================
     async function loadAttendanceMonitor() {
       const isAdm = (currentUserRole === 'admin');
       const dateEl = document.getElementById(isAdm ? 'adminAttendanceDate' : 'recepcionAttendanceDate');
@@ -466,7 +760,6 @@
       if (!targetTbody) return;
 
       try {
-        // Enviar solo los parámetros que tengan valor para evitar fallos HTTP en PostgREST
         const params = {};
         if (selectedDate) params.p_date = selectedDate;
         if (selectedStatus) params.p_status_filter = selectedStatus;
@@ -475,7 +768,6 @@
         const { data, error } = await supabaseClient.rpc('get_attendance_monitor', params);
 
         if (error) {
-          // Si falla la función, consulta directa como respaldo de alta disponibilidad
           let directQuery = supabaseClient
             .from('attendances')
             .select(`
@@ -615,6 +907,8 @@
         .on('postgres_changes', { event: '*', schema: 'public', table: 'attendances' }, () => {
           if (currentUserRole === 'admin' || currentUserRole === 'recepcion') {
             loadAttendanceMonitor();
+          } else if (currentUserRole === 'profesor') {
+            loadTeacherStudentStats();
           }
         })
         .subscribe();
