@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asignación de Horarios de Alumnos - Academi</title>
+  <title>Asignación de Horarios y Profesores - Academi</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
   <!-- Barra Superior -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <a href="dashboard.html" class="text-xl font-bold text-indigo-600 hover:text-indigo-700">← Volver al Panel</a>
         <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-600">Asignar Horarios a Alumnos</span>
+        <span class="text-sm font-semibold text-slate-600">Asignación de Alumnos a Profesores</span>
       </div>
       <div>
         <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
@@ -25,79 +25,101 @@
     </div>
   </header>
 
-  <!-- Contenido -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Contenedor Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-      <!-- Formulario para Asignar Alumno a un Profesor y Horario -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-        <h2 class="text-lg font-bold text-slate-800 mb-1">Agendar Alumno</h2>
-        <p class="text-xs text-slate-500 mb-4">Selecciona el alumno, el profesor guía, curso y turno.</p>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+      <!-- Panel Izquierdo: Configurar y Asignar (Individual o Múltiple) -->
+      <div class="lg:col-span-5 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Asignar Alumnos</h2>
+          <p class="text-xs text-slate-500">Selecciona el profesor, horario y los alumnos que cursarán con él.</p>
+        </div>
 
-        <form id="assignStudentForm" class="space-y-4">
+        <div id="alertMsg" class="hidden p-3 rounded-lg text-sm"></div>
+
+        <form id="assignmentForm" class="space-y-4">
+          <!-- Profesor Encargado -->
           <div>
-            <div class="flex justify-between items-center mb-1">
-              <label class="block text-xs font-semibold text-slate-600">Alumno</label>
-              <button type="button" onclick="openStudentModal()" class="text-xs text-blue-600 hover:underline font-semibold">+ Nuevo Alumno</button>
-            </div>
-            <select id="selectStudent" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-              <option value="" disabled selected>Cargando alumnos...</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Profesor Asignado</label>
-            <select id="selectTeacher" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Profesor Encargado *</label>
+            <select id="selectTeacher" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
               <option value="" disabled selected>Cargando profesores...</option>
             </select>
           </div>
 
+          <!-- Curso / Materia -->
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Curso / Materia</label>
-            <select id="selectCourse" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Curso / Materia *</label>
+            <select id="selectCourse" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
               <option value="" disabled selected>Cargando cursos...</option>
             </select>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha (Día / Mes / Año)</label>
-            <input type="date" id="assignDate" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <!-- Fecha y Turno -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Clase *</label>
+              <input type="date" id="inputAssignedDate" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Turno *</label>
+              <select id="selectTimeSlot" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white font-medium">
+                <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
+                <option value="2:00 pm a 5:00 pm" selected>2:00 pm a 5:00 pm (Tarde)</option>
+                <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Horario / Turno</label>
-            <select id="selectSlot" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium text-slate-700">
-              <option value="" disabled selected>Selecciona un turno...</option>
-              <option value="10:00 am a 1:00 pm">10:00 am a 1:00 pm (Mañana)</option>
-              <option value="2:00 pm a 5:00 pm">2:00 pm a 5:00 pm (Tarde)</option>
-              <option value="6:00 pm a 8:45 pm">6:00 pm a 8:45 pm (Noche)</option>
-            </select>
+          <!-- Selección de Alumnos (Uno o Múltiples) -->
+          <div class="border-t border-slate-100 pt-3">
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-xs font-bold text-slate-700 uppercase">Seleccionar Alumno(s) *</label>
+              <span id="selectedCountBadge" class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full border border-indigo-200">
+                0 seleccionados
+              </span>
+            </div>
+
+            <!-- Buscador rápido dentro de los alumnos -->
+            <div class="mb-2">
+              <input 
+                type="text" 
+                id="searchStudentInput" 
+                oninput="filterStudentList()" 
+                placeholder="🔍 Filtrar alumno por nombre..." 
+                class="w-full border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+            </div>
+
+            <!-- Botones de seleccionar todos / ninguno -->
+            <div class="flex items-center justify-between text-xs text-slate-500 mb-2 px-1">
+              <button type="button" onclick="toggleSelectAll(true)" class="text-indigo-600 hover:underline font-semibold">Seleccionar todos</button>
+              <button type="button" onclick="toggleSelectAll(false)" class="text-slate-500 hover:underline">Desmarcar todos</button>
+            </div>
+
+            <!-- Contenedor con Scroll de Casillas de Selección -->
+            <div id="studentsCheckboxList" class="border border-slate-200 rounded-lg max-h-56 overflow-y-auto p-2 space-y-1.5 bg-slate-50 text-sm">
+              <p class="text-xs text-slate-400 p-2 text-center">Cargando lista de alumnos...</p>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Notas (opcional)</label>
-            <textarea id="assignNotes" rows="2" placeholder="Aula, detalles o nivel del alumno..." class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-          </div>
-
-          <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">
-            Guardar Asignación
+          <button type="submit" id="btnSubmitAssign" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">
+            Asignar Alumnos Seleccionados
           </button>
         </form>
       </div>
 
-      <!-- Tabla y Filtro del Calendario de Alumnos -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+      <!-- Panel Derecho: Programación y Horarios Activos -->
+      <div class="lg:col-span-7 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-slate-100 pb-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-100 pb-4">
           <div>
-            <h2 class="text-lg font-bold text-slate-800">Calendario de Clases por Alumno</h2>
-            <p class="text-xs text-slate-500">Horarios agendados por día, mes y año.</p>
+            <h2 class="text-lg font-bold text-slate-800">Horarios y Alumnos Asignados</h2>
+            <p class="text-xs text-slate-500">Muestra los alumnos registrados con cada profesor.</p>
           </div>
           <div class="flex items-center gap-2">
-            <label class="text-xs font-semibold text-slate-600">Filtrar Fecha:</label>
-            <input type="date" id="filterCalendarDate" onchange="filterSchedules()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-blue-500">
+            <input type="date" id="filterDateView" onchange="loadScheduleList()" class="border border-slate-300 rounded-lg p-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500">
             <button onclick="clearDateFilter()" class="text-xs text-slate-500 hover:text-slate-800 underline">Todos</button>
           </div>
         </div>
@@ -106,17 +128,16 @@
           <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Fecha</th>
-                <th class="p-3">Horario</th>
+                <th class="p-3">Fecha y Horario</th>
                 <th class="p-3">Alumno</th>
-                <th class="p-3">Profesor Asignado</th>
+                <th class="p-3">Profesor</th>
                 <th class="p-3">Curso</th>
                 <th class="p-3 text-center">Acción</th>
               </tr>
             </thead>
             <tbody id="schedulesTableBody">
               <tr>
-                <td colspan="6" class="p-4 text-center text-slate-400">Cargando asignaciones...</td>
+                <td colspan="5" class="p-4 text-center text-slate-400">Cargando asignaciones...</td>
               </tr>
             </tbody>
           </table>
@@ -125,255 +146,164 @@
       </div>
 
     </div>
+
   </main>
-
-  <!-- MODAL POPUP: REGISTRAR NUEVO ALUMNO -->
-  <div id="studentModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-bold text-slate-800">Registrar Nuevo Alumno</h3>
-        <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
-      </div>
-
-      <div id="modalAlert" class="hidden mb-4 p-2.5 rounded-lg text-xs"></div>
-
-      <form id="newStudentForm" class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre(s) *</label>
-          <input 
-            type="text" 
-            id="modalFirstName" 
-            placeholder="Ej: Sofia" 
-            required 
-            pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
-            title="Solo letras y espacios" 
-            class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-          >
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Apellidos *</label>
-          <input 
-            type="text" 
-            id="modalLastName" 
-            placeholder="Ej: Rodríguez Vargas" 
-            required 
-            pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
-            title="Solo letras y espacios" 
-            class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-          >
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Celular / Teléfono *</label>
-          <input 
-            type="tel" 
-            id="modalPhone" 
-            placeholder="Ej: 8888-8888" 
-            required 
-            class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-          >
-        </div>
-
-        <div class="flex justify-end space-x-2 pt-3">
-          <button type="button" onclick="closeStudentModal()" class="px-4 py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 transition">
-            Cancelar
-          </button>
-          <button type="submit" id="btnSaveStudent" class="px-4 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition">
-            Guardar Alumno
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    let allStudents = [];
     let allSchedules = [];
 
-    const alertMsg = document.getElementById('alertMsg');
-    const form = document.getElementById('assignStudentForm');
-    const btnSubmit = document.getElementById('btnSubmit');
-
     function showAlert(text, type = 'error') {
-      alertMsg.textContent = text;
-      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
-      alertMsg.classList.remove('hidden');
+      const alertBox = document.getElementById('alertMsg');
+      alertBox.textContent = text;
+      alertBox.className = `p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      alertBox.classList.remove('hidden');
+      setTimeout(() => alertBox.classList.add('hidden'), 4000);
     }
 
-    async function checkRole() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) {
-        window.location.href = 'index.html';
-        return;
-      }
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
-        alert('Acceso permitido solo para Administrador o Recepción.');
-        window.location.href = 'dashboard.html';
-      }
-    }
-
-    async function loadSelectOptions(preselectedStudentId = null) {
-      // 1. Cargar Alumnos
-      const { data: students } = await supabaseClient
-        .from('students')
+    async function loadTeachers() {
+      const select = document.getElementById('selectTeacher');
+      const { data, error } = await supabaseClient
+        .from('teachers')
         .select('id, full_name')
         .order('full_name');
 
-      const selectStudent = document.getElementById('selectStudent');
-      if (students && students.length > 0) {
-        selectStudent.innerHTML = '<option value="" disabled selected>Selecciona un alumno...</option>' +
-          students.map(s => `<option value="${s.id}">${s.full_name}</option>`).join('');
-        if (preselectedStudentId) {
-          selectStudent.value = preselectedStudentId;
-        }
-      } else {
-        selectStudent.innerHTML = '<option value="" disabled selected>No hay alumnos registrados (usa + Nuevo Alumno)</option>';
+      if (error || !data || data.length === 0) {
+        select.innerHTML = '<option value="" disabled selected>No hay profesores registrados</option>';
+        return;
       }
 
-      // 2. Cargar Profesores
-      const selectTeacher = document.getElementById('selectTeacher');
-      const { data: teachers, error: tErr } = await supabaseClient
-        .from('teachers')
-        .select('id, full_name, specialty')
-        .order('full_name');
+      select.innerHTML = '<option value="" disabled selected>Seleccione un profesor...</option>' +
+        data.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
+    }
 
-      if (!tErr && teachers && teachers.length > 0) {
-        selectTeacher.innerHTML = '<option value="" disabled selected>Selecciona un profesor...</option>' +
-          teachers.map(t => `<option value="${t.id}">${t.full_name} (${t.specialty || 'General'})</option>`).join('');
-      } else {
-        selectTeacher.innerHTML = '<option value="" disabled>No se encontraron profesores</option>';
-      }
-
-      // 3. Cargar Cursos
-      const selectCourse = document.getElementById('selectCourse');
-      const { data: courses } = await supabaseClient
+    async function loadCourses() {
+      const select = document.getElementById('selectCourse');
+      const { data, error } = await supabaseClient
         .from('courses')
         .select('id, name')
         .order('name');
 
-      if (courses && courses.length > 0) {
-        selectCourse.innerHTML = '<option value="" disabled selected>Selecciona un curso...</option>' +
-          courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      } else {
-        selectCourse.innerHTML = '<option value="" disabled>No hay cursos disponibles</option>';
+      if (error || !data || data.length === 0) {
+        select.innerHTML = '<option value="" disabled selected>No hay cursos disponibles</option>';
+        return;
       }
 
-      if (!document.getElementById('assignDate').value) {
-        document.getElementById('assignDate').value = new Date().toISOString().split('T')[0];
-      }
+      select.innerHTML = data.map((c, idx) => `<option value="${c.id}" ${idx === 0 ? 'selected' : ''}>${c.name}</option>`).join('');
     }
 
-    // CONTROL DEL POPUP DE NUEVO ALUMNO
-    function openStudentModal() {
-      document.getElementById('newStudentForm').reset();
-      const modalAlert = document.getElementById('modalAlert');
-      modalAlert.classList.add('hidden');
-      modalAlert.textContent = '';
-      document.getElementById('studentModal').classList.remove('hidden');
-      document.getElementById('modalFirstName').focus();
-    }
-
-    function closeStudentModal() {
-      document.getElementById('studentModal').classList.add('hidden');
-    }
-
-    document.getElementById('newStudentForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const firstName = document.getElementById('modalFirstName').value.trim();
-      const lastName = document.getElementById('modalLastName').value.trim();
-      const phone = document.getElementById('modalPhone').value.trim();
-      const modalAlert = document.getElementById('modalAlert');
-      const btn = document.getElementById('btnSaveStudent');
-
-      modalAlert.classList.add('hidden');
-      btn.disabled = true;
-      btn.textContent = 'Guardando...';
-
-      try {
-        const { data, error } = await supabaseClient.rpc('create_student_quick', {
-          p_first_name: firstName,
-          p_last_name: lastName,
-          p_phone: phone
-        });
-
-        if (error) throw error;
-
-        // Actualizar select en tiempo real y auto-seleccionar el recién creado
-        await loadSelectOptions(data.id);
-        closeStudentModal();
-        showAlert(`Alumno "${data.full_name}" registrado y seleccionado con éxito.`, 'success');
-      } catch (err) {
-        modalAlert.textContent = err.message || 'Error al guardar alumno.';
-        modalAlert.className = 'mb-4 p-2.5 rounded-lg text-xs bg-red-50 text-red-700 border border-red-200 block';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Guardar Alumno';
-      }
-    });
-
-    async function loadSchedules() {
-      const tableBody = document.getElementById('schedulesTableBody');
+    async function loadStudentsCheckboxes() {
+      const container = document.getElementById('studentsCheckboxList');
       const { data, error } = await supabaseClient
+        .from('students')
+        .select('id, full_name, phone')
+        .order('full_name');
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 p-2 text-center">No hay alumnos registrados.</p>';
+        return;
+      }
+
+      allStudents = data;
+      renderStudentsList(allStudents);
+    }
+
+    function renderStudentsList(list) {
+      const container = document.getElementById('studentsCheckboxList');
+      if (list.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 p-2 text-center">No coincide ningún alumno.</p>';
+        return;
+      }
+
+      container.innerHTML = list.map(s => `
+        <label class="flex items-center space-x-2.5 p-1.5 hover:bg-white rounded cursor-pointer transition border border-transparent hover:border-slate-200">
+          <input 
+            type="checkbox" 
+            value="${s.id}" 
+            onchange="updateSelectedCount()" 
+            class="student-checkbox w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+          >
+          <span class="text-xs font-semibold text-slate-800">${s.full_name}</span>
+          ${s.phone ? `<span class="text-[11px] text-slate-400 font-normal">(${s.phone})</span>` : ''}
+        </label>
+      `).join('');
+      updateSelectedCount();
+    }
+
+    function filterStudentList() {
+      const query = document.getElementById('searchStudentInput').value.toLowerCase().trim();
+      const filtered = allStudents.filter(s => s.full_name.toLowerCase().includes(query) || (s.phone && s.phone.includes(query)));
+      renderStudentsList(filtered);
+    }
+
+    function toggleSelectAll(select) {
+      const checkboxes = document.querySelectorAll('.student-checkbox');
+      checkboxes.forEach(cb => cb.checked = select);
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.student-checkbox:checked').length;
+      document.getElementById('selectedCountBadge').textContent = `${checked} seleccionado(s)`;
+    }
+
+    async function loadScheduleList() {
+      const tbody = document.getElementById('schedulesTableBody');
+      const filterDate = document.getElementById('filterDateView').value;
+
+      let query = supabaseClient
         .from('student_schedules')
         .select(`
           id,
           assigned_date,
           time_slot,
-          notes,
-          students (id, full_name),
-          teachers (id, full_name),
-          courses (id, name)
+          students (full_name),
+          teachers (full_name),
+          courses (name)
         `)
         .order('assigned_date', { ascending: false });
 
+      if (filterDate) {
+        query = query.eq('assigned_date', filterDate);
+      }
+
+      const { data, error } = await query;
+
       if (error) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar datos.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Error al cargar horarios: ${error.message}</td></tr>`;
         return;
       }
 
       allSchedules = data || [];
-      renderSchedulesTable(allSchedules);
-    }
 
-    function renderSchedulesTable(schedules) {
-      const tableBody = document.getElementById('schedulesTableBody');
-      if (schedules.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay horarios registrados para esta fecha.</td></tr>`;
+      if (allSchedules.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">No hay asignaciones para esta fecha.</td></tr>`;
         return;
       }
 
-      tableBody.innerHTML = schedules.map(s => {
-        const [year, month, day] = s.assigned_date.split('-');
-        const dateFormatted = `${day}/${month}/${year}`;
+      tbody.innerHTML = allSchedules.map(item => {
+        let dateFormatted = item.assigned_date;
+        if (item.assigned_date && item.assigned_date.includes('-')) {
+          const [y, m, d] = item.assigned_date.split('-');
+          dateFormatted = `${d}/${m}/${y}`;
+        }
 
         return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="p-3 font-semibold text-slate-700 whitespace-nowrap">${dateFormatted}</td>
-            <td class="p-3">
-              <span class="px-2.5 py-1 rounded text-xs font-semibold ${
-                s.time_slot.includes('10:00') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-                s.time_slot.includes('2:00') ? 'bg-blue-50 text-blue-800 border border-blue-200' :
-                'bg-indigo-50 text-indigo-800 border border-indigo-200'
-              }">
-                ${s.time_slot}
-              </span>
+          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+            <td class="p-3 text-xs">
+              <span class="font-bold text-slate-700">${dateFormatted}</span><br>
+              <span class="text-indigo-600 font-semibold text-[11px]">${item.time_slot}</span>
             </td>
-            <td class="p-3 font-bold text-slate-800">${s.students?.full_name || 'Sin nombre'}</td>
-            <td class="p-3 text-slate-700 font-medium">${s.teachers?.full_name || 'Desconocido'}</td>
-            <td class="p-3 text-slate-600 text-xs">${s.courses?.name || '-'}</td>
-            <td class="p-3 text-center">
-              <button onclick="removeSchedule('${s.id}')" class="text-xs text-red-600 hover:text-red-800 font-semibold hover:underline">
-                Eliminar
+            <td class="p-3 font-bold text-slate-800">${item.students?.full_name || 'Alumno sin nombre'}</td>
+            <td class="p-3 text-xs font-semibold text-slate-700">${item.teachers?.full_name || 'Sin profesor'}</td>
+            <td class="p-3 text-xs text-slate-600">${item.courses?.name || 'General'}</td>
+            <td class="p-3 text-center whitespace-nowrap">
+              <button onclick="deleteScheduleItem('${item.id}')" class="text-xs text-red-600 hover:underline font-semibold">
+                Quitar
               </button>
             </td>
           </tr>
@@ -381,75 +311,79 @@
       }).join('');
     }
 
-    function filterSchedules() {
-      const dateVal = document.getElementById('filterCalendarDate').value;
-      if (!dateVal) {
-        renderSchedulesTable(allSchedules);
-        return;
-      }
-      const filtered = allSchedules.filter(s => s.assigned_date === dateVal);
-      renderSchedulesTable(filtered);
-    }
-
     function clearDateFilter() {
-      document.getElementById('filterCalendarDate').value = '';
-      renderSchedulesTable(allSchedules);
+      document.getElementById('filterDateView').value = '';
+      loadScheduleList();
     }
 
-    form.addEventListener('submit', async (e) => {
+    async function deleteScheduleItem(id) {
+      if (!confirm('¿Deseas desasignar este alumno de este horario?')) return;
+      const { error } = await supabaseClient
+        .from('student_schedules')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Error al quitar horario: ' + error.message);
+      } else {
+        loadScheduleList();
+      }
+    }
+
+    // FORMULARIO: ASIGNAR UNO O MÚLTIPLES ALUMNOS
+    document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      alertMsg.classList.add('hidden');
 
-      const student_id = document.getElementById('selectStudent').value;
-      const teacher_id = document.getElementById('selectTeacher').value;
-      const course_id = document.getElementById('selectCourse').value;
-      const assigned_date = document.getElementById('assignDate').value;
-      const time_slot = document.getElementById('selectSlot').value;
-      const notes = document.getElementById('assignNotes').value.trim();
+      const teacherId = document.getElementById('selectTeacher').value;
+      const courseId = document.getElementById('selectCourse').value;
+      const assignedDate = document.getElementById('inputAssignedDate').value;
+      const timeSlot = document.getElementById('selectTimeSlot').value;
 
-      if (!student_id || !teacher_id || !course_id || !assigned_date || !time_slot) {
-        showAlert('Por favor completa todos los campos requeridos.');
+      const checkedBoxes = document.querySelectorAll('.student-checkbox:checked');
+      const studentIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+      if (!teacherId || !courseId || !assignedDate || !timeSlot) {
+        showAlert('Por favor completa todos los campos de configuración.');
         return;
       }
 
+      if (studentIds.length === 0) {
+        showAlert('Debes marcar al menos un alumno de la lista.');
+        return;
+      }
+
+      const btnSubmit = document.getElementById('btnSubmitAssign');
       btnSubmit.disabled = true;
-      btnSubmit.textContent = 'Guardando...';
+      btnSubmit.textContent = `Asignando ${studentIds.length} alumno(s)...`;
 
       try {
-        const { error } = await supabaseClient.rpc('assign_student_schedule', {
-          p_student_id: student_id,
-          p_teacher_id: teacher_id,
-          p_course_id: course_id,
-          p_assigned_date: assigned_date,
-          p_time_slot: time_slot,
-          p_notes: notes || null
+        const { data, error } = await supabaseClient.rpc('assign_multiple_students_schedule', {
+          p_student_ids: studentIds,
+          p_teacher_id: teacherId,
+          p_course_id: courseId,
+          p_assigned_date: assignedDate,
+          p_time_slot: timeSlot
         });
 
         if (error) throw error;
 
-        showAlert('¡Horario asignado al alumno exitosamente!', 'success');
-        document.getElementById('assignNotes').value = '';
-        loadSchedules();
+        showAlert(`¡Éxito! Se asignaron ${studentIds.length} alumno(s) al profesor en tiempo real.`, 'success');
+
+        // Desmarcar lista
+        toggleSelectAll(false);
+        document.getElementById('searchStudentInput').value = '';
+        renderStudentsList(allStudents);
+
+        // Recargar tabla de la derecha
+        await loadScheduleList();
+
       } catch (err) {
-        showAlert(err.message || 'Error al guardar horario.');
+        showAlert(err.message || 'Error al procesar la asignación.');
       } finally {
         btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Guardar Asignación';
+        btnSubmit.textContent = 'Asignar Alumnos Seleccionados';
       }
     });
-
-    async function removeSchedule(scheduleId) {
-      if (!confirm('¿Deseas eliminar este horario asignado al alumno?')) return;
-      try {
-        const { error } = await supabaseClient.rpc('delete_student_schedule', {
-          p_schedule_id: scheduleId
-        });
-        if (error) throw error;
-        loadSchedules();
-      } catch (err) {
-        alert('Error al eliminar: ' + err.message);
-      }
-    }
 
     document.getElementById('btnLogout').addEventListener('click', async () => {
       await supabaseClient.auth.signOut();
@@ -457,9 +391,15 @@
       window.location.href = 'index.html';
     });
 
-    checkRole().then(() => {
-      loadSelectOptions();
-      loadSchedules();
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('inputAssignedDate').value = today;
+      document.getElementById('filterDateView').value = today;
+
+      loadTeachers();
+      loadCourses();
+      loadStudentsCheckboxes();
+      loadScheduleList();
     });
   </script>
 </body>
