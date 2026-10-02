@@ -3,192 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equipo Docente y Recepción - Academi</title>
+  <title>Gestión de Personal y Cuentas - Academi Elohim</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
-  <!-- Barra Superior -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+  <!-- ENCABEZADO -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
-        <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-600">Personal (Profesores y Recepción)</span>
+        <a href="dashboard.html" class="text-sm font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <span class="text-slate-300">|</span>
+        <span class="text-sm font-bold text-slate-800">Docentes y Personal</span>
       </div>
-      <div>
-        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
-          Cerrar Sesión
-        </button>
+      <div class="flex items-center space-x-3">
+        <span id="userInfo" class="text-xs font-semibold text-slate-600">Verificando...</span>
+        <button onclick="handleLogout()" class="text-xs text-red-600 border border-red-200 hover:bg-red-50 px-2.5 py-1.5 rounded-lg font-bold">Salir</button>
       </div>
     </div>
   </header>
 
-  <!-- Contenido -->
-  <main class="max-w-7xl mx-auto px-4 py-6">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- CONTENIDO PRINCIPAL -->
+  <main id="mainContainer" class="hidden max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-      <!-- Formulario para Registrar Personal -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Registrar Personal</h2>
-
-        <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
-
-        <form id="createStaffForm" class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Cargo</label>
-            <select id="staffRole" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-              <option value="profesor" selected>Profesor</option>
-              <option value="recepcion">Recepción</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo (solo letras)</label>
-            <input 
-              type="text" 
-              id="staffName" 
-              placeholder="Ej: Carlos Morales" 
-              required 
-              pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" 
-              title="Solo letras y espacios" 
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-          </div>
-
-          <div id="fieldSpecialty">
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Especialidad / Materia</label>
-            <select id="staffSpecialty" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-              <option value="" disabled selected>Selecciona especialidad...</option>
-              <option value="Barberia y Estilismo">Barbería y Estilismo</option>
-              <option value="Manicurismo">Manicurismo</option>
-              <option value="Trenzado">Trenzado</option>
-              <option value="Maquillaje">Maquillaje</option>
-              <option value="Estilismo">Estilismo</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Teléfono</label>
-            <input type="tel" id="staffPhone" placeholder="Ej: 8888-8888" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-          </div>
-
-          <div class="border-t border-slate-200 pt-3">
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre de Usuario (Login)</label>
-            <input 
-              type="text" 
-              id="staffUsername" 
-              placeholder="Ej: carlos" 
-              required 
-              pattern="^[a-zA-Z0-9._-]+$"
-              title="Sin espacios"
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Contraseña Inicial</label>
-            <input 
-              type="password" 
-              id="staffPassword" 
-              placeholder="••••••••" 
-              required 
-              minlength="6"
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-          </div>
-
-          <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">
-            Guardar y Registrar
-          </button>
-        </form>
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h2 class="text-lg font-black text-slate-800">Gestión de Docentes y Accesos</h2>
+        <p class="text-xs text-slate-500">Crea o administra cuentas. El correo registrado se utilizará si la persona olvida su contraseña.</p>
       </div>
-
-      <!-- Tabla de Personal -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-bold text-slate-800">Equipo Registrado</h2>
-          <button onclick="loadStaff()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-300">
-            Actualizar Estados
-          </button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
-                <th class="p-3">Estado</th>
-                <th class="p-3">Nombre</th>
-                <th class="p-3">Cargo</th>
-                <th class="p-3">Especialidad</th>
-                <th class="p-3">Usuario</th>
-                <th class="p-3 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="staffTableBody">
-              <tr>
-                <td colspan="6" class="p-4 text-center text-slate-400">Cargando datos...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+      <button onclick="openModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow-sm">
+        ➕ Agregar Nuevo Usuario / Docente
+      </button>
     </div>
+
+    <!-- TABLA DE USUARIOS -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase">
+              <th class="p-3.5">Nombre Completo</th>
+              <th class="p-3.5">Usuario de Ingreso</th>
+              <th class="p-3.5">Correo para Recuperación</th>
+              <th class="p-3.5">Rol</th>
+              <th class="p-3.5">Teléfono</th>
+              <th class="p-3.5 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody" class="divide-y divide-slate-100">
+            <tr><td colspan="6" class="p-6 text-center text-slate-400">Cargando personal...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
 
-  <!-- Modal para Editar Datos Personales -->
-  <div id="editModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-      <h3 class="text-base font-bold text-slate-800 mb-4">Editar Datos Personales</h3>
-      <input type="hidden" id="editUserId">
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre Completo</label>
-          <input type="text" id="editName" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
-        </div>
-        <div id="editSpecialtyDiv">
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Especialidad</label>
-          <select id="editSpecialty" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-1 focus:ring-blue-500">
-            <option value="Barberia y Estilismo">Barbería y Estilismo</option>
-            <option value="Manicurismo">Manicurismo</option>
-            <option value="Trenzado">Trenzado</option>
-            <option value="Maquillaje">Maquillaje</option>
-            <option value="Estilismo">Estilismo</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Teléfono</label>
-          <input type="tel" id="editPhone" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
-        </div>
-      </div>
-      <div class="flex justify-end space-x-2 mt-5">
-        <button onclick="closeModal()" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Cancelar</button>
-        <button id="btnSaveEdit" onclick="saveEdit()" class="px-4 py-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium">Guardar Cambios</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para Cambiar Contraseña -->
-  <div id="passwordModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-      <h3 class="text-base font-bold text-slate-800 mb-1">Cambiar Contraseña</h3>
-      <p id="passwordTargetUser" class="text-xs text-slate-500 mb-4">Usuario: -</p>
-      
-      <input type="hidden" id="passwordUserId">
-      <div id="passwordAlert" class="hidden mb-3 p-2 rounded text-xs"></div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Nueva Contraseña</label>
-          <input type="password" id="newPasswordInput" placeholder="Mínimo 6 caracteres" minlength="6" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-1 focus:ring-blue-500">
-        </div>
+  <!-- MODAL: REGISTRAR NUEVO USUARIO -->
+  <div id="userModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-800">Registrar Cuenta de Personal</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
       </div>
 
-      <div class="flex justify-end space-x-2 mt-5">
-        <button onclick="closePasswordModal()" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Cancelar</button>
-        <button id="btnSavePassword" onclick="saveNewPassword()" class="px-4 py-1.5 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium">Actualizar Contraseña</button>
-      </div>
+      <div id="modalAlert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+      <form id="newUserForm" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nombre Completo *</label>
+          <input type="text" id="inputFullName" required placeholder="Ej: Pedro Castro Valerio" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Usuario de Ingreso *</label>
+          <input type="text" id="inputUsername" required placeholder="Ej: pcastro" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+          <p class="text-[10px] text-slate-400 mt-0.5">Podrá usar este usuario o su correo para iniciar sesión.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Correo Electrónico Real *</label>
+          <input type="email" id="inputEmail" required placeholder="ejemplo@correo.com" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+          <p class="text-[10px] text-amber-700 font-semibold mt-0.5">⚠️ Esencial: aquí recibirá el enlace si olvida su clave.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Rol en el Sistema *</label>
+            <select id="inputRole" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              <option value="profesor">Profesor</option>
+              <option value="recepcion">Recepción</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Teléfono (WhatsApp)</label>
+            <input type="text" id="inputPhone" placeholder="88888888" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contraseña Inicial *</label>
+          <input type="password" id="inputPassword" minlength="6" required placeholder="Mínimo 6 caracteres" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-50">Cancelar</button>
+          <button type="submit" id="btnSaveUser" class="px-5 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm">Crear Cuenta</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -197,269 +121,188 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let staffList = [];
+    let currentRole = null;
+    let usersList = [];
 
-    document.getElementById('staffRole').addEventListener('change', (e) => {
-      const field = document.getElementById('fieldSpecialty');
-      if (e.target.value === 'recepcion') {
-        field.classList.add('hidden');
-      } else {
-        field.classList.remove('hidden');
-      }
-    });
+    function openModal() {
+      document.getElementById('newUserForm').reset();
+      document.getElementById('modalAlert').classList.add('hidden');
+      document.getElementById('userModal').classList.remove('hidden');
+    }
 
-    async function checkAdmin() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) {
-        window.location.href = 'index.html';
-        return;
-      }
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
+    function closeModal() {
+      document.getElementById('userModal').classList.add('hidden');
+    }
 
-      if (!profile || profile.role !== 'admin') {
-        alert('Solo administradores.');
-        window.location.href = 'dashboard.html';
+    function showModalAlert(msg, isError = true) {
+      const box = document.getElementById('modalAlert');
+      box.textContent = msg;
+      box.className = `p-3 rounded-xl text-xs font-semibold ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      box.classList.remove('hidden');
+    }
+
+    async function loadUsers() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .order('full_name');
+
+        if (error) throw error;
+        usersList = data || [];
+        renderUsers();
+      } catch (err) {
+        document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
       }
     }
 
-    function isOnline(lastSeen) {
-      if (!lastSeen) return false;
-      const diffMinutes = (new Date() - new Date(lastSeen)) / (1000 * 60);
-      return diffMinutes <= 3;
-    }
-
-    async function loadStaff() {
-      const tableBody = document.getElementById('staffTableBody');
-      const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('id, full_name, role, username, last_seen, teachers(specialty, phone)')
-        .in('role', ['profesor', 'recepcion'])
-        .order('full_name');
-
-      if (error) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Error al cargar datos.</td></tr>`;
+    function renderUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      if (usersList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No hay usuarios registrados.</td></tr>`;
         return;
       }
 
-      staffList = data || [];
-
-      if (staffList.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No hay personal registrado aún.</td></tr>`;
-        return;
-      }
-
-      tableBody.innerHTML = staffList.map(u => {
-        const online = isOnline(u.last_seen);
-        const specialty = u.teachers?.[0]?.specialty || (u.role === 'recepcion' ? 'Atención al Cliente' : '-');
-        const phone = u.teachers?.[0]?.phone || '-';
+      tbody.innerHTML = usersList.map(u => {
+        const roleBadge = u.role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                          u.role === 'recepcion' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
+                          'bg-blue-100 text-blue-800 border-blue-200';
 
         return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="p-3">
-              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${online ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
-                <span class="w-1.5 h-1.5 rounded-full ${online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
-                ${online ? 'Online' : 'Offline'}
+          <tr class="hover:bg-slate-50 border-b border-slate-100">
+            <td class="p-3.5 font-bold text-slate-900">${u.full_name || 'Sin nombre'}</td>
+            <td class="p-3.5 font-mono text-slate-700">${u.username || '-'}</td>
+            <td class="p-3.5 text-blue-700 font-semibold">${u.email || '<span class="text-rose-500">Sin correo</span>'}</td>
+            <td class="p-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${roleBadge} capitalize">
+                ${u.role}
               </span>
             </td>
-            <td class="p-3 font-medium text-slate-800">${u.full_name}</td>
-            <td class="p-3 capitalize font-semibold text-xs text-slate-600">${u.role}</td>
-            <td class="p-3 text-slate-600 text-xs">${specialty}</td>
-            <td class="p-3 font-mono text-xs text-blue-600 bg-blue-50 w-fit rounded px-2 py-0.5">${u.username || '-'}</td>
-            <td class="p-3 text-center space-x-2">
-              <button onclick="openEditModal('${u.id}')" class="text-xs text-blue-600 hover:underline font-semibold">Editar</button>
-              <span class="text-slate-300">|</span>
-              <button onclick="openPasswordModal('${u.id}')" class="text-xs text-amber-600 hover:underline font-semibold">Clave</button>
-              <span class="text-slate-300">|</span>
-              <button onclick="deleteStaffMember('${u.id}', '${u.full_name}')" class="text-xs text-red-600 hover:underline font-semibold">Eliminar</button>
+            <td class="p-3.5 text-slate-600">${u.phone || '-'}</td>
+            <td class="p-3.5 text-center">
+              <button onclick="deleteUserProfile('${u.id}')" class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-lg text-xs font-bold hover:bg-red-100 transition">
+                🗑️
+              </button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    // Modal de edición
-    function openEditModal(userId) {
-      const user = staffList.find(s => s.id === userId);
-      if (!user) return;
-
-      document.getElementById('editUserId').value = user.id;
-      document.getElementById('editName').value = user.full_name;
-      document.getElementById('editPhone').value = user.teachers?.[0]?.phone || '';
-      
-      const specDiv = document.getElementById('editSpecialtyDiv');
-      if (user.role === 'recepcion') {
-        specDiv.classList.add('hidden');
-      } else {
-        specDiv.classList.remove('hidden');
-        document.getElementById('editSpecialty').value = user.teachers?.[0]?.specialty || 'Barberia y Estilismo';
-      }
-
-      document.getElementById('editModal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('editModal').classList.add('hidden');
-    }
-
-    async function saveEdit() {
-      const id = document.getElementById('editUserId').value;
-      const name = document.getElementById('editName').value.trim();
-      const phone = document.getElementById('editPhone').value.trim();
-      const specialty = document.getElementById('editSpecialty').value;
-      const btn = document.getElementById('btnSaveEdit');
-
+    // REGISTRAR NUEVO USUARIO
+    document.getElementById('newUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSaveUser');
       btn.disabled = true;
-      btn.textContent = 'Guardando...';
+      btn.textContent = 'Creando cuenta...';
+
+      const fullName = document.getElementById('inputFullName').value.trim();
+      const username = document.getElementById('inputUsername').value.trim().toLowerCase();
+      const email = document.getElementById('inputEmail').value.trim().toLowerCase();
+      const role = document.getElementById('inputRole').value;
+      const phone = document.getElementById('inputPhone').value.trim();
+      const password = document.getElementById('inputPassword').value;
 
       try {
-        const { error } = await supabaseClient.rpc('admin_update_staff', {
-          p_user_id: id,
-          p_full_name: name,
-          p_specialty: specialty,
-          p_phone: phone
+        // 1. Crear el usuario en auth.users a través de Supabase SignUp
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              full_name: fullName,
+              role: role,
+              username: username
+            }
+          }
         });
 
-        if (error) throw error;
-        closeModal();
-        loadStaff();
+        if (authError) throw authError;
+
+        const newUserId = authData.user?.id;
+        if (!newUserId) throw new Error('No se pudo generar el ID de usuario.');
+
+        // 2. Guardar / actualizar en la tabla profiles
+        const { error: profileError } = await supabaseClient
+          .from('profiles')
+          .upsert({
+            id: newUserId,
+            full_name: fullName,
+            username: username,
+            email: email,
+            role: role,
+            phone: phone
+          });
+
+        if (profileError) throw profileError;
+
+        // 3. Si es profesor, registrar también en la tabla teachers
+        if (role === 'profesor') {
+          await supabaseClient.from('teachers').insert({
+            profile_id: newUserId,
+            full_name: fullName,
+            phone: phone
+          });
+        }
+
+        showModalAlert('¡Usuario creado con éxito!', false);
+        setTimeout(() => {
+          closeModal();
+          loadUsers();
+        }, 1200);
+
       } catch (err) {
-        alert('Error al guardar: ' + err.message);
+        showModalAlert(err.message || 'Error al crear usuario.');
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Guardar Cambios';
+        btn.textContent = 'Crear Cuenta';
+      }
+    });
+
+    async function deleteUserProfile(userId) {
+      if (!confirm('¿Deseas eliminar este usuario? Perderá el acceso de inmediato.')) return;
+      try {
+        const { error } = await supabaseClient.from('profiles').delete().eq('id', userId);
+        if (error) throw error;
+        await loadUsers();
+      } catch (err) {
+        alert('Error: ' + err.message);
       }
     }
 
-    // Modal contraseña
-    function openPasswordModal(userId) {
-      const user = staffList.find(s => s.id === userId);
-      if (!user) return;
-
-      document.getElementById('passwordUserId').value = user.id;
-      document.getElementById('passwordTargetUser').textContent = `Usuario: ${user.full_name} (@${user.username})`;
-      document.getElementById('newPasswordInput').value = '';
-      
-      const alertBox = document.getElementById('passwordAlert');
-      alertBox.className = 'hidden';
-      alertBox.textContent = '';
-
-      document.getElementById('passwordModal').classList.remove('hidden');
-    }
-
-    function closePasswordModal() {
-      document.getElementById('passwordModal').classList.add('hidden');
-    }
-
-    async function saveNewPassword() {
-      const userId = document.getElementById('passwordUserId').value;
-      const newPassword = document.getElementById('newPasswordInput').value;
-      const alertBox = document.getElementById('passwordAlert');
-      const btn = document.getElementById('btnSavePassword');
-
-      if (!newPassword || newPassword.length < 6) {
-        alertBox.textContent = 'La contraseña debe tener mínimo 6 caracteres.';
-        alertBox.className = 'mb-3 p-2 rounded text-xs bg-red-50 text-red-700 border border-red-200 block';
+    async function init() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = 'index.html';
         return;
       }
 
-      btn.disabled = true;
-      btn.textContent = 'Cambiando...';
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', session.user.id)
+        .single();
 
-      try {
-        const { error } = await supabaseClient.rpc('admin_change_user_password', {
-          p_user_id: userId,
-          p_new_password: newPassword
-        });
-
-        if (error) throw error;
-
-        alert('¡Contraseña actualizada con éxito!');
-        closePasswordModal();
-      } catch (err) {
-        alertBox.textContent = err.message || 'Error al cambiar contraseña.';
-        alertBox.className = 'mb-3 p-2 rounded text-xs bg-red-50 text-red-700 border border-red-200 block';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Actualizar Contraseña';
+      if (!profile || (profile.role !== 'admin' && profile.role !== 'recepcion')) {
+        alert('Acceso restringido: Solo Administrador y Recepción pueden gestionar usuarios.');
+        window.location.href = 'dashboard.html';
+        return;
       }
+
+      currentRole = profile.role;
+      document.getElementById('userInfo').textContent = `${profile.full_name || 'Usuario'} (${profile.role.toUpperCase()})`;
+      document.getElementById('mainContainer').classList.remove('hidden');
+
+      await loadUsers();
     }
 
-    // Eliminar personal
-    async function deleteStaffMember(userId, fullName) {
-      const confirmed = confirm(`¿Estás seguro de que deseas eliminar permanentemente a "${fullName}"?\nEsta acción no se puede deshacer.`);
-      if (!confirmed) return;
-
-      try {
-        const { error } = await supabaseClient.rpc('admin_delete_staff', {
-          p_user_id: userId
-        });
-
-        if (error) throw error;
-
-        alert(`El usuario "${fullName}" ha sido eliminado exitosamente.`);
-        loadStaff();
-      } catch (err) {
-        alert('Error al eliminar: ' + (err.message || 'No se pudo completar la operación.'));
-      }
-    }
-
-    // Crear personal
-    document.getElementById('createStaffForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const alertMsg = document.getElementById('alertMsg');
-      alertMsg.classList.add('hidden');
-
-      const role = document.getElementById('staffRole').value;
-      const full_name = document.getElementById('staffName').value.trim();
-      const specialty = document.getElementById('staffSpecialty').value;
-      const phone = document.getElementById('staffPhone').value.trim();
-      const username = document.getElementById('staffUsername').value.trim().toLowerCase();
-      const password = document.getElementById('staffPassword').value;
-
-      const btn = document.getElementById('btnSubmit');
-      btn.disabled = true;
-      btn.textContent = 'Guardando...';
-
-      try {
-        const { error } = await supabaseClient.rpc('admin_create_staff', {
-          p_full_name: full_name,
-          p_role: role,
-          p_username: username,
-          p_password: password,
-          p_specialty: role === 'profesor' ? specialty : null,
-          p_phone: phone
-        });
-
-        if (error) throw error;
-
-        alertMsg.textContent = '¡Personal registrado con éxito!';
-        alertMsg.className = 'mb-4 p-3 rounded-lg text-sm bg-emerald-50 text-emerald-700 border border-emerald-200';
-        alertMsg.classList.remove('hidden');
-
-        document.getElementById('createStaffForm').reset();
-        loadStaff();
-      } catch (err) {
-        alertMsg.textContent = err.message || 'Error al registrar.';
-        alertMsg.className = 'mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-700 border border-red-200';
-        alertMsg.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Guardar y Registrar';
-      }
-    });
-
-    // Cerrar sesión
-    document.getElementById('btnLogout').addEventListener('click', async () => {
+    async function handleLogout() {
       await supabaseClient.auth.signOut();
       sessionStorage.clear();
       window.location.href = 'index.html';
-    });
+    }
 
-    checkAdmin().then(loadStaff);
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
