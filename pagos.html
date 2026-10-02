@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Generador de imágenes de recibos -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
@@ -35,14 +37,14 @@
     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         <h2 class="text-lg font-black text-slate-800">Reportes Financieros y Control de Pagos</h2>
-        <p class="text-xs text-slate-500">Descarga los ingresos en Excel o revisa las alertas de estudiantes.</p>
+        <p class="text-xs text-slate-500">Descarga los ingresos en Excel o genera y consulta los recibos oficiales.</p>
       </div>
       <div class="flex flex-wrap gap-2 w-full sm:w-auto">
         <button onclick="exportPaymentsToExcel()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs">
           📊 Descargar Ingresos (Excel)
         </button>
         <a href="cobros_pendientes.html" class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs">
-          🔔 Ir a Módulo de Alertas de Cobro
+          🔔 Ir a Alertas de Cobro
         </a>
       </div>
     </div>
@@ -54,13 +56,13 @@
       <div class="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
         <div>
           <h3 class="font-black text-slate-800 text-base">Registrar Cobro</h3>
-          <p class="text-xs text-slate-500">Ingresa el pago del alumno para generar su recibo.</p>
+          <p class="text-xs text-slate-500">Ingresa el pago del alumno para generar su recibo digital.</p>
         </div>
 
         <div id="paymentAlert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
 
         <form id="paymentForm" class="space-y-3.5">
-          <!-- Selector de Alumno -->
+          <!-- Alumno -->
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Alumno *</label>
             <select id="selectStudent" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white outline-none focus:ring-2 focus:ring-blue-500">
@@ -111,7 +113,7 @@
               <input type="date" id="inputPaymentDate" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <!-- CAMPO PRÓXIMO PAGO (SE OCULTA SI NO ES MENSUALIDAD) -->
+            <!-- Próximo Pago (Oculto si no es mensualidad) -->
             <div id="nextPaymentFieldWrapper">
               <label class="block text-xs font-bold text-amber-700 mb-1">🗓️ Próximo Pago *</label>
               <input type="date" id="inputNextPaymentDate" class="w-full border border-amber-300 bg-amber-50/50 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-amber-500 font-semibold">
@@ -128,7 +130,7 @@
       <div class="lg:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
         <div>
           <h3 class="font-black text-slate-800 text-base">Historial de Recibos</h3>
-          <p class="text-xs text-slate-500">Expedientes de pagos registrados y recibos emitidos.</p>
+          <p class="text-xs text-slate-500">Expedientes de pagos registrados. Haz clic en "Ver Recibo" para abrirlo como imagen.</p>
         </div>
 
         <!-- Filtros del Historial -->
@@ -168,6 +170,91 @@
 
   </main>
 
+  <!-- ======================================================== -->
+  <!-- MODAL VISOR DE RECIBO DIGITAL (IMAGEN / DESCARGA)        -->
+  <!-- ======================================================== -->
+  <div id="receiptModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 z-50">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 flex flex-col space-y-4 max-h-[95vh] overflow-y-auto border border-slate-100">
+      
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h4 class="text-xs font-bold text-slate-500 uppercase">Comprobante de Pago Digital</h4>
+        <button onclick="closeReceiptModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <!-- TARJETA DEL RECIBO QUE SE CONVIERTE EN IMAGEN -->
+      <div id="receiptCard" class="bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-sm space-y-4 text-slate-800">
+        
+        <!-- Cabecera -->
+        <div class="text-center border-b border-dashed border-slate-300 pb-3">
+          <div class="w-14 h-14 mx-auto mb-2 rounded-full border border-slate-200 p-0.5 flex items-center justify-center overflow-hidden">
+            <img src="logo.png" alt="Logo" class="w-full h-full object-contain rounded-full" onerror="this.src='assets/logo.png'">
+          </div>
+          <h3 class="text-base font-black text-slate-900 leading-tight">Academia de Belleza Elohim</h3>
+          <p class="text-[10px] text-slate-500 font-medium">Comprobante Oficial de Ingreso</p>
+          <div class="inline-block bg-blue-50 text-blue-800 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full mt-2 border border-blue-200">
+            Recibo N° <span id="recReceiptNumber">0000</span>
+          </div>
+        </div>
+
+        <!-- Ficha de Datos -->
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between items-center py-1 border-b border-slate-100">
+            <span class="text-slate-500 font-semibold">Fecha de Pago:</span>
+            <span id="recDate" class="font-bold text-slate-800 font-mono">-</span>
+          </div>
+          <div class="flex justify-between items-center py-1 border-b border-slate-100">
+            <span class="text-slate-500 font-semibold">Estudiante:</span>
+            <span id="recStudent" class="font-black text-slate-900 text-right">-</span>
+          </div>
+          <div class="flex justify-between items-center py-1 border-b border-slate-100">
+            <span class="text-slate-500 font-semibold">Concepto:</span>
+            <span id="recConcept" class="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-[11px]">-</span>
+          </div>
+          <div class="flex justify-between items-center py-1 border-b border-slate-100">
+            <span class="text-slate-500 font-semibold">Método de Pago:</span>
+            <span id="recMethod" class="font-semibold text-slate-800">-</span>
+          </div>
+          <div id="recRefRow" class="flex justify-between items-center py-1 border-b border-slate-100">
+            <span class="text-slate-500 font-semibold">N° Referencia:</span>
+            <span id="recReference" class="font-mono text-slate-700">-</span>
+          </div>
+          <div id="recNextDateRow" class="flex justify-between items-center py-1 border-b border-slate-100">
+            <span class="text-amber-800 font-semibold">Próximo Vencimiento:</span>
+            <span id="recNextDate" class="font-bold font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded">-</span>
+          </div>
+        </div>
+
+        <!-- Total Pagado -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+          <p class="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Monto Total Cancelado</p>
+          <p id="recAmount" class="text-2xl font-black text-emerald-600 font-mono mt-0.5">₡0</p>
+        </div>
+
+        <p class="text-[9px] text-center text-slate-400 font-medium">
+          ¡Gracias por ser parte de Academia Elohim! Guarde este recibo para su control personal.
+        </p>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button 
+          onclick="downloadReceiptImage()" 
+          id="btnDownloadImage"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer"
+        >
+          📥 Descargar JPG
+        </button>
+        <button 
+          onclick="shareReceiptWhatsApp()" 
+          class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer"
+        >
+          💬 WhatsApp
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
@@ -175,8 +262,8 @@
 
     let rawStudents = [];
     let rawPayments = [];
+    let currentReceiptItem = null;
 
-    // CONTROL DEL CAMPO PRÓXIMO PAGO
     function handleConceptChange() {
       const concept = document.getElementById('selectConcept').value;
       const nextPayWrapper = document.getElementById('nextPaymentFieldWrapper');
@@ -189,7 +276,6 @@
         datesContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
         setDefaultNextPaymentDate();
       } else {
-        // Ocultar y quitar requerimiento para cualquier otro concepto
         nextPayWrapper.classList.add('hidden');
         nextPayInput.required = false;
         nextPayInput.value = '';
@@ -201,7 +287,7 @@
       const payDate = document.getElementById('inputPaymentDate').value;
       if (!payDate) return;
       const [y, m, d] = payDate.split('-').map(Number);
-      const nextDate = new Date(y, m, d); // Sumar 1 mes exacto
+      const nextDate = new Date(y, m, d);
       document.getElementById('inputNextPaymentDate').value = nextDate.toISOString().split('T')[0];
     }
 
@@ -225,7 +311,6 @@
     }
 
     async function loadInitialData() {
-      // 1. Cargar alumnos
       const { data: stData } = await supabaseClient
         .from('students')
         .select('id, full_name, phone')
@@ -239,12 +324,9 @@
       document.getElementById('filterStudentHistory').innerHTML = '<option value="">👤 Todos los alumnos</option>' +
         rawStudents.map(s => `<option value="${s.id}">${s.full_name}</option>`).join('');
 
-      // Fechas por defecto
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('inputPaymentDate').value = today;
+      document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
       handleConceptChange();
 
-      // 2. Cargar pagos
       await loadPayments();
     }
 
@@ -296,7 +378,7 @@
 
       tbody.innerHTML = filtered.map(p => {
         const receiptNum = p.receipt_number || `#${p.id}`;
-        const studentName = p.students?.full_name || 'Alumno eliminado';
+        const studentName = p.students?.full_name || 'Alumno';
         const nextPayDisplay = (p.concept === 'Mensualidad' && p.next_payment_date)
           ? `<span class="bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded border border-amber-200">🗓️ ${formatDate(p.next_payment_date)}</span>`
           : '<span class="text-slate-400 font-medium">No aplica</span>';
@@ -310,8 +392,8 @@
             <td class="p-3 whitespace-nowrap">${nextPayDisplay}</td>
             <td class="p-3 font-bold font-mono text-slate-900 whitespace-nowrap">₡${Number(p.amount).toLocaleString('es-CR')}</td>
             <td class="p-3 text-center">
-              <button onclick="viewReceipt('${p.id}')" class="text-xs text-blue-700 font-bold hover:underline">
-                Ver Recibo
+              <button onclick="openReceiptModal('${p.id}')" class="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg text-xs font-bold transition">
+                👁️ Ver Recibo
               </button>
             </td>
           </tr>
@@ -343,7 +425,7 @@
         payment_method: document.getElementById('selectPaymentMethod').value,
         reference_number: document.getElementById('inputReference').value.trim() || null,
         payment_date: document.getElementById('inputPaymentDate').value,
-        next_payment_date: nextDate // Solo guarda fecha si fue Mensualidad
+        next_payment_date: nextDate
       };
 
       try {
@@ -356,6 +438,10 @@
         handleConceptChange();
 
         await loadPayments();
+        
+        // Abre automáticamente el recibo para verlo o descargarlo
+        openReceiptModal(data.id);
+
       } catch (err) {
         showAlert(err.message || 'Error al guardar el pago.');
       } finally {
@@ -363,6 +449,101 @@
         btn.textContent = 'Guardar Pago y Emitir Recibo';
       }
     });
+
+    // FUNCIONALIDADES DEL MODAL RECIBO
+    function openReceiptModal(paymentId) {
+      const item = rawPayments.find(p => String(p.id) === String(paymentId));
+      if (!item) return;
+
+      currentReceiptItem = item;
+
+      document.getElementById('recReceiptNumber').textContent = item.receipt_number || `#${item.id}`;
+      document.getElementById('recDate').textContent = formatDate(item.payment_date);
+      document.getElementById('recStudent').textContent = item.students?.full_name || 'Estudiante';
+      document.getElementById('recConcept').textContent = item.concept;
+      document.getElementById('recMethod').textContent = item.payment_method;
+      document.getElementById('recAmount').textContent = '₡' + Number(item.amount).toLocaleString('es-CR');
+
+      // Referencia
+      const refRow = document.getElementById('recRefRow');
+      if (item.reference_number) {
+        document.getElementById('recReference').textContent = item.reference_number;
+        refRow.classList.remove('hidden');
+      } else {
+        refRow.classList.add('hidden');
+      }
+
+      // Próximo pago
+      const nextRow = document.getElementById('recNextDateRow');
+      if (item.concept === 'Mensualidad' && item.next_payment_date) {
+        document.getElementById('recNextDate').textContent = formatDate(item.next_payment_date);
+        nextRow.classList.remove('hidden');
+      } else {
+        nextRow.classList.add('hidden');
+      }
+
+      document.getElementById('receiptModal').classList.remove('hidden');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.add('hidden');
+    }
+
+    // DESCARGAR RECIBO COMO IMAGEN (JPG)
+    async function downloadReceiptImage() {
+      const element = document.getElementById('receiptCard');
+      const btn = document.getElementById('btnDownloadImage');
+      btn.disabled = true;
+      btn.textContent = 'Generando imagen...';
+
+      try {
+        const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        
+        const link = document.createElement('a');
+        const num = currentReceiptItem?.receipt_number || currentReceiptItem?.id || 'recibo';
+        link.download = `Recibo_Elohim_${num}.jpg`;
+        link.href = imgData;
+        link.click();
+      } catch (err) {
+        alert('Error al generar la imagen del recibo: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📥 Descargar JPG';
+      }
+    }
+
+    // ENVIAR CONFIRMACIÓN DIRECTA A WHATSAPP
+    function shareReceiptWhatsApp() {
+      if (!currentReceiptItem) return;
+
+      const phone = currentReceiptItem.students?.phone || '';
+      let cleanPhone = String(phone).replace(/\D/g, '');
+      if (cleanPhone.length === 8) cleanPhone = '506' + cleanPhone;
+
+      const num = currentReceiptItem.receipt_number || `#${currentReceiptItem.id}`;
+      const student = currentReceiptItem.students?.full_name || 'Estudiante';
+      const monto = '₡' + Number(currentReceiptItem.amount).toLocaleString('es-CR');
+      const fecha = formatDate(currentReceiptItem.payment_date);
+      const proximo = currentReceiptItem.next_payment_date ? formatDate(currentReceiptItem.next_payment_date) : 'N/A';
+
+      let msg = `*ACADEMIA ELOHIM - RECIBO DE PAGO*\n\n` +
+                `Hola *${student}*, hemos recibido su pago con éxito:\n\n` +
+                `• *N° Recibo:* ${num}\n` +
+                `• *Concepto:* ${currentReceiptItem.concept}\n` +
+                `• *Monto Pagado:* ${monto}\n` +
+                `• *Fecha:* ${fecha}\n` +
+                `• *Método:* ${currentReceiptItem.payment_method}\n`;
+
+      if (currentReceiptItem.concept === 'Mensualidad' && currentReceiptItem.next_payment_date) {
+        msg += `• *Próximo Vencimiento:* ${proximo}\n`;
+      }
+
+      msg += `\n_¡Muchas gracias por su preferencia!_`;
+
+      const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
+    }
 
     function exportPaymentsToExcel() {
       if (rawPayments.length === 0) {
@@ -387,10 +568,6 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Ingresos');
       XLSX.writeFile(wb, `Ingresos_Academia_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-
-    function viewReceipt(paymentId) {
-      window.open(`recibo.html?id=${paymentId}`, '_blank');
     }
 
     async function handleLogout() {
