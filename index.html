@@ -42,7 +42,16 @@
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contraseña</label>
+        <div class="flex justify-between items-center mb-1">
+          <label class="block text-xs font-bold text-slate-700 uppercase">Contraseña</label>
+          <button 
+            type="button" 
+            onclick="openForgotModal()" 
+            class="text-[11px] font-bold text-blue-600 hover:text-blue-800 transition underline cursor-pointer"
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
         <input 
           type="password" 
           id="passwordInput" 
@@ -66,6 +75,52 @@
         Iniciar Sesión
       </button>
     </form>
+  </div>
+
+  <!-- MODAL: RECUPERAR CONTRASEÑA -->
+  <div id="forgotModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 class="text-sm font-bold text-slate-800">Recuperar Acceso</h3>
+        <button onclick="closeForgotModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Ingresa el correo electrónico asociado a tu cuenta de Administrador o Personal. Te enviaremos un enlace seguro para restablecerla.
+      </p>
+
+      <div id="forgotAlert" class="hidden p-2.5 rounded-xl text-xs font-semibold"></div>
+
+      <form id="forgotForm" class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Correo Electrónico</label>
+          <input 
+            type="email" 
+            id="forgotEmail" 
+            required 
+            placeholder="ejemplo@correo.com"
+            class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <button 
+            type="button" 
+            onclick="closeForgotModal()" 
+            class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-50 transition"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            id="btnSendReset" 
+            class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm"
+          >
+            Enviar Enlace
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script>
@@ -120,6 +175,59 @@
       }
     }
 
+    // Modal de Olvido de Contraseña
+    function openForgotModal() {
+      document.getElementById('forgotAlert').classList.add('hidden');
+      document.getElementById('forgotEmail').value = '';
+      document.getElementById('forgotModal').classList.remove('hidden');
+    }
+
+    function closeForgotModal() {
+      document.getElementById('forgotModal').classList.add('hidden');
+    }
+
+    document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim();
+      const btn = document.getElementById('btnSendReset');
+      const alertBox = document.getElementById('forgotAlert');
+
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      alertBox.classList.add('hidden');
+
+      try {
+        const options = {
+          redirectTo: 'https://academia.elohimcr.workers.dev/reset_password.html'
+        };
+
+        if (turnstileToken) {
+          options.captchaToken = turnstileToken;
+        }
+
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, options);
+
+        if (error) throw error;
+
+        alertBox.className = 'p-2.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+        alertBox.textContent = '✓ Correo enviado con éxito. Revisa tu bandeja de entrada o spam para restablecerla.';
+        alertBox.classList.remove('hidden');
+
+        setTimeout(() => {
+          closeForgotModal();
+        }, 4000);
+
+      } catch (err) {
+        alertBox.className = 'p-2.5 rounded-xl text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
+        alertBox.textContent = err.message || 'Error al enviar correo de recuperación.';
+        alertBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviar Enlace';
+      }
+    });
+
+    // Formulario de Inicio de Sesión
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       document.getElementById('loginAlert').classList.add('hidden');
@@ -128,7 +236,6 @@
       const password = document.getElementById('passwordInput').value;
       const btnLogin = document.getElementById('btnLogin');
 
-      // Si por alguna razón la variable está vacía, intentar extraer el token del input generado
       if (!turnstileToken) {
         const hiddenInput = document.querySelector('[name="cf-turnstile-response"]');
         if (hiddenInput && hiddenInput.value) {
@@ -147,7 +254,6 @@
       try {
         let authEmail = userInput;
 
-        // Si escribió un nombre o usuario sin @, buscar su correo asignado en Supabase
         if (!userInput.includes('@')) {
           const { data: resolvedEmail, error: rpcError } = await supabaseClient.rpc('get_email_by_identifier', {
             p_identifier: userInput
@@ -160,7 +266,6 @@
           authEmail = resolvedEmail;
         }
 
-        // Intento de login enviando el token de Turnstile a Supabase
         const { data, error: authError } = await supabaseClient.auth.signInWithPassword({
           email: authEmail,
           password: password,
@@ -182,7 +287,7 @@
       }
     });
 
-    // Verificar si ya hay una sesión activa para redirigir
+    // Redirigir si ya tiene sesión
     async function checkSession() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
