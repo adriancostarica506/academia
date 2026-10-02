@@ -3,511 +3,314 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caja y Pagos - Academi</title>
+  <title>Caja y Cobros - Academi Elohim</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
-    @media print {
-      body * { visibility: hidden; }
-      #printArea, #printArea * { visibility: visible; }
-      #printArea {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        padding: 20px;
-        background: white;
-      }
-      .no-print { display: none !important; }
-    }
-  </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800 font-sans">
 
-  <!-- Barra Superior -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-10 no-print">
+  <!-- ENCABEZADO -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <a href="dashboard.html" class="text-xl font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
-        <span class="text-slate-400">|</span>
-        <span class="text-sm font-semibold text-slate-600">Caja y Cobros</span>
+        <a href="dashboard.html" class="text-sm font-bold text-blue-600 hover:text-blue-700">← Volver al Panel</a>
+        <span class="text-slate-300">|</span>
+        <span class="text-sm font-bold text-slate-800">Caja y Cobros</span>
       </div>
-      <div class="flex items-center space-x-3">
-        <a href="cobros_pendientes.html" class="text-xs bg-amber-50 text-amber-800 border border-amber-300 font-bold px-3 py-1.5 rounded-lg hover:bg-amber-100 transition shadow-sm">
+      <div class="flex items-center space-x-2">
+        <a href="cobros_pendientes.html" class="flex items-center gap-1 text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-300 font-bold px-3 py-1.5 rounded-lg transition">
           🔔 Alertas de Cobro
         </a>
-        <button id="btnLogout" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition">
+        <button onclick="handleLogout()" class="text-xs text-red-600 border border-red-200 hover:bg-red-50 px-2.5 py-1.5 rounded-lg font-bold">
           Cerrar Sesión
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Contenedor Principal -->
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6 no-print">
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- Tarjetas de Resumen -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recaudado Hoy</p>
-          <h3 id="statTotalToday" class="text-2xl font-black text-emerald-600 mt-1">₡0,00</h3>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg border border-emerald-100">
-          ₡
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Recibos Emitidos Hoy</p>
-          <h3 id="statCountToday" class="text-2xl font-black text-blue-600 mt-1">0</h3>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg border border-blue-100">
-          #
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-        <div>
-          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" id="statFilterLabel">Total Filtrado</p>
-          <h3 id="statFilteredTotal" class="text-2xl font-black text-slate-800 mt-1">₡0,00</h3>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg border border-amber-100">
-          ∑
-        </div>
-      </div>
-    </div>
-
-    <!-- Barra de Herramientas -->
-    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <!-- BARRA SUPERIOR -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h3 class="text-sm font-bold text-slate-800">Reportes Financieros y Control de Pagos</h3>
+        <h2 class="text-lg font-black text-slate-800">Reportes Financieros y Control de Pagos</h2>
         <p class="text-xs text-slate-500">Descarga los ingresos en Excel o revisa las alertas de estudiantes.</p>
       </div>
-
-      <div class="flex flex-wrap items-center gap-2.5">
-        <button 
-          onclick="exportIncomeExcel()" 
-          class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
-        >
-          <span>📊 Descargar Ingresos (Excel)</span>
+      <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+        <button onclick="exportPaymentsToExcel()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs">
+          📊 Descargar Ingresos (Excel)
         </button>
-        <a 
-          href="cobros_pendientes.html" 
-          class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm"
-        >
-          <span>🔔 Ir a Módulo de Alertas de Cobro</span>
+        <a href="cobros_pendientes.html" class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs">
+          🔔 Ir a Módulo de Alertas de Cobro
         </a>
       </div>
     </div>
 
-    <!-- Registro y Tabla -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- CUADRÍCULA: REGISTRO Y HISTORIAL -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- Formulario para Registrar Cobro -->
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
-        <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar Cobro</h2>
-        <p class="text-xs text-slate-500 mb-4">Ingresa el pago del alumno para generar su recibo y fijar su próximo cobro.</p>
+      <!-- FORMULARIO DE COBRO (COLUMNA IZQUIERDA) -->
+      <div class="lg:col-span-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div>
+          <h3 class="font-black text-slate-800 text-base">Registrar Cobro</h3>
+          <p class="text-xs text-slate-500">Ingresa el pago del alumno para generar su recibo.</p>
+        </div>
 
-        <div id="alertMsg" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+        <div id="paymentAlert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
 
-        <form id="paymentForm" class="space-y-4">
+        <form id="paymentForm" class="space-y-3.5">
+          <!-- Selector de Alumno -->
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Alumno *</label>
-            <select id="selectStudent" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-              <option value="" disabled selected>Cargando alumnos...</option>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Alumno *</label>
+            <select id="selectStudent" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Selecciona un alumno...</option>
             </select>
           </div>
 
+          <!-- Concepto -->
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Concepto *</label>
-            <select id="paymentConcept" onchange="handleConceptChange(this.value)" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-              <option value="Mensualidad" selected>Mensualidad</option>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Concepto *</label>
+            <select id="selectConcept" onchange="handleConceptChange()" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-blue-800">
+              <option value="Mensualidad" selected>Mensualidad (Genera Próximo Pago)</option>
               <option value="Matrícula">Matrícula</option>
               <option value="Uniforme">Uniforme</option>
-              <option value="Materiales / Kit">Materiales / Kit</option>
-              <option value="Certificación / Examen">Certificación / Examen</option>
-              <option value="Otro">Otro concepto...</option>
+              <option value="Materiales/Kit">Materiales / Kit</option>
+              <option value="Certificado/Examen">Certificado / Examen</option>
+              <option value="Otro concepto">Otro concepto</option>
             </select>
-            <input type="text" id="otherConceptInput" placeholder="Especifique el concepto..." class="w-full mt-2 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none hidden">
           </div>
 
+          <!-- Monto -->
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Monto en Colones (₡) *</label>
-            <input 
-              type="number" 
-              id="paymentAmount" 
-              placeholder="Ej: 25000" 
-              required 
-              min="1" 
-              step="any"
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
-            >
+            <label class="block text-xs font-bold text-slate-700 mb-1">Monto en Colones (₡) *</label>
+            <input type="number" id="inputAmount" min="1" step="0.01" placeholder="Ej: 25000" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-900">
           </div>
 
+          <!-- Método de Pago -->
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Método de Pago *</label>
-            <select id="paymentMethod" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Método de Pago *</label>
+            <select id="selectPaymentMethod" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white outline-none focus:ring-2 focus:ring-blue-500">
               <option value="SINPE Móvil" selected>SINPE Móvil</option>
               <option value="Efectivo">Efectivo</option>
               <option value="Transferencia">Transferencia Bancaria</option>
-              <option value="Tarjeta">Tarjeta (Datáfono)</option>
+              <option value="Tarjeta">Tarjeta</option>
             </select>
           </div>
 
+          <!-- Referencia -->
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">N° Comprobante / Referencia (Opcional)</label>
-            <input 
-              type="text" 
-              id="paymentReference" 
-              placeholder="Ej: SINPE #98214" 
-              class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            >
+            <label class="block text-xs font-bold text-slate-700 mb-1">N° Comprobante / Referencia (Opcional)</label>
+            <input type="text" id="inputReference" placeholder="Ej: SINPE #98214" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-mono">
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Fechas dinámicas -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="datesContainer">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha de Pago *</label>
-              <input 
-                type="date" 
-                id="paymentDate" 
-                onchange="autoSuggestNextDate()" 
-                required 
-                class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-              >
+              <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de Pago *</label>
+              <input type="date" id="inputPaymentDate" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white outline-none focus:ring-2 focus:ring-blue-500">
             </div>
-            <div>
-              <label class="block text-xs font-bold text-amber-700 mb-1">📅 Próximo Pago *</label>
-              <input 
-                type="date" 
-                id="nextPaymentDate" 
-                required 
-                class="w-full border border-amber-300 bg-amber-50/50 rounded-lg p-2 text-xs font-semibold text-amber-900 focus:ring-2 focus:ring-amber-500 outline-none"
-              >
+
+            <!-- CAMPO PRÓXIMO PAGO (SE OCULTA SI NO ES MENSUALIDAD) -->
+            <div id="nextPaymentFieldWrapper">
+              <label class="block text-xs font-bold text-amber-700 mb-1">🗓️ Próximo Pago *</label>
+              <input type="date" id="inputNextPaymentDate" class="w-full border border-amber-300 bg-amber-50/50 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-amber-500 font-semibold">
             </div>
           </div>
 
-          <button type="submit" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm">
+          <button type="submit" id="btnSubmitPayment" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-xs text-xs cursor-pointer">
             Guardar Pago y Emitir Recibo
           </button>
         </form>
       </div>
 
-      <!-- Tabla y Búsqueda de Recibos -->
-      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        
-        <div class="flex flex-col space-y-3 border-b border-slate-100 pb-4">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div>
-              <h2 class="text-lg font-bold text-slate-800">Historial de Recibos</h2>
-              <p class="text-xs text-slate-500">Expedientes de pagos registrados con su fecha de próximo vencimiento.</p>
-            </div>
-            <div id="activeFilterBadge" class="hidden">
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
-                <span id="activeFilterStudentName">Alumno</span>
-                <button onclick="clearFilters()" class="text-blue-600 hover:text-blue-900 font-black">✕</button>
-              </span>
-            </div>
-          </div>
+      <!-- HISTORIAL DE RECIBOS (COLUMNA DERECHA) -->
+      <div class="lg:col-span-8 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div>
+          <h3 class="font-black text-slate-800 text-base">Historial de Recibos</h3>
+          <p class="text-xs text-slate-500">Expedientes de pagos registrados y recibos emitidos.</p>
+        </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-            <div class="sm:col-span-5">
-              <select id="filterStudentSelect" onchange="filterPayments()" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none bg-white">
-                <option value="">👤 Todos los alumnos</option>
-              </select>
-            </div>
-            <div class="sm:col-span-4">
-              <input 
-                type="text" 
-                id="searchInput" 
-                oninput="filterPayments()" 
-                placeholder="Buscar concepto o recibo..." 
-                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none"
-              >
-            </div>
-            <div class="sm:col-span-2">
-              <input 
-                type="date" 
-                id="filterDate" 
-                onchange="filterPayments()" 
-                class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none"
-              >
-            </div>
-            <div class="sm:col-span-1 flex items-center justify-center">
-              <button onclick="clearFilters()" title="Limpiar filtros" class="w-full text-xs text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg p-2 hover:bg-slate-50 transition text-center font-medium">
-                Limpiar
-              </button>
-            </div>
+        <!-- Filtros del Historial -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <select id="filterStudentHistory" onchange="renderHistoryTable()" class="border border-slate-300 rounded-xl p-2 text-xs bg-white outline-none">
+            <option value="">👤 Todos los alumnos</option>
+          </select>
+          <input type="text" id="filterConceptHistory" oninput="renderHistoryTable()" placeholder="Buscar concepto o recibo..." class="border border-slate-300 rounded-xl p-2 text-xs outline-none">
+          <div class="flex gap-1">
+            <input type="month" id="filterMonthHistory" onchange="renderHistoryTable()" class="flex-1 border border-slate-300 rounded-xl p-2 text-xs outline-none bg-white">
+            <button onclick="clearHistoryFilters()" class="px-3 border border-slate-300 hover:bg-slate-50 rounded-xl text-xs text-slate-600 font-semibold">Limpiar</button>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
+        <!-- Tabla -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left border-collapse text-xs">
             <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-xs uppercase bg-slate-50">
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase">
                 <th class="p-3">Recibo #</th>
                 <th class="p-3">Fecha Pago</th>
                 <th class="p-3">Alumno</th>
                 <th class="p-3">Concepto</th>
                 <th class="p-3">Próximo Pago</th>
-                <th class="p-3 text-right">Monto</th>
+                <th class="p-3">Monto</th>
                 <th class="p-3 text-center">Acciones</th>
               </tr>
             </thead>
-            <tbody id="paymentsTableBody">
-              <tr>
-                <td colspan="7" class="p-4 text-center text-slate-400">Cargando pagos...</td>
-              </tr>
+            <tbody id="paymentsTableBody" class="divide-y divide-slate-100">
+              <tr><td colspan="7" class="p-6 text-center text-slate-400">Cargando recibos...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
     </div>
+
   </main>
-
-  <!-- MODAL: RECIBO IMPRIMIBLE CON LOGO INCORPORADO -->
-  <div id="receiptModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
-      
-      <div id="printArea" class="border border-slate-200 rounded-2xl p-6 bg-white space-y-4">
-        
-        <!-- ENCABEZADO DEL RECIBO CON EL LOGO -->
-        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-          <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 p-1 flex items-center justify-center overflow-hidden">
-              <img 
-                src="logo.png" 
-                alt="Logo" 
-                class="w-full h-full object-contain"
-                onerror="this.onerror=null; this.src='assets/logo.png';"
-              >
-            </div>
-            <div>
-              <h2 class="text-lg font-black text-slate-900 leading-tight">ACADEMI</h2>
-              <p class="text-[11px] text-slate-500 font-medium">Sistema Escolar Elohim</p>
-            </div>
-          </div>
-          <div class="text-right">
-            <span class="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-xs" id="rcptNumber">RECIBO #0000</span>
-          </div>
-        </div>
-
-        <div class="flex justify-between items-center text-xs text-slate-600 font-medium pt-1">
-          <p id="rcptDate">Fecha: --/--/----</p>
-          <p id="rcptTime">Hora: --:--</p>
-        </div>
-
-        <div class="space-y-2 text-sm pt-2">
-          <div class="flex justify-between border-b border-slate-100 py-1">
-            <span class="text-xs font-semibold text-slate-500">Recibido de:</span>
-            <span class="font-bold text-slate-800 text-right" id="rcptStudent">-</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-100 py-1">
-            <span class="text-xs font-semibold text-slate-500">Concepto:</span>
-            <span class="font-semibold text-slate-800 text-right" id="rcptConcept">-</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-100 py-1">
-            <span class="text-xs font-semibold text-slate-500">Método de Pago:</span>
-            <span class="text-slate-700 font-medium" id="rcptMethod">-</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-100 py-1">
-            <span class="text-xs font-semibold text-amber-700 font-bold">Próximo Cobro:</span>
-            <span class="text-amber-800 font-bold font-mono" id="rcptNextDate">--/--/----</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-100 py-1" id="rcptRefContainer">
-            <span class="text-xs font-semibold text-slate-500">Referencia:</span>
-            <span class="font-mono text-xs text-slate-600" id="rcptRef">-</span>
-          </div>
-        </div>
-
-        <div class="bg-slate-50 p-3.5 rounded-xl flex justify-between items-center border border-slate-200 mt-3">
-          <span class="text-xs font-bold uppercase text-slate-600">Total Pagado:</span>
-          <span class="text-2xl font-black text-emerald-600 font-mono" id="rcptAmount">₡0,00</span>
-        </div>
-
-        <div class="pt-2 text-center text-[11px] text-slate-400 font-medium">
-          ¡Gracias por su puntualidad y confianza!
-        </div>
-      </div>
-
-      <div class="flex justify-end space-x-2 pt-4 no-print">
-        <button onclick="closeReceiptModal()" class="px-4 py-2 text-xs font-medium rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 transition">
-          Cerrar
-        </button>
-        <button onclick="window.print()" class="px-5 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm">
-          Imprimir Recibo
-        </button>
-      </div>
-
-    </div>
-  </div>
 
   <script>
     const SUPABASE_URL = 'https://ianektdgzoohzrktuzph.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let allPayments = [];
-    let allStudents = [];
-    let currentFilteredPayments = [];
+    let rawStudents = [];
+    let rawPayments = [];
 
-    const formatCurrency = (amt) => '₡' + Number(amt || 0).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // CONTROL DEL CAMPO PRÓXIMO PAGO
+    function handleConceptChange() {
+      const concept = document.getElementById('selectConcept').value;
+      const nextPayWrapper = document.getElementById('nextPaymentFieldWrapper');
+      const nextPayInput = document.getElementById('inputNextPaymentDate');
+      const datesContainer = document.getElementById('datesContainer');
 
-    function formatSafeDate(rawDate) {
-      if (!rawDate) return '--/--/----';
-      const clean = String(rawDate).split('T')[0];
-      const parts = clean.split('-');
-      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      return clean;
-    }
-
-    function formatSafeTime(rawTimestamp) {
-      if (!rawTimestamp) return '';
-      try {
-        const d = new Date(rawTimestamp);
-        return d.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', hour12: true });
-      } catch (e) {
-        return '';
-      }
-    }
-
-    function handleConceptChange(val) {
-      const otherInput = document.getElementById('otherConceptInput');
-      if (val === 'Otro') {
-        otherInput.classList.remove('hidden');
-        otherInput.required = true;
-        otherInput.focus();
+      if (concept === 'Mensualidad') {
+        nextPayWrapper.classList.remove('hidden');
+        nextPayInput.required = true;
+        datesContainer.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
+        setDefaultNextPaymentDate();
       } else {
-        otherInput.classList.add('hidden');
-        otherInput.required = false;
+        // Ocultar y quitar requerimiento para cualquier otro concepto
+        nextPayWrapper.classList.add('hidden');
+        nextPayInput.required = false;
+        nextPayInput.value = '';
+        datesContainer.className = "grid grid-cols-1 gap-2";
       }
-      autoSuggestNextDate();
     }
 
-    function autoSuggestNextDate() {
-      const payDateVal = document.getElementById('paymentDate').value;
-      if (!payDateVal) return;
-
-      const [y, m, d] = payDateVal.split('-').map(Number);
-      const nextDate = new Date(y, m, d);
-      const nextY = nextDate.getFullYear();
-      const nextM = String(nextDate.getMonth() + 1).padStart(2, '0');
-      const nextD = String(nextDate.getDate()).padStart(2, '0');
-
-      document.getElementById('nextPaymentDate').value = `${nextY}-${nextM}-${nextD}`;
+    function setDefaultNextPaymentDate() {
+      const payDate = document.getElementById('inputPaymentDate').value;
+      if (!payDate) return;
+      const [y, m, d] = payDate.split('-').map(Number);
+      const nextDate = new Date(y, m, d); // Sumar 1 mes exacto
+      document.getElementById('inputNextPaymentDate').value = nextDate.toISOString().split('T')[0];
     }
 
-    function showAlert(text, type = 'error') {
-      const alertMsg = document.getElementById('alertMsg');
-      alertMsg.textContent = text;
-      alertMsg.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
-      alertMsg.classList.remove('hidden');
-    }
-
-    async function loadStudentsSelect() {
-      const selectForm = document.getElementById('selectStudent');
-      const selectFilter = document.getElementById('filterStudentSelect');
-      try {
-        const { data, error } = await supabaseClient
-          .from('students')
-          .select('id, full_name, phone')
-          .order('full_name', { ascending: true });
-
-        if (error) throw error;
-        allStudents = data || [];
-
-        if (allStudents.length === 0) {
-          selectForm.innerHTML = '<option value="" disabled selected>No hay alumnos registrados</option>';
-          selectFilter.innerHTML = '<option value="">👤 No hay alumnos</option>';
-          return;
-        }
-
-        const optionsHtml = allStudents.map(s => `<option value="${s.id}">${s.full_name} ${s.phone ? '(' + s.phone + ')' : ''}</option>`).join('');
-
-        selectForm.innerHTML = '<option value="" disabled selected>Selecciona un alumno...</option>' + optionsHtml;
-        selectFilter.innerHTML = '<option value="">👤 Todos los alumnos</option>' + 
-          allStudents.map(s => `<option value="${s.id}">👤 ${s.full_name}</option>`).join('');
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const preStudentId = urlParams.get('student_id');
-        if (preStudentId) {
-          selectForm.value = preStudentId;
-        }
-
-      } catch (err) {
-        selectForm.innerHTML = '<option value="" disabled selected>Error al cargar alumnos</option>';
+    document.getElementById('inputPaymentDate').addEventListener('change', () => {
+      if (document.getElementById('selectConcept').value === 'Mensualidad') {
+        setDefaultNextPaymentDate();
       }
+    });
+
+    function showAlert(msg, isError = true) {
+      const box = document.getElementById('paymentAlert');
+      box.textContent = msg;
+      box.className = `p-3 rounded-xl text-xs font-semibold ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`;
+      box.classList.remove('hidden');
+    }
+
+    function formatDate(raw) {
+      if (!raw) return '-';
+      const parts = raw.split('T')[0].split('-');
+      return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : raw;
+    }
+
+    async function loadInitialData() {
+      // 1. Cargar alumnos
+      const { data: stData } = await supabaseClient
+        .from('students')
+        .select('id, full_name, phone')
+        .order('full_name');
+
+      rawStudents = stData || [];
+      const studentOptions = '<option value="">Selecciona un alumno...</option>' +
+        rawStudents.map(s => `<option value="${s.id}">${s.full_name}</option>`).join('');
+
+      document.getElementById('selectStudent').innerHTML = studentOptions;
+      document.getElementById('filterStudentHistory').innerHTML = '<option value="">👤 Todos los alumnos</option>' +
+        rawStudents.map(s => `<option value="${s.id}">${s.full_name}</option>`).join('');
+
+      // Fechas por defecto
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('inputPaymentDate').value = today;
+      handleConceptChange();
+
+      // 2. Cargar pagos
+      await loadPayments();
     }
 
     async function loadPayments() {
-      const tableBody = document.getElementById('paymentsTableBody');
       try {
         const { data, error } = await supabaseClient
           .from('payments')
           .select(`
             id,
             receipt_number,
-            student_id,
             amount,
             concept,
-            payment_concept,
             payment_method,
-            reference_number,
             payment_date,
             next_payment_date,
+            reference_number,
             created_at,
             students (id, full_name, phone)
           `)
-          .order('created_at', { ascending: false });
+          .order('id', { ascending: false });
 
         if (error) throw error;
-
-        allPayments = data || [];
-        filterPayments();
-
+        rawPayments = data || [];
+        renderHistoryTable();
       } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">Error al cargar pagos: ${err.message}</td></tr>`;
+        document.getElementById('paymentsTableBody').innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
       }
     }
 
-    function renderPayments(list) {
-      const tableBody = document.getElementById('paymentsTableBody');
-      if (!list || list.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No se encontraron pagos con los filtros seleccionados.</td></tr>`;
+    function renderHistoryTable() {
+      const studentFilter = document.getElementById('filterStudentHistory').value;
+      const searchConcept = document.getElementById('filterConceptHistory').value.toLowerCase().trim();
+      const monthFilter = document.getElementById('filterMonthHistory').value;
+
+      const filtered = rawPayments.filter(p => {
+        const matchStudent = !studentFilter || p.students?.id === studentFilter;
+        const matchConcept = !searchConcept ||
+          (p.concept || '').toLowerCase().includes(searchConcept) ||
+          String(p.receipt_number || p.id).includes(searchConcept);
+        const matchMonth = !monthFilter || (p.payment_date && p.payment_date.startsWith(monthFilter));
+        return matchStudent && matchConcept && matchMonth;
+      });
+
+      const tbody = document.getElementById('paymentsTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">No hay recibos con los filtros aplicados.</td></tr>`;
         return;
       }
 
-      tableBody.innerHTML = list.map(p => {
-        const dateFormatted = formatSafeDate(p.payment_date);
-        const nextDateFormatted = p.next_payment_date ? formatSafeDate(p.next_payment_date) : '-';
-        const timeFormatted = formatSafeTime(p.created_at);
-        const concept = p.concept || p.payment_concept || 'Cobro General';
-        const studentName = p.students?.full_name || 'Sin nombre';
-        const studentId = p.student_id || p.students?.id;
+      tbody.innerHTML = filtered.map(p => {
+        const receiptNum = p.receipt_number || `#${p.id}`;
+        const studentName = p.students?.full_name || 'Alumno eliminado';
+        const nextPayDisplay = (p.concept === 'Mensualidad' && p.next_payment_date)
+          ? `<span class="bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded border border-amber-200">🗓️ ${formatDate(p.next_payment_date)}</span>`
+          : '<span class="text-slate-400 font-medium">No aplica</span>';
 
         return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3 font-mono font-bold text-xs text-blue-600 whitespace-nowrap">#${p.receipt_number || '-'}</td>
-            <td class="p-3 text-xs text-slate-600 whitespace-nowrap">
-              <span>${dateFormatted}</span>
-              ${timeFormatted ? `<span class="text-[11px] text-slate-400 ml-1.5 font-medium">${timeFormatted}</span>` : ''}
-            </td>
-            <td class="p-3 font-bold text-slate-800">
-              <button onclick="filterByStudentId('${studentId}')" title="Filtrar solo pagos de este alumno" class="text-left hover:text-blue-600 hover:underline transition">
-                ${studentName}
-              </button>
-            </td>
-            <td class="p-3 text-xs text-slate-700 font-semibold">${concept}</td>
-            <td class="p-3 text-xs font-mono font-bold text-amber-700 bg-amber-50/50">
-              📅 ${nextDateFormatted}
-            </td>
-            <td class="p-3 text-right font-mono font-bold text-slate-900">${formatCurrency(p.amount)}</td>
-            <td class="p-3 text-center whitespace-nowrap">
-              <button onclick="viewReceipt('${p.id}')" class="text-xs text-blue-600 hover:underline font-semibold">
+          <tr class="hover:bg-slate-50 border-b border-slate-100 font-medium">
+            <td class="p-3 font-mono font-bold text-blue-600">${receiptNum}</td>
+            <td class="p-3 whitespace-nowrap text-slate-600">${formatDate(p.payment_date)}</td>
+            <td class="p-3 font-bold text-slate-900">${studentName}</td>
+            <td class="p-3 text-slate-700 font-semibold">${p.concept}</td>
+            <td class="p-3 whitespace-nowrap">${nextPayDisplay}</td>
+            <td class="p-3 font-bold font-mono text-slate-900 whitespace-nowrap">₡${Number(p.amount).toLocaleString('es-CR')}</td>
+            <td class="p-3 text-center">
+              <button onclick="viewReceipt('${p.id}')" class="text-xs text-blue-700 font-bold hover:underline">
                 Ver Recibo
               </button>
             </td>
@@ -516,212 +319,87 @@
       }).join('');
     }
 
-    function calculateStats(filteredList) {
-      const today = new Date().toISOString().split('T')[0];
-      let totalToday = 0;
-      let countToday = 0;
-      let totalFiltered = 0;
-
-      allPayments.forEach(p => {
-        const cleanDate = p.payment_date ? String(p.payment_date).split('T')[0] : '';
-        if (cleanDate === today) {
-          totalToday += Number(p.amount) || 0;
-          countToday++;
-        }
-      });
-
-      filteredList.forEach(p => {
-        totalFiltered += Number(p.amount) || 0;
-      });
-
-      document.getElementById('statTotalToday').textContent = formatCurrency(totalToday);
-      document.getElementById('statCountToday').textContent = countToday;
-      document.getElementById('statFilteredTotal').textContent = formatCurrency(totalFiltered);
+    function clearHistoryFilters() {
+      document.getElementById('filterStudentHistory').value = '';
+      document.getElementById('filterConceptHistory').value = '';
+      document.getElementById('filterMonthHistory').value = '';
+      renderHistoryTable();
     }
 
-    function filterPayments() {
-      const search = document.getElementById('searchInput').value.toLowerCase().trim();
-      const dateVal = document.getElementById('filterDate').value;
-      const studentFilterId = document.getElementById('filterStudentSelect').value;
-
-      const badge = document.getElementById('activeFilterBadge');
-      const badgeText = document.getElementById('activeFilterStudentName');
-
-      if (studentFilterId) {
-        const found = allStudents.find(s => s.id === studentFilterId);
-        badgeText.textContent = `Alumno: ${found ? found.full_name : 'Seleccionado'}`;
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
-
-      currentFilteredPayments = allPayments.filter(p => {
-        const concept = (p.concept || p.payment_concept || '').toLowerCase();
-        const student = (p.students?.full_name || '').toLowerCase();
-        const ref = (p.reference_number || '').toLowerCase();
-        const receiptStr = String(p.receipt_number || '');
-
-        const matchSearch = !search || student.includes(search) || concept.includes(search) || receiptStr.includes(search) || ref.includes(search);
-        
-        const cleanDate = p.payment_date ? String(p.payment_date).split('T')[0] : '';
-        const matchDate = dateVal ? cleanDate === dateVal : true;
-
-        const currentStudentId = p.student_id || p.students?.id;
-        const matchStudent = !studentFilterId || currentStudentId === studentFilterId;
-
-        return matchSearch && matchDate && matchStudent;
-      });
-
-      renderPayments(currentFilteredPayments);
-      calculateStats(currentFilteredPayments);
-    }
-
-    function filterByStudentId(studentId) {
-      if (!studentId) return;
-      document.getElementById('filterStudentSelect').value = studentId;
-      filterPayments();
-    }
-
-    function clearFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('filterDate').value = '';
-      document.getElementById('filterStudentSelect').value = '';
-      filterPayments();
-    }
-
-    // REGISTRAR PAGO
+    // REGISTRO DE COBRO
     document.getElementById('paymentForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      document.getElementById('alertMsg').classList.add('hidden');
+      const btn = document.getElementById('btnSubmitPayment');
+      const concept = document.getElementById('selectConcept').value;
+      const nextDate = (concept === 'Mensualidad') ? document.getElementById('inputNextPaymentDate').value : null;
 
-      const studentId = document.getElementById('selectStudent').value;
-      const amount = parseFloat(document.getElementById('paymentAmount').value);
-      const date = document.getElementById('paymentDate').value;
-      const nextDate = document.getElementById('nextPaymentDate').value;
-      const conceptSelect = document.getElementById('paymentConcept').value;
-      const otherConcept = document.getElementById('otherConceptInput').value.trim();
-      const concept = conceptSelect === 'Otro' ? otherConcept : conceptSelect;
-      const method = document.getElementById('paymentMethod').value;
-      const reference = document.getElementById('paymentReference').value.trim();
-      const btnSubmit = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Guardando cobro...';
 
-      if (!studentId || !amount || amount <= 0 || !concept || !nextDate) {
-        showAlert('Por favor completa todos los campos obligatorios, incluyendo la fecha de próximo pago.');
-        return;
-      }
-
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = 'Guardando...';
+      const payload = {
+        student_id: document.getElementById('selectStudent').value,
+        concept: concept,
+        amount: parseFloat(document.getElementById('inputAmount').value),
+        payment_method: document.getElementById('selectPaymentMethod').value,
+        reference_number: document.getElementById('inputReference').value.trim() || null,
+        payment_date: document.getElementById('inputPaymentDate').value,
+        next_payment_date: nextDate // Solo guarda fecha si fue Mensualidad
+      };
 
       try {
-        const { data, error } = await supabaseClient.rpc('register_student_payment', {
-          p_student_id: studentId,
-          p_amount: amount,
-          p_concept: concept,
-          p_payment_method: method,
-          p_reference_number: reference || null,
-          p_payment_date: date,
-          p_next_payment_date: nextDate
-        });
-
+        const { data, error } = await supabaseClient.from('payments').insert(payload).select().single();
         if (error) throw error;
 
-        showAlert(`¡Pago registrado! Recibo #${data.receipt_number}. Próximo cobro: ${formatSafeDate(data.next_payment_date)}`, 'success');
-
-        document.getElementById('paymentAmount').value = '';
-        document.getElementById('paymentReference').value = '';
-        document.getElementById('otherConceptInput').value = '';
-        document.getElementById('paymentConcept').value = 'Mensualidad';
-        document.getElementById('otherConceptInput').classList.add('hidden');
+        showAlert('¡Pago registrado con éxito!', false);
+        document.getElementById('paymentForm').reset();
+        document.getElementById('inputPaymentDate').value = new Date().toISOString().split('T')[0];
+        handleConceptChange();
 
         await loadPayments();
-
-        if (data && data.payment_id) {
-          viewReceipt(data.payment_id);
-        }
-
       } catch (err) {
-        showAlert(err.message || 'Error al procesar el pago.');
+        showAlert(err.message || 'Error al guardar el pago.');
       } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Guardar Pago y Emitir Recibo';
+        btn.disabled = false;
+        btn.textContent = 'Guardar Pago y Emitir Recibo';
       }
     });
 
-    function viewReceipt(paymentId) {
-      const payment = allPayments.find(p => p.id === paymentId);
-      if (!payment) return;
-
-      const dateFormatted = formatSafeDate(payment.payment_date);
-      const nextDateFormatted = payment.next_payment_date ? formatSafeDate(payment.next_payment_date) : '-';
-      const timeFormatted = formatSafeTime(payment.created_at);
-
-      document.getElementById('rcptNumber').textContent = `RECIBO #${payment.receipt_number || '-'}`;
-      document.getElementById('rcptDate').textContent = `Fecha: ${dateFormatted}`;
-      document.getElementById('rcptTime').textContent = timeFormatted ? `Hora: ${timeFormatted}` : '';
-      document.getElementById('rcptStudent').textContent = payment.students?.full_name || 'Sin nombre';
-      document.getElementById('rcptConcept').textContent = payment.concept || payment.payment_concept || 'Matrícula';
-      document.getElementById('rcptMethod').textContent = payment.payment_method;
-      document.getElementById('rcptNextDate').textContent = nextDateFormatted;
-      document.getElementById('rcptAmount').textContent = formatCurrency(payment.amount);
-
-      const refContainer = document.getElementById('rcptRefContainer');
-      if (payment.reference_number) {
-        refContainer.classList.remove('hidden');
-        document.getElementById('rcptRef').textContent = payment.reference_number;
-      } else {
-        refContainer.classList.add('hidden');
-      }
-
-      document.getElementById('receiptModal').classList.remove('hidden');
-    }
-
-    function closeReceiptModal() {
-      document.getElementById('receiptModal').classList.add('hidden');
-    }
-
-    function exportIncomeExcel() {
-      if (allPayments.length === 0) {
+    function exportPaymentsToExcel() {
+      if (rawPayments.length === 0) {
         alert('No hay pagos registrados para exportar.');
         return;
       }
 
-      const rows = allPayments.map(p => ({
-        'N° Recibo': p.receipt_number || 'S/N',
-        'Fecha Pago': formatSafeDate(p.payment_date),
-        'Hora': formatSafeTime(p.created_at),
+      const rows = rawPayments.map(p => ({
+        'N° Recibo': p.receipt_number || p.id,
+        'Fecha Pago': formatDate(p.payment_date),
         'Alumno': p.students?.full_name || 'Desconocido',
         'Teléfono': p.students?.phone || '-',
-        'Concepto': p.concept || p.payment_concept || 'Mensualidad',
-        'Método de Pago': p.payment_method || 'Efectivo',
-        'Referencia': p.reference_number || 'N/A',
-        'Monto (₡)': Number(p.amount) || 0,
-        'Próximo Cobro': p.next_payment_date ? formatSafeDate(p.next_payment_date) : 'N/A'
+        'Concepto': p.concept,
+        'Monto (₡)': Number(p.amount),
+        'Método de Pago': p.payment_method,
+        'Referencia': p.reference_number || 'S/N',
+        'Próximo Cobro Mensual': (p.concept === 'Mensualidad' && p.next_payment_date) ? formatDate(p.next_payment_date) : 'N/A'
       }));
 
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Ingresos');
-      XLSX.writeFile(workbook, `Academi_Ingresos_${new Date().toISOString().split('T')[0]}.xlsx`);
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{ wch: 12 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 22 }, { wch: 15 }, { wch: 18 }, { wch: 20 }, { wch: 22 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Ingresos');
+      XLSX.writeFile(wb, `Ingresos_Academia_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
-    document.getElementById('btnLogout').addEventListener('click', async () => {
+    function viewReceipt(paymentId) {
+      window.open(`recibo.html?id=${paymentId}`, '_blank');
+    }
+
+    async function handleLogout() {
       await supabaseClient.auth.signOut();
       sessionStorage.clear();
       window.location.href = 'index.html';
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      document.getElementById('paymentDate').value = `${yyyy}-${mm}-${dd}`;
-      
-      autoSuggestNextDate();
-      loadStudentsSelect();
-      loadPayments();
-    });
+    document.addEventListener('DOMContentLoaded', loadInitialData);
   </script>
 </body>
 </html>
