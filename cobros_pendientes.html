@@ -22,24 +22,25 @@
         <a href="pagos.html" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition shadow-xs">
           + Registrar Nuevo Pago
         </a>
-        <span id="userBadge" class="text-xs font-bold text-slate-600 px-2">Admin</span>
-        <button onclick="handleLogout()" class="text-xs text-red-600 border border-red-200 hover:bg-red-50 px-2.5 py-1.5 rounded-lg font-bold">Salir</button>
+        <button onclick="handleLogout()" class="text-xs text-red-600 border border-red-200 hover:bg-red-50 px-2.5 py-1.5 rounded-lg font-bold">
+          Salir
+        </button>
       </div>
     </div>
   </header>
 
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-5">
 
-    <!-- TARJETAS DE ESTADO -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- TARJETAS DE ALERTAS (SOLO PENDIENTES) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="bg-white p-5 rounded-2xl border border-rose-200 shadow-xs flex items-center justify-between">
         <div>
           <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 bg-rose-500 rounded-full"></span>
-            <p class="text-[11px] font-bold uppercase text-rose-800">Vencidos / No han pagado</p>
+            <span class="w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse"></span>
+            <p class="text-[11px] font-bold uppercase text-rose-800">Vencidos / No Han Pagado</p>
           </div>
           <p id="countVencidos" class="text-3xl font-black text-rose-600 mt-1">0</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">Fecha de mensualidad expirada</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">Fecha límite superada o sin mensualidad registrada</p>
         </div>
         <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-xl">⚠️</div>
       </div>
@@ -47,25 +48,13 @@
       <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-xs flex items-center justify-between">
         <div>
           <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 bg-amber-500 rounded-full"></span>
-            <p class="text-[11px] font-bold uppercase text-amber-800">Próximos a Cobrar (Alerta)</p>
+            <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse"></span>
+            <p class="text-[11px] font-bold uppercase text-amber-800">Próximos a Cobrar (Próximos 5 días)</p>
           </div>
           <p id="countProximos" class="text-3xl font-black text-amber-600 mt-1">0</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">Vencen en los próximos 5 días o hoy</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">Vencen en 5 días o menos (o vencen hoy)</p>
         </div>
         <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-xl">🔔</div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-xs flex items-center justify-between">
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
-            <p class="text-[11px] font-bold uppercase text-emerald-800">Al Día</p>
-          </div>
-          <p id="countAlDia" class="text-3xl font-black text-emerald-600 mt-1">0</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">Faltan más de 5 días para su pago</p>
-        </div>
-        <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-xl">✓</div>
       </div>
     </div>
 
@@ -78,15 +67,14 @@
             type="text" 
             id="searchInput" 
             oninput="renderTable()" 
-            placeholder="Buscar alumno por nombre o teléfono..." 
+            placeholder="Buscar alumno moroso por nombre o teléfono..." 
             class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-500"
           >
         </div>
         <select id="statusFilter" onchange="renderTable()" class="w-full sm:w-auto border border-slate-300 rounded-xl p-2 text-xs bg-white outline-none font-semibold">
-          <option value="todos">Todos los Estados</option>
+          <option value="todos">Todas las Alertas (Vencidos y Próximos)</option>
           <option value="vencido">🔴 Solo Vencidos / No Han Pagado</option>
-          <option value="proximo">🟡 Próximos a Cobrar (Próximos 5 días)</option>
-          <option value="al_dia">🟢 Al Día</option>
+          <option value="proximo">🟡 Solo Próximos a Cobrar (≤ 5 días)</option>
         </select>
       </div>
 
@@ -95,22 +83,22 @@
           🔄 Actualizar
         </button>
         <button onclick="exportToExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs">
-          📊 Descargar en Excel (.xlsx)
+          📊 Descargar Morosidad (.xlsx)
         </button>
       </div>
     </div>
 
-    <!-- TABLA DE ALUMNOS Y COBROS -->
+    <!-- TABLA DE ALUMNOS CON COBROS PENDIENTES -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
             <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase">
-              <th class="p-3.5">Estado Financiero</th>
+              <th class="p-3.5">Estado</th>
               <th class="p-3.5">Alumno</th>
               <th class="p-3.5">Teléfono</th>
-              <th class="p-3.5">Último Pago Mensual</th>
-              <th class="p-3.5">Fecha Próximo Cobro</th>
+              <th class="p-3.5">Última Mensualidad</th>
+              <th class="p-3.5">Fecha Límite Mensualidad</th>
               <th class="p-3.5">Situación de Cobro</th>
               <th class="p-3.5 text-center">Acciones</th>
             </tr>
@@ -129,7 +117,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhbmVrdGRnem9vaHpya3R1enBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2MzQ1ODEsImV4cCI6MjEwNjIxMDU4MX0.dxV9ZmlFPuNVF5gTx5oURXrtOj1wRoIbLf5A1S99U8c';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let billingList = [];
+    let pendingBillingList = [];
 
     function formatDate(raw) {
       if (!raw) return '-';
@@ -147,7 +135,7 @@
 
         if (sErr) throw sErr;
 
-        // 2. Obtener únicamente los pagos cuyo concepto sea 'Mensualidad' y tengan next_payment_date
+        // 2. Obtener EXCLUSIVAMENTE recibos de 'Mensualidad' que tengan fecha de próximo cobro
         const { data: payments, error: pErr } = await supabaseClient
           .from('payments')
           .select('student_id, payment_date, next_payment_date, amount, concept')
@@ -158,53 +146,74 @@
         if (pErr) throw pErr;
 
         const todayStr = new Date().toISOString().split('T')[0];
-        const today = new Date(todayStr);
+        const [ty, tm, td] = todayStr.split('-').map(Number);
+        const todayUtc = Date.UTC(ty, tm - 1, td);
 
         let countVencidos = 0;
         let countProximos = 0;
-        let countAlDia = 0;
+        const alertsOnly = [];
 
-        billingList = (students || []).map(st => {
-          // Tomar el pago de mensualidad más reciente
-          const lastPayment = (payments || []).find(p => p.student_id === st.id);
+        (students || []).forEach(st => {
+          // Buscar el pago más reciente de MENSUALIDAD de este alumno
+          const lastMonthlyPayment = (payments || []).find(p => p.student_id === st.id);
 
-          let status = 'al_dia';
-          let diffDays = null;
-          let nextDateStr = lastPayment?.next_payment_date || null;
-
-          if (nextDateStr) {
-            const nextDate = new Date(nextDateStr);
-            const diffTime = nextDate.getTime() - today.getTime();
-            diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays < 0) {
-              status = 'vencido';
-              countVencidos++;
-            } else if (diffDays <= 5) {
-              status = 'proximo';
-              countProximos++;
-            } else {
-              status = 'al_dia';
-              countAlDia++;
-            }
-          } else {
-            // Si nunca ha pagado mensualidad, se marca como al día/sin historial de cobro
-            status = 'al_dia';
-            countAlDia++;
+          if (!lastMonthlyPayment) {
+            // El alumno nunca ha pagado mensualidad: es un cobro vencido / pendiente inicial
+            countVencidos++;
+            alertsOnly.push({
+              student: st,
+              lastPaymentDate: null,
+              nextPaymentDate: null,
+              diffDays: -999,
+              status: 'vencido',
+              isNeverPaid: true
+            });
+            return;
           }
 
-          return {
-            student: st,
-            lastPaymentDate: lastPayment?.payment_date || null,
-            nextPaymentDate: nextDateStr,
-            diffDays: diffDays,
-            status: status
-          };
+          const nextDateStr = lastMonthlyPayment.next_payment_date;
+          const [ny, nm, nd] = nextDateStr.split('-').map(Number);
+          const nextUtc = Date.UTC(ny, nm - 1, nd);
+
+          const diffDays = Math.round((nextUtc - todayUtc) / (1000 * 60 * 60 * 24));
+
+          // REGLA: Si faltan MÁS de 5 días, está AL DÍA. NO SE MUESTRA EN ESTE PANEL.
+          if (diffDays > 5) {
+            return;
+          }
+
+          if (diffDays < 0) {
+            // Ya se venció
+            countVencidos++;
+            alertsOnly.push({
+              student: st,
+              lastPaymentDate: lastMonthlyPayment.payment_date,
+              nextPaymentDate: nextDateStr,
+              diffDays: diffDays,
+              status: 'vencido',
+              isNeverPaid: false
+            });
+          } else if (diffDays <= 5) {
+            // Faltan 5 días o menos, o vence hoy
+            countProximos++;
+            alertsOnly.push({
+              student: st,
+              lastPaymentDate: lastMonthlyPayment.payment_date,
+              nextPaymentDate: nextDateStr,
+              diffDays: diffDays,
+              status: 'proximo',
+              isNeverPaid: false
+            });
+          }
         });
+
+        // Ordenar primero los más urgentes (más días vencidos primero, luego los próximos)
+        alertsOnly.sort((a, b) => a.diffDays - b.diffDays);
+
+        pendingBillingList = alertsOnly;
 
         document.getElementById('countVencidos').textContent = countVencidos;
         document.getElementById('countProximos').textContent = countProximos;
-        document.getElementById('countAlDia').textContent = countAlDia;
 
         renderTable();
 
@@ -217,7 +226,7 @@
       const search = (document.getElementById('searchInput').value || '').toLowerCase().trim();
       const statusFilter = document.getElementById('statusFilter').value;
 
-      const filtered = billingList.filter(item => {
+      const filtered = pendingBillingList.filter(item => {
         const name = (item.student.full_name || '').toLowerCase();
         const phone = (item.student.phone || '').toLowerCase();
         const matchSearch = !search || name.includes(search) || phone.includes(search);
@@ -227,7 +236,7 @@
 
       const tbody = document.getElementById('billingTableBody');
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">No se encontraron alumnos con los criterios seleccionados.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">🎉 Excelente: No hay alumnos con mensualidades pendientes ni por vencer en este momento.</td></tr>`;
         return;
       }
 
@@ -236,38 +245,40 @@
         let situacionText = '';
 
         if (item.status === 'vencido') {
-          const diasVencido = Math.abs(item.diffDays);
           badgeHtml = `<span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-0.5 rounded-full text-[10px]">🔴 Vencido</span>`;
-          situacionText = `<span class="text-rose-700 font-bold">Venció hace ${diasVencido} día(s)</span>`;
-        } else if (item.status === 'proximo') {
-          const diasRestantes = item.diffDays;
-          badgeHtml = `<span class="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-2 py-0.5 rounded-full text-[10px]">🟡 Por Vencer</span>`;
-          situacionText = diasRestantes === 0
-            ? `<span class="text-amber-700 font-bold">¡Vence hoy mismo!</span>`
-            : `<span class="text-amber-700 font-bold">Vence en ${diasRestantes} día(s)</span>`;
+          if (item.isNeverPaid) {
+            situacionText = `<span class="text-rose-700 font-bold">Sin ningún pago de mensualidad registrado</span>`;
+          } else {
+            const dias = Math.abs(item.diffDays);
+            situacionText = `<span class="text-rose-700 font-bold">Venció hace ${dias} día(s)</span>`;
+          }
         } else {
-          badgeHtml = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded-full text-[10px]">🟢 Al Día</span>`;
-          situacionText = item.nextPaymentDate
-            ? `<span class="text-slate-500">Al día (${item.diffDays} días restantes)</span>`
-            : `<span class="text-slate-400">Sin mensualidad registrada</span>`;
+          // Próximo a vencer (≤ 5 días)
+          badgeHtml = `<span class="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-2 py-0.5 rounded-full text-[10px]">🟡 Por Vencer</span>`;
+          if (item.diffDays === 0) {
+            situacionText = `<span class="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">¡Vence hoy mismo!</span>`;
+          } else {
+            situacionText = `<span class="text-amber-700 font-bold">Vence en ${item.diffDays} día(s)</span>`;
+          }
         }
 
         const phone = item.student.phone || '';
+        const targetDate = item.nextPaymentDate ? formatDate(item.nextPaymentDate) : 'pendiente';
         const waButton = phone
-          ? `<button onclick="sendWhatsAppReminder('${escapeHtml(item.student.full_name)}', '${phone}', '${formatDate(item.nextPaymentDate)}')" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1">💬 Recordar</button>`
+          ? `<button onclick="sendWhatsAppReminder('${escapeHtml(item.student.full_name)}', '${phone}', '${targetDate}', ${item.diffDays})" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs">💬 WhatsApp</button>`
           : `<span class="text-slate-300 text-xs">Sin teléfono</span>`;
 
         return `
           <tr class="hover:bg-slate-50 border-b border-slate-100 font-medium">
-            <td class="p-3.5">${badgeHtml}</td>
+            <td class="p-3.5 whitespace-nowrap">${badgeHtml}</td>
             <td class="p-3.5 font-bold text-slate-900">${item.student.full_name}</td>
             <td class="p-3.5 text-slate-600 font-mono">${phone || '-'}</td>
             <td class="p-3.5 text-slate-600 whitespace-nowrap">${formatDate(item.lastPaymentDate)}</td>
-            <td class="p-3.5 font-mono font-bold ${item.status === 'vencido' ? 'text-rose-600' : item.status === 'proximo' ? 'text-amber-600' : 'text-slate-700'} whitespace-nowrap">
-              ${item.nextPaymentDate ? '🗓️ ' + formatDate(item.nextPaymentDate) : '-'}
+            <td class="p-3.5 font-mono font-bold ${item.status === 'vencido' ? 'text-rose-600' : 'text-amber-600'} whitespace-nowrap">
+              ${item.nextPaymentDate ? '🗓️ ' + formatDate(item.nextPaymentDate) : '<span class="text-rose-500">Pendiente Primer Mes</span>'}
             </td>
-            <td class="p-3.5">${situacionText}</td>
-            <td class="p-3.5 text-center flex justify-center items-center gap-1.5">
+            <td class="p-3.5 whitespace-nowrap">${situacionText}</td>
+            <td class="p-3.5 text-center flex justify-center items-center gap-1.5 whitespace-nowrap">
               ${waButton}
               <a href="pagos.html" class="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg text-xs font-bold transition">Cobrar</a>
             </td>
@@ -276,34 +287,42 @@
       }).join('');
     }
 
-    function sendWhatsAppReminder(studentName, phone, nextDate) {
+    function sendWhatsAppReminder(studentName, phone, nextDate, diffDays) {
       let cleanPhone = String(phone).replace(/\D/g, '');
       if (cleanPhone.length === 8) cleanPhone = '506' + cleanPhone;
 
-      const mensaje = encodeURIComponent(`Hola ${studentName}, le saludamos de Academia Elohim. Le recordamos cordialmente que el pago de su próxima mensualidad corresponde al día ${nextDate}. ¡Muchas gracias por su puntualidad!`);
-      window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${mensaje}`, '_blank');
+      let msg = '';
+      if (diffDays < 0) {
+        msg = `Hola ${studentName}, le saludamos con mucho gusto de Academia Elohim. Le recordamos cordialmente que su mensualidad se encuentra pendiente desde el ${nextDate}. Agradecemos su pronta cancelación para mantener sus clases al día. ¡Muchas gracias!`;
+      } else if (diffDays === 0) {
+        msg = `Hola ${studentName}, le saludamos de Academia Elohim. Le recordamos con gusto que el día de hoy corresponde la cancelación de su mensualidad. ¡Muchas gracias por su puntualidad!`;
+      } else {
+        msg = `Hola ${studentName}, le saludamos de Academia Elohim. Le recordamos cordialmente que su mensualidad está próxima a vencer este ${nextDate} (en ${diffDays} días). ¡Muchas gracias por su puntualidad!`;
+      }
+
+      window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function exportToExcel() {
-      if (billingList.length === 0) {
-        alert('No hay información para exportar.');
+      if (pendingBillingList.length === 0) {
+        alert('No hay cobros pendientes o morosidad para exportar.');
         return;
       }
 
-      const rows = billingList.map(item => ({
+      const rows = pendingBillingList.map(item => ({
         'Alumno': item.student.full_name,
         'Teléfono': item.student.phone || '-',
-        'Estado': item.status === 'vencido' ? 'Vencido' : item.status === 'proximo' ? 'Próximo a Vencer' : 'Al Día',
+        'Estado': item.status === 'vencido' ? 'Vencido' : 'Próximo a Vencer (≤ 5 días)',
         'Último Pago Mensual': formatDate(item.lastPaymentDate),
-        'Fecha Próximo Cobro': formatDate(item.nextPaymentDate),
-        'Días de Diferencia': item.diffDays !== null ? item.diffDays : 'N/A'
+        'Fecha Límite Mensualidad': formatDate(item.nextPaymentDate),
+        'Días de Diferencia': item.diffDays !== -999 ? item.diffDays : 'Sin Historial'
       }));
 
       const ws = XLSX.utils.json_to_sheet(rows);
-      ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 18 }, { wch: 20 }, { wch: 20 }, { wch: 18 }];
+      ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 18 }];
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Cobros_Pendientes');
-      XLSX.writeFile(wb, `Cobros_Pendientes_${new Date().toISOString().split('T')[0]}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, 'Morosos_Pendientes');
+      XLSX.writeFile(wb, `Morosos_Mensualidad_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
     function escapeHtml(text) {
